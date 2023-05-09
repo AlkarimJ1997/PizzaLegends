@@ -28,13 +28,12 @@ npm run dev
 
 ### Day 1
 
-- [x] Set up the project
-- [x] Create the map
-- [x] Pixelate the map
-- [x] Create the player
-- [x] Draw the player on the map
-- [x] Create a shadow
-- [x] Draw the shadow below the player
+- [x] [Set up the project](#set-up-the-project)
+- [x] [Create the map](#create-the-map)
+- [x] [Pixelate the map](#pixelate-the-map)
+- [x] [Create the player](#create-the-player)
+- [x] [Create a shadow](#create-a-shadow)
+- [x] [Draw the shadow below the player](#draw-the-shadow-below-the-player)
 
 #### Set up the project
 
@@ -138,7 +137,7 @@ To pixelate the map, we scaled the canvas using `transform` and used the `image-
 }
 ```
 
-#### Create the player and draw the player on the map
+#### Create the player
 
 Initially, creating the player was much like creating the map. We used a URL object and HTML image element to draw the player on the canvas in the `init()` method.
 
@@ -199,8 +198,8 @@ shadow.src = urlShadow.href;
 
 ### Day 2
 
-- [x] Create GameObject pattern
-- [ ] Refactor
+- [x] [Create GameObject pattern](#create-gameobject-pattern)
+- [x] [Refactor](#refactor)
 
 #### Create GameObject pattern
 
@@ -363,10 +362,10 @@ Notice the reduced code in the `init()` method. Now, we only have to create Game
 
 ### Day 3
 
-- [x] Create Image Utility
-- [x] Create Overworld Maps
-- [x] Define Map Configs
-- [x] Create Game Loop
+- [x] [Create Image Utility](#create-image-utility)
+- [x] [Create Overworld Maps](#create-overworld-maps)
+- [x] [Define Map Configs](#define-map-configs)
+- [x] [Create Game Loop](#create-game-loop)
 
 #### Create Image Utility
 
@@ -553,11 +552,11 @@ Finally, we define our current map in `init()` and call `startGameLoop()`.
 
 ### Day 4
 
-- [x] Fix Jaggedy Movement
-- [x] Adding Sprite Updater
-- [x] Grid Based Movement
-- [x] Keyboard Events
-- [x] Player Controlled Flag
+- [x] [Fix Jaggedy Movement](#fix-jaggedy-movement)
+- [x] [Adding Sprite Updater](#adding-sprite-updater)
+- [x] [Grid Based Movement](#grid-based-movement)
+- [x] [Keyboard Events](#keyboard-events)
+- [x] [Player Controlled Flag](#player-controlled-flag)
 
 #### Fix Jaggedy Movement
 
@@ -846,7 +845,7 @@ So now, if the `Person` is not player controlled, we simply won't run any moveme
 
 ### Day 5
 
-- [x] Character Animations
+- [x] [Character Animations](#character-animations)
 
 #### Character Animations
 
@@ -1010,7 +1009,7 @@ One thing to keep in mind is that `animationFrameLimit` can be adjusted if we wa
 
 ### Day 6
 
-- [x] Creating a Camera
+- [x] [Creating a Camera](#creating-a-camera)
 
 #### Creating a Camera
 
@@ -1140,11 +1139,11 @@ startGameLoop() {
 
 ### Day 7
 
-- [x] Creating a Collision System
-- [ ] NPC Puppeting
-- [ ] Refactoring
-- [ ] Moving Walls
-- [ ] Mounting other Game Objects
+- [x] [Creating a Collision System](#creating-a-collision-system)
+- [x] [NPC Puppeting](#npc-puppeting)
+- [x] [Refactoring](#refactoring)
+- [x] [Moving Walls](#moving-walls)
+- [x] [Mounting other Game Objects](#mounting-other-game-objects)
 
 #### Creating a Collision System
 
