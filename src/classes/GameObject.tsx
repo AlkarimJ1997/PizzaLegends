@@ -4,6 +4,8 @@ import { Sprite } from './Sprite';
 import { GameObjectConfig, State, BehaviorLoopEvent } from '../models/types';
 
 export abstract class GameObject {
+	protected abstract isStanding: boolean;
+
 	id: string | null;
 	isMounted: boolean;
 	x: number;
@@ -30,7 +32,9 @@ export abstract class GameObject {
 
 	async doBehaviorEvent(map: OverworldMap) {
 		// If we're in a cutscene or there's no behavior loop, bail out
-		if (map.isCutscenePlaying || this.behaviorLoop.length === 0) return;
+		if (map.isCutscenePlaying || this.behaviorLoop.length === 0 || this.isStanding) {
+			return;
+		}
 
 		const eventConfig = this.behaviorLoop[this.behaviorLoopIndex];
 		eventConfig.who = this.id as string;

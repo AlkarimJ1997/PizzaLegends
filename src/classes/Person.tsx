@@ -7,6 +7,8 @@ type DirectionUpdate = {
 };
 
 export class Person extends GameObject {
+	protected isStanding: boolean;
+    
 	movingProgressRemaining: number;
 	isPlayerControlled: boolean;
 	directionUpdate: DirectionUpdate;
@@ -15,6 +17,7 @@ export class Person extends GameObject {
 		super(config);
 
 		this.movingProgressRemaining = 0;
+		this.isStanding = false;
 		this.isPlayerControlled = config.isPlayerControlled || false;
 		this.directionUpdate = {
 			up: ['y', -1],
@@ -66,8 +69,11 @@ export class Person extends GameObject {
 		}
 
 		if (behavior.type === 'stand') {
+			this.isStanding = true;
+
 			setTimeout(() => {
 				emitEvent('PersonStandingComplete', { whoId: this.id as string });
+				this.isStanding = false;
 			}, behavior.time);
 		}
 	}

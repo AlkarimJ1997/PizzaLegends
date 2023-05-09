@@ -80,6 +80,11 @@ export class OverworldMap {
 		}
 
 		this.isCutscenePlaying = false;
+
+		// Reset NPCs to do their idle behavior
+		Object.values(this.gameObjects).forEach(gameObject => {
+			gameObject.doBehaviorEvent(this);
+		});
 	}
 
 	isSpaceTaken(currentX: number, currentY: number, direction: string) {

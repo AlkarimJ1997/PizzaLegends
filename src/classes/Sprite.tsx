@@ -83,7 +83,7 @@ export class Sprite {
 		this.currentAnimationFrame = 0;
 
 		// game loop frames per animation frame (lower is faster)
-		this.animationFrameLimit = config.animationFrameLimit || 8;
+		this.animationFrameLimit = config.animationFrameLimit || 16;
 		this.animationFrameProgress = this.animationFrameLimit;
 
 		// Game Object reference

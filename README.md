@@ -1840,3 +1840,5 @@ As you can see, we can define a cutscene with a series of events, and the `start
 
 ### Day 9
 
+- [x] [Restarting Idle Behaviors]
+- [x] [Multiplying SetTimeouts] 

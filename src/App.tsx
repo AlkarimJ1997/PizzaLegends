@@ -15,6 +15,8 @@ function App() {
 		if (!overworld) return;
 
 		overworld.init();
+
+		return () => overworld.destroy();
 	}, [overworld]);
 
 	return (
