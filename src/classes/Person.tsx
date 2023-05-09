@@ -1,26 +1,9 @@
 import { GameObject } from './GameObject';
-import { OverworldMap } from './OverworldMap';
+import { BehaviorLoopEvent, PersonConfig, State } from '../models/types';
+import { emitEvent } from '../utils/utils';
 
 type DirectionUpdate = {
 	[key: string]: ['x' | 'y', 1 | -1];
-};
-
-type PersonConfig = {
-	x?: number;
-	y?: number;
-	src?: string;
-	direction?: 'up' | 'down' | 'left' | 'right';
-	isPlayerControlled?: boolean;
-};
-
-type State = {
-	arrow: string;
-	map: OverworldMap;
-};
-
-type Behavior = {
-	type: string;
-	direction: string;
 };
 
 export class Person extends GameObject {
@@ -46,6 +29,11 @@ export class Person extends GameObject {
 
 		this[property] += value;
 		this.movingProgressRemaining -= 1;
+
+		if (this.movingProgressRemaining === 0) {
+			// We're done moving, so let's throw a signal
+			emitEvent('PersonWalkingComplete', { whoId: this.id as string });
+		}
 	}
 
 	updateSprite() {
@@ -57,18 +45,30 @@ export class Person extends GameObject {
 		this.sprite.setAnimation(`idle-${this.direction}`);
 	}
 
-	startBehavior(state: State, behavior: Behavior) {
+	startBehavior(state: State, behavior: BehaviorLoopEvent) {
 		this.direction = behavior.direction;
 
 		if (behavior.type === 'walk') {
 			// Don't walk if the space is taken (i.e. a wall or other NPC)
 			if (state.map.isSpaceTaken(this.x, this.y, this.direction)) {
+				behavior.retry &&
+					setTimeout(() => {
+						this.startBehavior(state, behavior);
+					}, 10);
+
 				return;
 			}
 
 			// Ready to walk!
 			state.map.moveWall(this.x, this.y, this.direction);
 			this.movingProgressRemaining = 16;
+			this.updateSprite();
+		}
+
+		if (behavior.type === 'stand') {
+			setTimeout(() => {
+				emitEvent('PersonStandingComplete', { whoId: this.id as string });
+			}, behavior.time);
 		}
 	}
 
@@ -81,7 +81,7 @@ export class Person extends GameObject {
 		// ...
 
 		// Case: We're keyboard ready (player is able to walk - no cutscene going on, etc.) and have an arrow pressed down
-		if (this.isPlayerControlled && state.arrow) {
+		if (!state.map.isCutscenePlaying && this.isPlayerControlled && state.arrow) {
 			this.startBehavior(state, {
 				type: 'walk',
 				direction: state.arrow,

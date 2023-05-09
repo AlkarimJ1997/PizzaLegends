@@ -1,3 +1,5 @@
+import { Detail } from '../models/types';
+
 export const createImage = (src: string): Promise<HTMLImageElement> => {
 	return new Promise((resolve, reject) => {
 		const url = new URL(src, import.meta.url);
@@ -28,4 +30,10 @@ export const nextPosition = (initialX: number, initialY: number, dir: string) =>
 		default:
 			return { x: initialX, y: initialY };
 	}
+};
+
+export const emitEvent = (name: string, detail: Detail) => {
+	const event = new CustomEvent(name, { detail });
+
+	document.dispatchEvent(event);
 };

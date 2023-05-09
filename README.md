@@ -1419,3 +1419,424 @@ startBehavior(state: State, behavior: Behavior) {
 
 ### Day 8
 
+- [x] [Behavior Loop System](#behavior-loop-system)
+- [x] [Signal Pattern](#signal-pattern)
+- [x] [Retry Behavior](#retry-behavior)
+- [x] [Drawing Order](#drawing-order)
+- [x] [Cutscene System](#cutscene-system)
+
+#### Behavior Loop System
+
+The most important part of the game is the behavior loop and cutscene system. These systems will allow idle NPCs to walk around, and allow for cutscenes to be played.
+
+There's an important distinction to make here.
+
+We have an internal person behavior loop system which is used for NPCs to walk around when nothing else is going on.
+
+We also have a global cutscene system which is used for cutscenes, which tells the player or other NPCs to move a predetermined way or do something when the player steps on a certain spot or picks up an item, etc.
+
+If you've played Pokemon, an example of the first system is spinner trainers, while your rival appearing to battle you is an example of the second system.
+
+We'll start with the internal behavior loop system, but its code is very similar to the cutscene system.
+
+To actually reference each game object in the scene, we need a `who` property to uniquely identify each game object.
+
+Luckily, we can do this dynamically when the objects are mounted.
+
+```tsx
+mountObjects() {
+    Object.keys(this.gameObjects).forEach(key => {
+        const gameObject = this.gameObjects[key];
+
+        // TODO: determine if object should actually be mounted
+        gameObject.id = key;
+        gameObject.mount(this);
+    });
+}
+```
+
+Notice we iterate by the keys and use it as the `id` of the game object. Make sure to take in the `id` as a parameter in the constructor of `GameObject`.
+
+Now, we can start giving `behaviorLoop` properties to our game objects.
+
+```tsx
+npcB: new Person({
+    x: withGrid(3),
+    y: withGrid(7),
+    src: '../assets/images/characters/people/npc2.png',
+    behaviorLoop: [
+        { type: 'walk', direction: 'left' },
+        { type: 'stand', direction: 'up', time: 800 },
+        { type: 'walk', direction: 'up' },
+        { type: 'walk', direction: 'right' },
+        { type: 'walk', direction: 'down' },
+    ],
+}),
+```
+
+Currently, we only have `walk` or `stand` behaviors. We'll add more later. The `time` property is only for `stand` behaviors and is the amount of time in milliseconds to stand facing the given direction.
+
+**_One thing that is imperative to understand with these behavior loops are they will repeat forever. So, when authoring them, you need to ensure the behavior loop ends in the same spot it starts._**
+
+If you don't do this, the game object will walk off the map and disappear forever.
+
+Now, we need to actually handle these events in the `GameObject` class.
+
+We'll start with adding the class properties to the constructor.
+
+```tsx
+this.behaviorLoop = config.behaviorLoop || [];
+this.behaviorLoopIndex = 0;
+```
+
+From here, we can kick off the event loop when the object is mounted, waiting a short delay before starting (to give priority to potential global cutscenes).
+
+```tsx
+mount(map: OverworldMap) {
+    this.isMounted = true;
+
+    map.addWall(this.x, this.y);
+
+    // If we have a behavior loop, kick it off after a short delay
+    setTimeout(() => {
+        this.doBehaviorEvent(map);
+    }, 10);
+}
+```
+
+Now, we need to actually implement the `doBehaviorEvent()` method. It's purpose is to asynchronously wait for the current behavior to finish, then start the next one.
+
+```tsx
+async doBehaviorEvent(map: OverworldMap) {
+    // If we're in a cutscene or there's no behavior loop, bail out
+    if (map.isCutscenePlaying || this.behaviorLoop.length === 0) return;
+
+    const eventConfig = this.behaviorLoop[this.behaviorLoopIndex];
+    eventConfig.who = this.id as string;
+
+    const eventHandler = new OverworldEvent({ map, event: eventConfig });
+    await eventHandler.init();
+
+    // Set next event to fire
+    this.behaviorLoopIndex += 1;
+
+    // Loop back to the beginning if we've reached the end
+    if (this.behaviorLoopIndex >= this.behaviorLoop.length) {
+        this.behaviorLoopIndex = 0;
+    }
+
+    // Kick off the next behavior loop event
+    this.doBehaviorEvent(map);
+}
+```
+
+Notice that we are dynamically assigning the `who` property to the event config. This is so the event handler knows which game object to move and when that specific game object is done moving.
+
+After the event finishes (is `await`ed), we increment to the next event in the loop, and if we've reached the end, we loop back to the beginning.
+
+Finally, we kick off the next event.
+
+Also, notice that at the very beginning, we check if a cutscene is playing or if we have no behavior loop tied to the game object. In either case, we want this method to do nothing.
+
+Remember to add the `isCutscenePlaying` property to the `OverworldMap` class.
+
+Now, for the OverworldEvent class, it's imperative that it knows when the event is finished. In other words, when the game object is done walking or standing. We need to implement this in the `Person` class.
+
+To do this, we'll use a signal pattern using Custom Events.
+
+#### Signal Pattern
+
+The signal pattern is a way to communicate between two objects without having to pass a callback function as a parameter. It's like a click event on a button, but the browser listens for the events we create.
+
+In our `updatePosition()` method, we can check if a `Person` is done moving, and if so, dispatch a `PersonWalkingComplete` event.
+
+Dispatching custom events will be used in many places, so we'll create another utility function for it.
+
+```tsx
+export const emitEvent = (name: string, detail: Detail) => {
+	const event = new CustomEvent(name, { detail });
+
+	document.dispatchEvent(event);
+};
+```
+
+Notice we have a `detail` object which has any information we may want to pass along with the event.
+
+Now we can use this in our `updatePosition()` method to dispatch the event when the person is done moving.
+
+```tsx
+updatePosition() {
+    const [property, value] = this.directionUpdate[this.direction];
+
+    this[property] += value;
+    this.movingProgressRemaining -= 1;
+
+    if (this.movingProgressRemaining === 0) {
+        // We're done moving, so let's throw a signal
+        emitEvent('PersonWalkingComplete', { whoId: this.id as string });
+    }
+}
+```
+
+Notice that we named our custom event `PersonWalkingComplete` and passed along which game object is done walking, i.e. the `whoId`.
+
+We can do the same thing for the `PersonStandingComplete` event.
+
+```tsx
+startBehavior(state: State, behavior: BehaviorLoopEvent) {
+    this.direction = behavior.direction;
+
+    if (behavior.type === 'walk') {
+        // Don't walk if the space is taken (i.e. a wall or other NPC)
+        if (state.map.isSpaceTaken(this.x, this.y, this.direction)) {
+            return;
+        }
+
+        // Ready to walk!
+        state.map.moveWall(this.x, this.y, this.direction);
+        this.movingProgressRemaining = 16;
+        this.updateSprite();
+    }
+
+    if (behavior.type === 'stand') {
+        setTimeout(() => {
+            emitEvent('PersonStandingComplete', { whoId: this.id as string });
+        }, behavior.time);
+    }
+}
+```
+
+Here, we just use `setTimeout` to wait for the given amount of time before dispatching the event being complete, as that simulates the person standing still.
+
+Notice that we also add a call to `updateSprite()` when the person is ready to walk. This is because we want to update the sprite to the walking sprite before the person (i.e. an NPC) starts walking.
+
+Now, let's implement the `OverworldEvent` class.
+
+```tsx
+type OverworldEventConfig = {
+	map: OverworldMap;
+	event: BehaviorLoopEvent;
+};
+
+type OverworldEventMethod = (resolve: () => void) => void;
+
+export class OverworldEvent {
+	map: OverworldMap;
+	event: BehaviorLoopEvent;
+
+	constructor({ map, event }: OverworldEventConfig) {
+		this.map = map;
+		this.event = event;
+	}
+
+	stand(resolve: () => void) {
+		const who = this.map.gameObjects[this.event.who as string] as Person;
+
+		who.startBehavior(
+			{ map: this.map },
+			{
+				type: 'stand',
+				direction: this.event.direction,
+				time: this.event.time,
+			}
+		);
+
+		// Complete handler for the PersonStandingComplete event
+		const completeHandler = (e: CustomEvent<Detail>) => {
+			if (e.detail.whoId === this.event.who) {
+				document.removeEventListener('PersonStandingComplete', completeHandler);
+				resolve();
+			}
+		};
+
+		// Listen for the PersonStandingComplete event
+		document.addEventListener('PersonStandingComplete', completeHandler);
+	}
+
+	walk(resolve: () => void) {
+		const who = this.map.gameObjects[this.event.who as string] as Person;
+
+		who.startBehavior(
+			{ map: this.map },
+			{
+				type: 'walk',
+				direction: this.event.direction,
+			}
+		);
+
+		// Complete handler for the PersonWalkingComplete event
+		const completeHandler = (e: CustomEvent<Detail>) => {
+			if (e.detail.whoId === this.event.who) {
+				document.removeEventListener('PersonWalkingComplete', completeHandler);
+				resolve();
+			}
+		};
+
+		// Listen for the PersonWalkingComplete event
+		document.addEventListener('PersonWalkingComplete', completeHandler);
+	}
+
+	init() {
+		const eventHandlers: Record<string, OverworldEventMethod> = {
+			stand: this.stand.bind(this),
+			walk: this.walk.bind(this),
+		};
+
+		return new Promise<void>(resolve => {
+			eventHandlers[this.event.type](resolve);
+		});
+	}
+}
+```
+
+There's a lot going on here, so let's break it down.
+
+Notice that we have a method named **_exactly_** the same as the event type. This is so we can dynamically call the correct method in the `init()` method.
+
+In each of these methods, we get the `Person` object from the `OverworldMap` (that will be executing this event) and call the `startBehavior()` method with the correct parameters.
+
+Then, we add an event listener for the event being complete. Notice that we have a `completeHandler` function that checks if the `whoId` matches the `who` property of the event config. This is necessary because we have multiple identical events for different NPCs, etc.
+
+Finally, we call `resolve()` when the event is complete to let the `await` know that it can continue.
+
+#### Retry Behavior
+
+There is one more thing we need to handle. Currently, if we, as the player, walk in front of the NPC in the middle of its walk behavior, and then walk away, the NPC will stop altogether.
+
+This is because the `Person` class doesn't know how to retry its behavior. We need to add this functionality.
+
+But this is a simple boolean flag that we can pass to the `startBehavior()` method.
+
+```tsx
+walk(resolve: () => void) {
+    const who = this.map.gameObjects[this.event.who as string] as Person;
+
+    who.startBehavior(
+        { map: this.map },
+        {
+            type: 'walk',
+            direction: this.event.direction,
+            retry: true,
+        }
+    );
+
+    // ... rest of code
+}
+```
+
+Remember we have to pass it explicitly here because we don't always want to retry the behavior, i.e. if the player is the one walking.
+
+Now, in the `Person` class, we can check for this flag and retry the behavior if necessary.
+
+```tsx
+startBehavior(state: State, behavior: BehaviorLoopEvent) {
+    this.direction = behavior.direction;
+
+    if (behavior.type === 'walk') {
+        // Don't walk if the space is taken (i.e. a wall or other NPC)
+        if (state.map.isSpaceTaken(this.x, this.y, this.direction)) {
+            behavior.retry &&
+                setTimeout(() => {
+                    this.startBehavior(state, behavior);
+                }, 10);
+
+            return;
+        }
+        // ... rest of code
+}
+```
+
+We pass along the same `state` and `behavior` parameters, so it will always retry until it can walk.
+
+#### Drawing Order
+
+One small thing we need to fix is the drawing order of game objects in the scene. Currently, they are drawn in the order they are explicitly defined in the map config.
+
+But, we want the game objects below to be drawn first, so that game objects with a smaller `y` value are drawn below game objects with a larger `y` value.
+
+We can do this by sorting the game objects before drawing them in the game loop.
+
+```tsx
+Object.values(this.map.gameObjects)
+	.sort((a, b) => a.y - b.y)
+	.forEach(gameObject => {
+		gameObject.sprite.draw(this.ctx, cameraPerson);
+	});
+```
+
+Now, the game objects will be drawn in the correct order.
+
+#### Cutscene System
+
+The last thing we want to do is implement our global cutscene system, which is very similar to how we are already handling events.
+
+Notice that if we set `isCutscenePlaying` to `true`, all the NPCs just stand there and don't perform their behaviors, which is what we want because they think a cutscene is playing.
+
+But the player can still move, so we need to disable that.
+
+```tsx
+update(state: State) {
+    // ... rest of code
+
+    // Case: We're keyboard ready (player is able to walk - no cutscene going on, etc.) and have an arrow pressed down
+    if (!state.map.isCutscenePlaying && this.isPlayerControlled && state.arrow) {
+        this.startBehavior(state, {
+            type: 'walk',
+            direction: state.arrow,
+        });
+    }
+
+    this.updateSprite();
+}
+```
+
+Now, for checking if we're keyboard ready, we also ensure that no cutscene is playing.
+
+From here, we can define a `startCutscene()` method on the `OverworldMap` class to handle global cutscene events.
+
+```tsx
+async startCutscene(events: BehaviorLoopEvent[]) {
+    this.isCutscenePlaying = true;
+
+    // Start a loop of async events, awaiting each one
+    for (const event of events) {
+        const eventHandler = new OverworldEvent({
+            event,
+            map: this,
+        });
+
+        await eventHandler.init();
+    }
+
+    this.isCutscenePlaying = false;
+}
+```
+
+Notice the similarities to the `doBehaviorEvent()` method in the `GameObject` class. We loop through each event and await it, so that we can wait for the event to complete before moving on to the next one.
+
+For now, we'll define a global cutscene array in the `init()` method of the `Overworld` class.
+
+```tsx
+init() {
+    this.map = new OverworldMap(window.OverworldMaps.DemoRoom);
+    this.map.mountObjects();
+
+    this.directionInput = new DirectionInput();
+    this.directionInput.init();
+
+    this.startGameLoop();
+
+    this.map.startCutscene([
+        { who: 'hero', type: 'walk', direction: 'down' },
+        { who: 'hero', type: 'walk', direction: 'down' },
+        { who: 'npcA', type: 'walk', direction: 'left' },
+        { who: 'npcA', type: 'walk', direction: 'left' },
+        { who: 'npcA', type: 'stand', direction: 'up', time: 800 },
+    ]);
+}
+```
+
+As you can see, we can define a cutscene with a series of events, and the `startCutscene()` method will handle the rest.
+
+### Day 9
+

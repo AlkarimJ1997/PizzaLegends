@@ -1,6 +1,7 @@
 import { GameObject } from './GameObject';
-import { Person } from './Person';
-import { createImage, withGrid, asGridCoord, nextPosition } from '../utils/utils';
+import { createImage, withGrid, nextPosition } from '../utils/utils';
+import { BehaviorLoopEvent } from '../models/types';
+import { OverworldEvent } from './OverworldEvent';
 
 type GameObjects = {
 	[key: string]: GameObject;
@@ -19,9 +20,10 @@ type OverworldMapConfig = {
 
 export class OverworldMap {
 	gameObjects: GameObjects;
+	walls: Walls;
 	lowerImage: HTMLImageElement = new Image();
 	upperImage: HTMLImageElement = new Image();
-	walls: Walls;
+	isCutscenePlaying: boolean;
 
 	constructor(config: OverworldMapConfig) {
 		this.gameObjects = config.gameObjects;
@@ -34,6 +36,8 @@ export class OverworldMap {
 		createImage(config.upperSrc).then(image => {
 			this.upperImage.src = image.src;
 		});
+
+		this.isCutscenePlaying = true;
 	}
 
 	drawLowerImage(ctx: CanvasRenderingContext2D, cameraPerson: GameObject) {
@@ -53,10 +57,29 @@ export class OverworldMap {
 	}
 
 	mountObjects() {
-		Object.values(this.gameObjects).forEach(gameObject => {
-            // TODO: determine if object should actually be mounted
+		Object.keys(this.gameObjects).forEach(key => {
+			const gameObject = this.gameObjects[key];
+
+			// TODO: determine if object should actually be mounted
+			gameObject.id = key;
 			gameObject.mount(this);
 		});
+	}
+
+	async startCutscene(events: BehaviorLoopEvent[]) {
+		this.isCutscenePlaying = true;
+
+		// Start a loop of async events, awaiting each one
+		for (const event of events) {
+			const eventHandler = new OverworldEvent({
+				event,
+				map: this,
+			});
+
+			await eventHandler.init();
+		}
+
+		this.isCutscenePlaying = false;
 	}
 
 	isSpaceTaken(currentX: number, currentY: number, direction: string) {
@@ -81,56 +104,3 @@ export class OverworldMap {
 		this.addWall(x, y);
 	}
 }
-
-declare global {
-	interface Window {
-		OverworldMaps: {
-			[key: string]: OverworldMapConfig;
-		};
-	}
-}
-
-window.OverworldMaps = {
-	DemoRoom: {
-		lowerSrc: '../assets/images/maps/DemoLower.png',
-		upperSrc: '../assets/images/maps/DemoUpper.png',
-		gameObjects: {
-			hero: new Person({
-				isPlayerControlled: true,
-				x: withGrid(5),
-				y: withGrid(6),
-			}),
-			npcA: new Person({
-				x: withGrid(7),
-				y: withGrid(9),
-				src: '../assets/images/characters/people/npc1.png',
-			}),
-		},
-		walls: {
-			[asGridCoord(7, 6)]: true,
-			[asGridCoord(8, 6)]: true,
-			[asGridCoord(7, 7)]: true,
-			[asGridCoord(8, 7)]: true,
-		},
-	},
-	// Kitchen: {
-	// 	lowerSrc: '../assets/images/maps/KitchenLower.png',
-	// 	upperSrc: '../assets/images/maps/KitchenUpper.png',
-	// 	gameObjects: {
-	// 		hero: new GameObject({
-	// 			x: 3,
-	// 			y: 5,
-	// 		}),
-	// 		npcA: new GameObject({
-	// 			x: 9,
-	// 			y: 6,
-	// 			src: '../assets/images/characters/people/npc2.png',
-	// 		}),
-	// 		npcB: new GameObject({
-	// 			x: 10,
-	// 			y: 8,
-	// 			src: '../assets/images/characters/people/npc3.png',
-	// 		}),
-	// 	},
-	// },
-};
