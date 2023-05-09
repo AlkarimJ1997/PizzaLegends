@@ -1,6 +1,7 @@
 import { OverworldMap } from './OverworldMap';
 import { Person } from './Person';
 import { BehaviorLoopEvent, Detail } from '../models/types';
+import { TextMessage } from './TextMessage';
 
 type OverworldEventConfig = {
 	map: OverworldMap;
@@ -50,7 +51,7 @@ export class OverworldEvent {
 			{
 				type: 'walk',
 				direction: this.event.direction,
-                retry: true,
+				retry: true,
 			}
 		);
 
@@ -66,10 +67,20 @@ export class OverworldEvent {
 		document.addEventListener('PersonWalkingComplete', completeHandler);
 	}
 
+	textMessage(resolve: () => void) {
+		const message = new TextMessage({
+			text: this.event.text as string,
+			onComplete: () => resolve(),
+		});
+
+		message.init(document.querySelector('.game') as HTMLDivElement);
+	}
+
 	init() {
 		const eventHandlers: Record<string, OverworldEventMethod> = {
 			stand: this.stand.bind(this),
 			walk: this.walk.bind(this),
+			textMessage: this.textMessage.bind(this),
 		};
 
 		return new Promise<void>(resolve => {

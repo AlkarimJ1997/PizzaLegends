@@ -1,5 +1,14 @@
 :root {
 	--clr-primary: hsl(0, 0%, 20%);
+
+	/* Text Message Variables */
+	--border-color: #291d4d;
+	--dialog-background: #fff3b4;
+
+	--menu-background: #ffe8d2;
+	--menu-border-color: #a48465;
+	--menu-font-color: #3a160d;
+	--menu-selected-background: #7fc2ff;
 }
 
 /* CSS RESET */
@@ -47,9 +56,33 @@ body {
 	width: 352px;
 	height: 198px;
 	outline: 1px solid hsl(0 0% 100%);
-    transform: scale(3);
+	transform: scale(3);
 }
 
 .game canvas {
-    image-rendering: pixelated;
+	image-rendering: pixelated;
+}
+
+/* Text Message Styles */
+.message {
+	position: absolute;
+	inset: auto 0 0 0;
+	height: 2.25rem;
+	background-color: var(--menu-background);
+	padding: 0.25rem;
+	font-size: 0.75rem;
+	color: var(--menu-font-color);
+	border: 1px solid var(--menu-border-color);
+}
+
+.message__btn {
+	position: absolute;
+	right: 2px;
+	bottom: 0;
+	background: none;
+	font-size: 0.5rem;
+	appearance: none;
+	-webkit-appearance: none;
+	border: 0;
+	cursor: pointer;
 }

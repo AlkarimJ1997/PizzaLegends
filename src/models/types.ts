@@ -4,9 +4,10 @@ import { OverworldMap } from '../classes/OverworldMap';
 export type BehaviorLoopEvent = {
     who?: string;
 	type: string;
-	direction: string;
+	direction?: string;
 	time?: number;
     retry?: true;
+    text?: string;
 };
 
 export type GameObjectConfig = {
