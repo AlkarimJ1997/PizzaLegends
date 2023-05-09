@@ -1140,10 +1140,8 @@ startGameLoop() {
 ### Day 7
 
 - [x] [Creating a Collision System](#creating-a-collision-system)
-- [x] [NPC Puppeting](#npc-puppeting)
-- [x] [Refactoring](#refactoring)
-- [x] [Moving Walls](#moving-walls)
-- [x] [Mounting other Game Objects](#mounting-other-game-objects)
+- [x] [NPC Puppeting and Refactoring](#npc-puppeting-and-refactoring)
+- [x] [Mounting Game Objects and Moving Walls](#mounting-game-objects-and-moving-walls)
 
 #### Creating a Collision System
 
@@ -1247,4 +1245,177 @@ With our current system for moving the `Person` game object, we are only able to
 
 To fix this, we will implement NPC puppeting, a system that takes a behavior object that tells the game object how to behave (i.e. move, speak, etc.)
 
+```tsx
+export class Person extends GameObject {
+	// ... member variables
+
+	constructor(config: PersonConfig) {
+		// ... constructor stuff
+	}
+
+	updatePosition() {
+		const [property, value] = this.directionUpdate[this.direction];
+
+		this[property] += value;
+		this.movingProgressRemaining -= 1;
+	}
+
+	updateSprite() {
+		if (this.movingProgressRemaining > 0) {
+			this.sprite.setAnimation(`walk-${this.direction}`);
+			return;
+		}
+
+		this.sprite.setAnimation(`idle-${this.direction}`);
+	}
+
+	startBehavior(state: State, behavior: Behavior) {
+		this.direction = behavior.direction;
+
+		if (behavior.type === 'walk') {
+			// Don't walk if the space is taken (i.e. a wall or other NPC)
+			if (state.map.isSpaceTaken(this.x, this.y, this.direction)) {
+				return;
+			}
+
+			// Ready to walk!
+			state.map.moveWall(this.x, this.y, this.direction);
+			this.movingProgressRemaining = 16;
+		}
+	}
+
+	update(state: State) {
+		if (this.movingProgressRemaining > 0) {
+			this.updatePosition();
+			return;
+		}
+		// More cases for starting to walk will come here
+		// ...
+
+		// Case: We're keyboard ready (player is able to walk - no cutscene going on, etc.) and have an arrow pressed down
+		if (this.isPlayerControlled && state.arrow) {
+			this.startBehavior(state, {
+				type: 'walk',
+				direction: state.arrow,
+			});
+		}
+
+		this.updateSprite();
+	}
+}
+```
+
+Notice the drastic changes to the `Person` class. In `update()`, if the player is currently moving, we update the position and nothing else.
+
+If not, and the player is keyboard ready (meaning the player is allowed to give input to move), we start a walk behavior. We also update the sprite.
+
+Due to our refactoring of if checks, we can also simplify the `updateSprite()` method and we add a `startBehavior()` method that takes a `Behavior` object and starts the behavior.
+
+But notice how we first check if the space is taken before starting to walk. If the space is taken, we don't allow the walk to happen.
+
+Finally, take note of the following line:
+
+```tsx
+state.map.moveWall(this.x, this.y, this.direction);
+```
+
+It will be touched on in the next section.
+
+#### Mounting Game Objects and Moving Walls
+
+Now that we have a system for moving, depending on if the next space is a `wall` or not, we also need to implement walls for other NPCs and game objects.
+
+If we don't do this, a player could walk through an NPC or vice versa.
+
+We start by adding 3 CRUD-like methods to `OverworldMap`:
+
+```tsx
+addWall(x: number, y: number) {
+    this.walls[`${x},${y}`] = true;
+}
+
+removeWall(x: number, y: number) {
+    delete this.walls[`${x},${y}`];
+}
+
+moveWall(wasX: number, wasY: number, direction: string) {
+    this.removeWall(wasX, wasY);
+
+    const { x, y } = nextPosition(wasX, wasY, direction);
+
+    this.addWall(x, y);
+}
+```
+
+Very basic concepts here:
+
+- `addWall()` will be called whenever a game object enters the scene, or is mounted.
+- `removeWall()` will be called whenever a game object exits the scene.
+- `moveWall()` will be called whenever a game object moves.
+
+We now need to actually mount our game objects (i.e. add their walls to the map) so they can't be collided with.
+
+In the `GameObject` constructor, we initialize a flag `isMounted` to `false`.
+
+```tsx
+this.isMounted = false;
+```
+
+We then create a `mount()` method that will be called when the game object is mounted.
+
+```tsx
+mount(map: OverworldMap) {
+    this.isMounted = true;
+
+    map.addWall(this.x, this.y);
+}
+```
+
+Now, we create a method in `OverworldMap` that mounts all game objects that are to be in the scene.
+
+Here, we would also add optional additional logic to determine if the game object should be mounted or not.
+
+For example, if a story flag has been set, and a key or other item has been picked up, we may not want to mount that game object, otherwise its invisible wall will still be in the scene.
+
+```tsx
+mountObjects() {
+    Object.values(this.gameObjects).forEach(gameObject => {
+        // TODO: determine if object should actually be mounted
+        gameObject.mount(this);
+    });
+}
+```
+
+We then call this method when we initialize the map in the `init()` method of `Overworld`
+
+```tsx
+init() {
+    this.map = new OverworldMap(window.OverworldMaps.DemoRoom);
+    this.map.mountObjects();
+    // ... rest of init
+}
+```
+
+Finally, we need to move the wall of the game object, or the player itself when they move. If we didn't do this, the player could not walk in the spot it was previously in, as the wall would still be there.
+
+We do this in the `startBehavior()` method of the `Person` class in the line I mentioned earlier:
+
+```tsx
+startBehavior(state: State, behavior: Behavior) {
+    this.direction = behavior.direction;
+
+    if (behavior.type === 'walk') {
+        // Don't walk if the space is taken (i.e. a wall or other NPC)
+        if (state.map.isSpaceTaken(this.x, this.y, this.direction)) {
+            return;
+        }
+
+        // Ready to walk!
+        state.map.moveWall(this.x, this.y, this.direction);
+        this.movingProgressRemaining = 16;
+    }
+}
+```
+
+### Day 8
 

@@ -75,21 +75,19 @@ export class Person extends GameObject {
 	update(state: State) {
 		if (this.movingProgressRemaining > 0) {
 			this.updatePosition();
-		} else {
-			// if (!this.isPlayerControlled) return;
-
-			// More cases for starting to walk will come here
-			// ...
-
-			// Case: We're keyboard ready (player is able to walk - no cutscene going on, etc.) and have an arrow pressed down
-			if (this.isPlayerControlled && state.arrow) {
-				this.startBehavior(state, {
-					type: 'walk',
-					direction: state.arrow,
-				});
-			}
-
-			this.updateSprite();
+			return;
 		}
+		// More cases for starting to walk will come here
+		// ...
+
+		// Case: We're keyboard ready (player is able to walk - no cutscene going on, etc.) and have an arrow pressed down
+		if (this.isPlayerControlled && state.arrow) {
+			this.startBehavior(state, {
+				type: 'walk',
+				direction: state.arrow,
+			});
+		}
+
+		this.updateSprite();
 	}
 }
