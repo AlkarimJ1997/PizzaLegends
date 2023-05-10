@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Overworld } from './classes/Overworld';
+import Message from './components/Message';
 
 function App() {
 	const [overworld, setOverworld] = useState<Overworld>();
@@ -23,6 +24,7 @@ function App() {
 		<>
 			<div ref={containerRef} className='game'>
 				<canvas className='game__canvas' width={352} height={198}></canvas>
+				<Message />
 			</div>
 		</>
 	);
