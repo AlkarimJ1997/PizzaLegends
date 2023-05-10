@@ -8,7 +8,7 @@ type DirectionUpdate = {
 
 export class Person extends GameObject {
 	protected isStanding: boolean;
-    
+
 	movingProgressRemaining: number;
 	isPlayerControlled: boolean;
 	directionUpdate: DirectionUpdate;
@@ -49,7 +49,7 @@ export class Person extends GameObject {
 	}
 
 	startBehavior(state: State, behavior: BehaviorLoopEvent) {
-		this.direction = behavior.direction;
+		this.direction = behavior.direction ?? this.direction;
 
 		if (behavior.type === 'walk') {
 			// Don't walk if the space is taken (i.e. a wall or other NPC)

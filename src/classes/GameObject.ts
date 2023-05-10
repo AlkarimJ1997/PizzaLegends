@@ -1,7 +1,12 @@
 import { OverworldMap } from './OverworldMap';
 import { OverworldEvent } from './OverworldEvent';
 import { Sprite } from './Sprite';
-import { GameObjectConfig, State, BehaviorLoopEvent } from '../models/types';
+import {
+	GameObjectConfig,
+	State,
+	BehaviorLoopEvent,
+	TalkEvent,
+} from '../models/types';
 
 export abstract class GameObject {
 	protected abstract isStanding: boolean;
@@ -14,6 +19,7 @@ export abstract class GameObject {
 	sprite: Sprite;
 	behaviorLoop: BehaviorLoopEvent[];
 	behaviorLoopIndex: number;
+	talking: TalkEvent[];
 
 	constructor(config: GameObjectConfig) {
 		this.id = null;
@@ -28,6 +34,8 @@ export abstract class GameObject {
 
 		this.behaviorLoop = config.behaviorLoop || [];
 		this.behaviorLoopIndex = 0;
+
+		this.talking = config.talking || [];
 	}
 
 	async doBehaviorEvent(map: OverworldMap) {

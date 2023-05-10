@@ -1,3 +1,5 @@
+import { KeyPressListener } from './KeyPressListener';
+
 type TextMessageConfig = {
 	text: string;
 	onComplete: () => void;
@@ -7,6 +9,7 @@ export class TextMessage {
 	text: string;
 	onComplete: () => void;
 	element: HTMLDivElement | null;
+	actionListener?: KeyPressListener;
 
 	constructor({ text, onComplete }: TextMessageConfig) {
 		this.text = text;
@@ -32,8 +35,14 @@ export class TextMessage {
             </div>
         `;
 
-		// Add a click event listener
+		// Close message on click
 		this.element.addEventListener('click', () => {
+			this.done();
+		});
+
+		// Enter key closes message
+		this.actionListener = new KeyPressListener('Enter', () => {
+			this.actionListener?.unbind();
 			this.done();
 		});
 	}

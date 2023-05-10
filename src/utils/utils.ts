@@ -37,3 +37,16 @@ export const emitEvent = (name: string, detail: Detail) => {
 
 	document.dispatchEvent(event);
 };
+
+export const oppositeDirection = (direction: string) => {
+	switch (direction) {
+		case 'left':
+			return 'right';
+		case 'right':
+			return 'left';
+		case 'up':
+			return 'down';
+		default:
+			return 'up';
+	}
+};

@@ -2,6 +2,7 @@ import { OverworldMap } from './OverworldMap';
 import { Person } from './Person';
 import { BehaviorLoopEvent, Detail } from '../models/types';
 import { TextMessage } from './TextMessage';
+import { oppositeDirection } from '../utils/utils';
 
 type OverworldEventConfig = {
 	map: OverworldMap;
@@ -46,6 +47,18 @@ export class OverworldEvent {
 	walk(resolve: () => void) {
 		const who = this.map.gameObjects[this.event.who as string] as Person;
 
+		// TODO: I MADE THIS CODE MYSELF TO FIX A BUG (WE'LL SEE IF THERE ARE ANY SIDE EFFECTS)
+		if (
+			who.id === 'hero' &&
+			this.event.direction &&
+			this.map.isSpaceTaken(who.x, who.y, this.event.direction)
+		) {
+			who.direction = this.event.direction;
+			resolve();
+			return;
+		}
+		// TODO: END OF MY CODE
+
 		who.startBehavior(
 			{ map: this.map },
 			{
@@ -68,6 +81,13 @@ export class OverworldEvent {
 	}
 
 	textMessage(resolve: () => void) {
+		if (this.event.faceHero) {
+			const hero = this.map.gameObjects.hero;
+			const obj = this.map.gameObjects[this.event.faceHero];
+
+			obj.direction = oppositeDirection(hero.direction);
+		}
+
 		const message = new TextMessage({
 			text: this.event.text as string,
 			onComplete: () => resolve(),
@@ -76,11 +96,17 @@ export class OverworldEvent {
 		message.init(document.querySelector('.game') as HTMLDivElement);
 	}
 
+	changeMap(resolve: () => void) {
+		this.map.overworld?.startMap(window.OverworldMaps[this.event.map as string]);
+		resolve();
+	}
+
 	init() {
 		const eventHandlers: Record<string, OverworldEventMethod> = {
 			stand: this.stand.bind(this),
 			walk: this.walk.bind(this),
 			textMessage: this.textMessage.bind(this),
+			changeMap: this.changeMap.bind(this),
 		};
 
 		return new Promise<void>(resolve => {

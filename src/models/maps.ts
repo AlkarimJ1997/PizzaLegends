@@ -21,18 +21,27 @@ window.OverworldMaps = {
 					{ type: 'stand', direction: 'right', time: 1200 },
 					{ type: 'stand', direction: 'up', time: 300 },
 				],
+				talking: [
+					{
+						events: [
+							{ type: 'textMessage', text: "I'm busy...", faceHero: 'npcA' },
+							{ type: 'textMessage', text: 'Go away!' },
+							{ type: 'walk', direction: 'up', who: 'hero' },
+						],
+					},
+				],
 			}),
 			npcB: new Person({
-				x: withGrid(3),
-				y: withGrid(7),
+				x: withGrid(8),
+				y: withGrid(5),
 				src: '../assets/images/characters/people/npc2.png',
-				behaviorLoop: [
-					{ type: 'walk', direction: 'left' },
-					{ type: 'stand', direction: 'up', time: 800 },
-					{ type: 'walk', direction: 'up' },
-					{ type: 'walk', direction: 'right' },
-					{ type: 'walk', direction: 'down' },
-				],
+				// behaviorLoop: [
+				// 	{ type: 'walk', direction: 'left' },
+				// 	{ type: 'stand', direction: 'up', time: 800 },
+				// 	{ type: 'walk', direction: 'up' },
+				// 	{ type: 'walk', direction: 'right' },
+				// 	{ type: 'walk', direction: 'down' },
+				// ],
 			}),
 		},
 		walls: {
@@ -41,25 +50,48 @@ window.OverworldMaps = {
 			[asGridCoord(7, 7)]: true,
 			[asGridCoord(8, 7)]: true,
 		},
+		cutsceneSpaces: {
+			[asGridCoord(7, 4)]: [
+				{
+					events: [
+						{ who: 'npcB', type: 'walk', direction: 'left' },
+						{ who: 'npcB', type: 'stand', direction: 'up', time: 500 },
+						{ type: 'textMessage', text: "You can't be in there!" },
+						{ who: 'npcB', type: 'walk', direction: 'right' },
+						{ who: 'npcB', type: 'stand', direction: 'down', time: 100 },
+						{ who: 'hero', type: 'walk', direction: 'down' },
+						{ who: 'hero', type: 'walk', direction: 'left' },
+					],
+				},
+			],
+			[asGridCoord(5, 10)]: [
+				{
+					events: [{ type: 'changeMap', map: 'Kitchen' }],
+				},
+			],
+		},
 	},
-	// Kitchen: {
-	// 	lowerSrc: '../assets/images/maps/KitchenLower.png',
-	// 	upperSrc: '../assets/images/maps/KitchenUpper.png',
-	// 	gameObjects: {
-	// 		hero: new GameObject({
-	// 			x: 3,
-	// 			y: 5,
-	// 		}),
-	// 		npcA: new GameObject({
-	// 			x: 9,
-	// 			y: 6,
-	// 			src: '../assets/images/characters/people/npc2.png',
-	// 		}),
-	// 		npcB: new GameObject({
-	// 			x: 10,
-	// 			y: 8,
-	// 			src: '../assets/images/characters/people/npc3.png',
-	// 		}),
-	// 	},
-	// },
+	Kitchen: {
+		lowerSrc: '../assets/images/maps/KitchenLower.png',
+		upperSrc: '../assets/images/maps/KitchenUpper.png',
+		gameObjects: {
+			hero: new Person({
+				isPlayerControlled: true,
+				x: withGrid(5),
+				y: withGrid(5),
+			}),
+			npcB: new Person({
+				x: withGrid(10),
+				y: withGrid(8),
+				src: '../assets/images/characters/people/npc3.png',
+				talking: [
+					{
+						events: [
+							{ type: 'textMessage', text: 'You made it!', faceHero: 'npcB' },
+						],
+					},
+				],
+			}),
+		},
+	},
 };

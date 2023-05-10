@@ -1,22 +1,12 @@
 :root {
 	--clr-primary: hsl(204, 70%, 53%);
 	--clr-secondary: hsl(204, 85%, 37%);
-	/* --clr-primary: hsl(194, 36%, 71%); */
+	--clr-accent: hsl(194, 36%, 71%);
 	--clr-light: hsl(0 0% 97%);
 	--clr-dark: hsl(240, 2%, 23%);
 	--clr-border: hsl(199, 54%, 17%);
 
-	--ff-body: 'Sora', monospace;
-	--ff-text: 'Dosis', monospace;
-
-	/* Text Message Variables */
-	--border-color: #291d4d;
-	--dialog-background: #fff3b4;
-
-	--menu-background: #ffe8d2;
-	--menu-border-color: #a48465;
-	--menu-font-color: #3a160d;
-	--menu-selected-background: #7fc2ff;
+	--ff-body: 'Dosis', monospace;
 }
 
 /* CSS RESET */
@@ -84,7 +74,6 @@ a {
 	background-color: var(--clr-light);
 	margin-inline: auto;
 	padding: 0.75em;
-	font-family: var(--ff-text);
 	font-size: 0.75rem;
 	font-weight: 700;
 	color: var(--clr-dark);
@@ -92,7 +81,7 @@ a {
 	word-spacing: 0.2em;
 	border: 1px solid var(--clr-border);
 	border-radius: 0.125rem;
-	box-shadow: 0 3px 0 0 var(--clr-secondary);
+	box-shadow: 0 3px 0 0 rgba(0, 0, 0, 0.3);
 	cursor: pointer;
 	user-select: none;
 	animation: slideIn 0.5s forwards;
@@ -132,7 +121,7 @@ a {
 
 	to {
 		opacity: 1;
-		transform: translate(0, -120%);
+		transform: translate(0%, -120%);
 	}
 }
 
