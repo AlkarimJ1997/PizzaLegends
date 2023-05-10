@@ -1843,6 +1843,9 @@ As you can see, we can define a cutscene with a series of events, and the `start
 - [x] [Restarting Idle Behaviors](#restarting-idle-behaviors)
 - [x] [Multiplying SetTimeouts](#multiplying-settimeouts)
 - [x] [Message Event](#message-event)
+- [x] [Talking to NPCs](#talking-to-npcs)
+- [x] [Cutscene Spaces](#cutscene-spaces)
+- [x] [ChangeMap Event](#changemap-event)
 
 #### Restarting Idle Behaviors
 
@@ -1916,3 +1919,446 @@ async doBehaviorEvent(map: OverworldMap) {
 Now, it's time to add a `message` event to the `OverworldEvent` system, similar to `stand` and `walk`.
 
 This event will allow NPCs and other game objects to display a message to the player.
+
+We'll start by creating a `Message` class.
+
+```tsx
+export class Message {
+	text: string;
+	onComplete: () => void;
+	element: HTMLDivElement | null;
+	actionListener?: KeyPressListener;
+
+	constructor({ text, onComplete }: MessageConfig) {
+		this.text = text;
+		this.onComplete = onComplete;
+		this.element = null;
+	}
+
+	createElement() {
+		// Create the element
+		this.element = document.createElement('div');
+		this.element.classList.add('message');
+
+		// Set the content
+		this.element.innerHTML = `
+            <p class='message__text'>${this.text}</p>
+            <div class='message__corner'>
+                <svg
+                    viewBox='0 0 65 62'
+                    fill='none'
+                    xmlns='http://www.w3.org/2000/svg'>
+                    <path d='M35 3.5L65 6.5V62L0 0L35 3.5Z' fill='hsl(0 0% 97%)' />
+                </svg>
+            </div>
+        `;
+
+		// Close message on click
+		this.element.addEventListener('click', () => {
+			this.done();
+		});
+	}
+
+	done() {
+		this.element?.remove();
+		this.onComplete();
+	}
+
+	init(container: HTMLDivElement) {
+		this.createElement();
+		container.appendChild(this.element as HTMLDivElement);
+	}
+}
+```
+
+Here, we dynamically create a message element and append it to the container.
+
+Notice that we have an `onComplete` callback, which will be called when the message is closed.
+
+And we can close the message by clicking on it.
+
+We also have an optional `actionListener` property, which will be used to listen for a key press to close the message. More on that later.
+
+Now we can add a `message()` method to the `OverworldEvent` class to handle the `message` event.
+
+```tsx
+message(resolve: () => void) {
+    const messageInstance = new Message({
+        text: this.event.text as string,
+        onComplete: () => resolve(),
+    });
+
+    messageInstance.init(document.querySelector('.game') as HTMLDivElement);
+}
+```
+
+This method will create a new `Message` instance with text from the event, and call the `init()` method to append it to the game container.
+
+Now let's make it so that we can close the message by pressing the `Enter` key.
+
+We will create a new `KeyPressListener` class that will be reusable for any key press we want to listen for.
+
+We can't use the `keydown` event or the `DirectionInput` class we currently have because the event for pressing the `Enter` key should only be pressable once per press.
+
+```tsx
+export class KeyPressListener {
+	keydownFunction: (event: KeyboardEvent) => void;
+	keyupFunction: (event: KeyboardEvent) => void;
+
+	constructor(key: string, callback: () => void) {
+		let keySafe = true;
+
+		this.keydownFunction = (event: KeyboardEvent) => {
+			if (event.key === key && keySafe) {
+				keySafe = false;
+				callback();
+			}
+		};
+
+		this.keyupFunction = (event: KeyboardEvent) => {
+			if (event.key === key) {
+				keySafe = true;
+			}
+		};
+
+		document.addEventListener('keydown', this.keydownFunction);
+		document.addEventListener('keyup', this.keyupFunction);
+	}
+
+	unbind() {
+		document.removeEventListener('keydown', this.keydownFunction);
+		document.removeEventListener('keyup', this.keyupFunction);
+	}
+}
+```
+
+Now we can use this to close our message in the `Message` class.
+
+```tsx
+createElement() {
+    // ... rest of code
+
+    // Close message on click
+    this.element.addEventListener('click', () => {
+        this.done();
+    });
+
+    // Enter key closes message
+    this.actionListener = new KeyPressListener('Enter', () => {
+        this.actionListener?.unbind();
+        this.done();
+    });
+}
+```
+
+Notice that we also unbind the key press listener when the message is closed as we don't need it anymore.
+
+#### Talking to NPCs
+
+Now that we have a `message` event, we can use it to talk to NPCs. But we want these messages to also be triggerable by the player when they talk to an NPC.
+
+We can do this by using the same `KeyPressListener` class we just created on the `Overworld` class.
+
+Let's create a `bindActionInput()` method on the `Overworld` class that we will call in the `init()` method.
+
+```ts
+bindActionInput() {
+    new KeyPressListener('Enter', () => {
+        // Is there a person here to talk to?
+        this.map.checkForActionCutscene();
+    });
+}
+
+init() {
+    this.startMap(window.OverworldMaps.DemoRoom);
+
+    this.bindActionInput();
+
+    this.directionInput = new DirectionInput();
+    this.directionInput.init();
+
+    this.startGameLoop();
+}
+```
+
+Now we can define the `checkForActionCutscene()` method on the `OverworldMap` class.
+
+But before we do, we need to update the configuration for game objects and give them a `talking` property for the messages they will say.
+
+```ts
+npcA: new Person({
+    x: withGrid(7),
+    y: withGrid(9),
+    src: '../assets/images/characters/people/npc1.png',
+    behaviorLoop: [
+        { type: 'stand', direction: 'left', time: 800 },
+        { type: 'stand', direction: 'up', time: 800 },
+        { type: 'stand', direction: 'right', time: 1200 },
+        { type: 'stand', direction: 'up', time: 300 },
+    ],
+    talking: [
+        {
+            events: [
+                { type: 'message', text: "I'm busy...", faceHero: 'npcA' },
+                { type: 'message', text: 'Go away!' },
+                { type: 'walk', direction: 'up', who: 'hero' },
+            ],
+        },
+    ],
+}),
+```
+
+Notice the combining of `message` events and other events to create a story. Also, the structure of the `talking` property may seem a bit strange, but it will be useful for story flags which we will get to later.
+
+Now let's actually pass the `talking` property to the `GameObject` class.
+
+```ts
+this.talking = config.talking || [];
+```
+
+Now we can define the `checkForActionCutscene()` method on the `OverworldMap` class.
+
+```ts
+checkForActionCutscene() {
+    const hero = this.gameObjects.hero;
+    const nextCoords = nextPosition(hero.x, hero.y, hero.direction);
+    const match = Object.values(this.gameObjects).find(obj => {
+        return `${obj.x},${obj.y}` === `${nextCoords.x},${nextCoords.y}`;
+    });
+
+    if (!this.isCutscenePlaying && match && match.talking.length) {
+        this.startCutscene(match.talking[0].events);
+    }
+}
+```
+
+This method is surprisingly simple. We use our utility function from early on to check if an NPC is in front of the player, and if there is, and they have something to say, and there is no global cutscene currently playing, we start the cutscene.
+
+One little tidbit with this. We want to ensure that the NPC faces the player when they talk to them. We can do this by passing the `faceHero` property to the `message` event.
+
+For example:
+
+```ts
+{ type: 'message', text: "I'm busy...", faceHero: 'npcA' },
+```
+
+Notice that the value of `faceHero` is the name of the NPC we want to face the player.
+
+Now in the `message()` method on the `OverworldEvent` class, we can check for this property and set the direction of the NPC to face the player.
+
+```ts
+message(resolve: () => void) {
+    if (this.event.faceHero) {
+        const hero = this.map.gameObjects.hero;
+        const obj = this.map.gameObjects[this.event.faceHero];
+
+        obj.direction = oppositeDirection(hero.direction);
+    }
+
+    const messageInstance = new Message({
+        text: this.event.text as string,
+        onComplete: () => resolve(),
+    });
+
+    messageInstance.init(document.querySelector('.game') as HTMLDivElement);
+}
+```
+
+We want the NPC to face the opposite direction of the player. In other words, if the player is facing right, the NPC should face left.
+
+This is a trivial utility function we can create.
+
+```ts
+export const oppositeDirection = (direction: string) => {
+	switch (direction) {
+		case 'left':
+			return 'right';
+		case 'right':
+			return 'left';
+		case 'up':
+			return 'down';
+		default:
+			return 'up';
+	}
+};
+```
+
+What's an added bonus is this `faceHero` property is a flag, meaning if we are designing a cutscene where perhaps we don't want the NPC to face the player because they are angry or something, we can just omit the `faceHero` property.
+
+We may also expand on this later to allow a specific direction to be passed to the `faceHero` property.
+
+#### Cutscene Spaces
+
+So far, we have a system that can trigger cutscenes explicitly or when the player talks to an NPC. But what if we want to trigger a cutscene when the player walks into a specific space?
+
+We can do this by adding a `cutsceneSpaces` property to our `OverworldMaps` configuration. It will have the same structure as the `talking` property because we may want to change the cutscene based on story flags later on.
+
+We start by defining the `cutsceneSpaces` property on the `OverworldMaps` configuration.
+
+```ts
+	DemoRoom: {
+		lowerSrc: '../assets/images/maps/DemoLower.png',
+		upperSrc: '../assets/images/maps/DemoUpper.png',
+		gameObjects: {
+			// ... game objects
+		},
+		walls: {
+			// ... walls
+		},
+		cutsceneSpaces: {
+			[asGridCoord(7, 4)]: [
+				{
+					events: [
+						{ who: 'npcB', type: 'walk', direction: 'left' },
+						{ who: 'npcB', type: 'stand', direction: 'up', time: 500 },
+						{ type: 'message', text: "You can't be in there!" },
+						{ who: 'npcB', type: 'walk', direction: 'right' },
+						{ who: 'npcB', type: 'stand', direction: 'down', time: 100 },
+						{ who: 'hero', type: 'walk', direction: 'down' },
+						{ who: 'hero', type: 'walk', direction: 'left' },
+					],
+				},
+			]
+		},
+	},
+```
+
+Notice that we are using the `asGridCoord()` utility function that we used before.
+
+Remember to pass the `cutsceneSpaces` property to the `OverworldMap` class.
+
+```ts
+this.cutsceneSpaces = config.cutsceneSpaces || {};
+```
+
+Now, let's create a `bindHeroPositionCheck()` method on the `Overworld` class, which we'll call in the `init()` method.
+
+```ts
+bindHeroPositionCheck() {
+    document.addEventListener('PersonWalkingComplete', e => {
+        if (e.detail.whoId === 'hero') {
+            this.map.checkForFootstepCutscene();
+        }
+    });
+}
+
+init() {
+    this.startMap(window.OverworldMaps.DemoRoom);
+
+    this.bindActionInput();
+    this.bindHeroPositionCheck();
+
+    this.directionInput = new DirectionInput();
+    this.directionInput.init();
+
+    this.startGameLoop();
+}
+```
+
+We are listening for the `PersonWalkingComplete` event, which is fired when a person finishes walking. We check if the person that finished walking was the hero, and if so, we call the `checkForFootstepCutscene()` method on the `OverworldMap` class.
+
+Now let's define the `checkForFootstepCutscene()` method on the `OverworldMap` class.
+
+```ts
+checkForFootstepCutscene() {
+    const hero = this.gameObjects.hero;
+    const match = this.cutsceneSpaces[`${hero.x},${hero.y}`];
+
+    if (!this.isCutscenePlaying && match) {
+        this.startCutscene(match[0].events);
+    }
+}
+```
+
+Notice its similar to the `checkForActionCutscene()` method. If we have a cutscene space and there is no global cutscene playing, we start the cutscene.
+
+We repeat this event every time we walk into that space (but we don't have to as we'll see later with story flags).
+
+#### ChangeMap Event
+
+First, let's define the `changeMap` event to take place in one of our `cutsceneSpaces`.
+
+```ts
+cutsceneSpaces: {
+    [asGridCoord(7, 4)]: [
+        {
+            events: [
+                { who: 'npcB', type: 'walk', direction: 'left' },
+                { who: 'npcB', type: 'stand', direction: 'up', time: 500 },
+                { type: 'message', text: "You can't be in there!" },
+                { who: 'npcB', type: 'walk', direction: 'right' },
+                { who: 'npcB', type: 'stand', direction: 'down', time: 100 },
+                { who: 'hero', type: 'walk', direction: 'down' },
+                { who: 'hero', type: 'walk', direction: 'left' },
+            ],
+        },
+    ],
+    [asGridCoord(5, 10)]: [
+        {
+            events: [{ type: 'changeMap', map: 'Kitchen' }],
+        },
+    ],
+},
+```
+
+Notice that we are using the `changeMap` event type and passing the name of the map we want to change to.
+
+Now to actually implement this, we will need to do something we haven't done yet. We need a back reference to the `Overworld` class on the `OverworldMap` class. This is because we no longer want to only set the map when the game starts, but also when we change maps.
+
+So first, let's pass the `overworld` reference to the `OverworldMap` class.
+
+```ts
+this.overworld = null;
+```
+
+Now, let's create a `startMap()` method in `Overworld` and pass the `overworld` reference to the `OverworldMap` class when we instantiate it.
+
+```ts
+startMap(mapConfig: OverworldMapConfig) {
+    this.map = new OverworldMap(mapConfig);
+    this.map.overworld = this;
+    this.map.mountObjects();
+}
+
+init() {
+    this.startMap(window.OverworldMaps.DemoRoom);
+
+    this.bindActionInput();
+    this.bindHeroPositionCheck();
+
+    this.directionInput = new DirectionInput();
+    this.directionInput.init();
+
+    this.startGameLoop();
+}
+```
+
+Notice how we pass the `Overworld` as a reference to the `OverworldMap` class and use this method when we start the game.
+
+But now, we can also use this method when we change maps. Let's create a `changeMap()` method on the `OverworldEvent` class like usual.
+
+```ts
+changeMap(resolve: () => void) {
+    this.map.overworld?.startMap(window.OverworldMaps[this.event.map as string]);
+    resolve();
+}
+```
+
+Notice the name of the map is passed as a string in the event that we use as a key to the `OverworldMaps` window object.
+
+Remember to update the `Record` type in `init()` whenever you add a method like so:
+
+```ts
+init() {
+    const eventHandlers: Record<string, OverworldEventMethod> = {
+        stand: this.stand.bind(this),
+        walk: this.walk.bind(this),
+        message: this.message.bind(this),
+        changeMap: this.changeMap.bind(this),
+    };
+
+    return new Promise<void>(resolve => {
+        eventHandlers[this.event.type](resolve);
+    });
+}
+```
