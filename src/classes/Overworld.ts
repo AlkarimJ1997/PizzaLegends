@@ -72,6 +72,11 @@ export class Overworld {
 	destroy() {
 		this.directionInput.destroy();
 		cancelAnimationFrame(this.currentAnimationFrame);
+
+		// Remove any children except the canvas
+		while (this.element.children.length > 1) {
+			this.element.removeChild(this.element.lastChild as Node);
+		}
 	}
 
 	init() {
@@ -84,12 +89,12 @@ export class Overworld {
 		this.startGameLoop();
 
 		this.map.startCutscene([
-			{ type: 'textMessage', text: 'WHY HELLO THERE! What a lovely day?' },
-			// { who: 'hero', type: 'walk', direction: 'down' },
-			// { who: 'hero', type: 'walk', direction: 'down' },
-			// { who: 'npcA', type: 'walk', direction: 'left' },
-			// { who: 'npcA', type: 'walk', direction: 'left' },
-			// { who: 'npcA', type: 'stand', direction: 'up', time: 800 },
+			{ who: 'hero', type: 'walk', direction: 'down' },
+			{ who: 'hero', type: 'walk', direction: 'down' },
+			{ who: 'npcA', type: 'walk', direction: 'up' },
+			{ who: 'npcA', type: 'walk', direction: 'left' },
+			{ who: 'hero', type: 'stand', direction: 'right', time: 200 },
+			{ type: 'textMessage', text: 'WHY HELLO THERE!' },
 		]);
 	}
 }

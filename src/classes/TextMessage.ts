@@ -22,19 +22,25 @@ export class TextMessage {
 		// Set the content
 		this.element.innerHTML = `
             <p class='message__text'>${this.text}</p>
-            <div class='ellipsis'>
-                <span class='dot'>.</span>
-                <span class='dot'>.</span>
-                <span class='dot'>.</span>
+            <div class='message__corner'>
+                <svg
+                    viewBox='0 0 65 62'
+                    fill='none'
+                    xmlns='http://www.w3.org/2000/svg'>
+                    <path d='M35 3.5L65 6.5V62L0 0L35 3.5Z' fill='hsl(0 0% 97%)' />
+                </svg>
             </div>
-            <svg
-                class='message__corner'
-                viewBox='0 0 65 62'
-                fill='none'
-                xmlns='http://www.w3.org/2000/svg'>
-                <path d='M35 3.5L65 6.5V62L0 0L35 3.5Z' fill='hsl(0 0% 97%)' />
-            </svg>
         `;
+
+		// Add a click event listener
+		this.element.addEventListener('click', () => {
+			this.done();
+		});
+	}
+
+	done() {
+		this.element?.remove();
+		this.onComplete();
 	}
 
 	init(container: HTMLDivElement) {

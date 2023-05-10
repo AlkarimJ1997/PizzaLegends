@@ -4,6 +4,7 @@
 	/* --clr-primary: hsl(194, 36%, 71%); */
 	--clr-light: hsl(0 0% 97%);
 	--clr-dark: hsl(240, 2%, 23%);
+	--clr-border: hsl(199, 54%, 17%);
 
 	--ff-body: 'Sora', monospace;
 	--ff-text: 'Dosis', monospace;
@@ -48,10 +49,12 @@ a {
 	text-decoration: none;
 }
 
-body {
-	display: grid;
-	place-content: center;
+#root {
+	display: flex;
+	justify-content: center;
+	align-items: center;
 	min-height: 100vh;
+	width: 100vw;
 	background-color: var(--clr-primary);
 	font-family: var(--ff-body);
 	line-height: 1.5;
@@ -63,7 +66,7 @@ body {
 	position: relative;
 	width: 352px;
 	height: 198px;
-	transform: scale(3);
+	transform: scale(3.5);
 }
 
 .game canvas {
@@ -72,9 +75,8 @@ body {
 
 /* Text Message Styles */
 .message {
-	--maxWidth: 80%;
+	--maxWidth: 70%;
 	--minHeight: 30%;
-	--offset: calc((100% - var(--minHeight)) * -1);
 
 	position: relative;
 	min-height: var(--minHeight);
@@ -88,47 +90,73 @@ body {
 	color: var(--clr-dark);
 	line-height: 1.2em;
 	word-spacing: 0.2em;
+	border: 1px solid var(--clr-border);
 	border-radius: 0.125rem;
 	box-shadow: 0 3px 0 0 var(--clr-secondary);
-	transform: translateY(var(--offset));
+	cursor: pointer;
+	user-select: none;
+	animation: slideIn 0.5s forwards;
 }
 
 .message__corner {
 	position: absolute;
 	inset: auto 0.5rem 0 auto;
 	width: 2rem;
-	z-index: 1;
 	transform: translateY(80%);
 }
 
-.ellipsis {
+.message__corner::before {
+	content: '';
 	position: absolute;
-	display: inline-flex;
-	inset: auto 0.4em 0.4em auto;
-	gap: 0.05em;
-	font-size: 1rem;
+	inset: 21% 0 0 auto;
+	width: 1px;
+	background-color: var(--clr-border);
 }
 
-.dot {
-	opacity: 0;
-	animation: dotAnimation 1.2s infinite;
+.message__corner::after {
+	content: '';
+	position: absolute;
+	inset: auto auto 11.5px 1px;
+	width: 35px;
+	height: 1px;
+	background-color: var(--clr-border);
+	transform-origin: bottom center;
+	transform: rotate(44deg);
 }
 
-.dot:nth-child(2) {
-	animation-delay: 0.4s;
-}
-
-.dot:nth-child(3) {
-	animation-delay: 0.8s;
-}
-
-@keyframes dotAnimation {
-	0%,
-	100% {
+@keyframes slideIn {
+	from {
 		opacity: 0;
+		transform: translate(100%, -120%);
 	}
 
-	50% {
+	to {
 		opacity: 1;
+		transform: translate(0, -120%);
+	}
+}
+
+/* Media Queries */
+@media (width <= 55em) {
+	.game {
+		transform: scale(2.5);
+	}
+}
+
+@media (width <= 40em) {
+	.game {
+		transform: scale(2);
+	}
+}
+
+@media (width <= 32em) {
+	.game {
+		transform: scale(1.5);
+	}
+}
+
+@media (width <= 23em) {
+	.message {
+		--maxWidth: 230px;
 	}
 }
