@@ -84,7 +84,7 @@ body {
 	box-shadow: 0 3px 0 0 hsl(204, 85%, 37%);
 }
 
-.corner {
+.message__corner {
 	position: absolute;
 	inset: auto 0.5rem 0 auto;
 	width: 2rem;
