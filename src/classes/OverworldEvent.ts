@@ -1,7 +1,7 @@
 import { OverworldMap } from './OverworldMap';
 import { Person } from './Person';
 import { BehaviorLoopEvent, Detail } from '../models/types';
-import { TextMessage } from './TextMessage';
+import { Message } from './Message';
 import { oppositeDirection } from '../utils/utils';
 
 type OverworldEventConfig = {
@@ -80,7 +80,7 @@ export class OverworldEvent {
 		document.addEventListener('PersonWalkingComplete', completeHandler);
 	}
 
-	textMessage(resolve: () => void) {
+	message(resolve: () => void) {
 		if (this.event.faceHero) {
 			const hero = this.map.gameObjects.hero;
 			const obj = this.map.gameObjects[this.event.faceHero];
@@ -88,12 +88,12 @@ export class OverworldEvent {
 			obj.direction = oppositeDirection(hero.direction);
 		}
 
-		const message = new TextMessage({
+		const messageInstance = new Message({
 			text: this.event.text as string,
 			onComplete: () => resolve(),
 		});
 
-		message.init(document.querySelector('.game') as HTMLDivElement);
+		messageInstance.init(document.querySelector('.game') as HTMLDivElement);
 	}
 
 	changeMap(resolve: () => void) {
@@ -105,7 +105,7 @@ export class OverworldEvent {
 		const eventHandlers: Record<string, OverworldEventMethod> = {
 			stand: this.stand.bind(this),
 			walk: this.walk.bind(this),
-			textMessage: this.textMessage.bind(this),
+            message: this.message.bind(this),
 			changeMap: this.changeMap.bind(this),
 		};
 

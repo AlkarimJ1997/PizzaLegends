@@ -24,8 +24,8 @@ window.OverworldMaps = {
 				talking: [
 					{
 						events: [
-							{ type: 'textMessage', text: "I'm busy...", faceHero: 'npcA' },
-							{ type: 'textMessage', text: 'Go away!' },
+							{ type: 'message', text: "I'm busy...", faceHero: 'npcA' },
+							{ type: 'message', text: 'Go away!' },
 							{ type: 'walk', direction: 'up', who: 'hero' },
 						],
 					},
@@ -56,7 +56,7 @@ window.OverworldMaps = {
 					events: [
 						{ who: 'npcB', type: 'walk', direction: 'left' },
 						{ who: 'npcB', type: 'stand', direction: 'up', time: 500 },
-						{ type: 'textMessage', text: "You can't be in there!" },
+						{ type: 'message', text: "You can't be in there!" },
 						{ who: 'npcB', type: 'walk', direction: 'right' },
 						{ who: 'npcB', type: 'stand', direction: 'down', time: 100 },
 						{ who: 'hero', type: 'walk', direction: 'down' },
@@ -86,9 +86,7 @@ window.OverworldMaps = {
 				src: '../assets/images/characters/people/npc3.png',
 				talking: [
 					{
-						events: [
-							{ type: 'textMessage', text: 'You made it!', faceHero: 'npcB' },
-						],
+						events: [{ type: 'message', text: 'You made it!', faceHero: 'npcB' }],
 					},
 				],
 			}),

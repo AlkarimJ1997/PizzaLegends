@@ -1,17 +1,17 @@
 import { KeyPressListener } from './KeyPressListener';
 
-type TextMessageConfig = {
+type MessageConfig = {
 	text: string;
 	onComplete: () => void;
 };
 
-export class TextMessage {
+export class Message {
 	text: string;
 	onComplete: () => void;
 	element: HTMLDivElement | null;
 	actionListener?: KeyPressListener;
 
-	constructor({ text, onComplete }: TextMessageConfig) {
+	constructor({ text, onComplete }: MessageConfig) {
 		this.text = text;
 		this.onComplete = onComplete;
 		this.element = null;

@@ -119,7 +119,7 @@ export class Overworld {
 		// 	{ who: 'npcA', type: 'walk', direction: 'up' },
 		// 	{ who: 'npcA', type: 'walk', direction: 'left' },
 		// 	{ who: 'hero', type: 'stand', direction: 'right', time: 200 },
-		// 	{ type: 'textMessage', text: 'WHY HELLO THERE!' },
+		// 	{ type: 'message', text: 'WHY HELLO THERE!' },
 		// ]);
 	}
 }
