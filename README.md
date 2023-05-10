@@ -1840,5 +1840,79 @@ As you can see, we can define a cutscene with a series of events, and the `start
 
 ### Day 9
 
-- [x] [Restarting Idle Behaviors]
-- [x] [Multiplying SetTimeouts] 
+- [x] [Restarting Idle Behaviors](#restarting-idle-behaviors)
+- [x] [Multiplying SetTimeouts](#multiplying-settimeouts)
+- [x] [Message Event](#message-event)
+
+#### Restarting Idle Behaviors
+
+We left off with a working cutscene system, but there is one more thing we need to fix.
+
+After a global cutscene, we need to tell all the NPCs to restart their idle behaviors.
+
+We can do this at the end of the `startCutscene()` method.
+
+```tsx
+async startCutscene(events: BehaviorLoopEvent[]) {
+    // ... rest of code
+
+    this.isCutscenePlaying = false;
+
+    // Reset NPCs to do their idle behavior
+    Object.values(this.gameObjects).forEach(gameObject => {
+        gameObject.doBehaviorEvent(this);
+    });
+}
+```
+
+#### Multiplying SetTimeouts
+
+There is one more thing we need to fix. Currently, we are using `setTimeout()` to handle the `time` property of the `stand` event.
+
+But with restarting idle behaviors, it's possible for multiple `setTimeout()` calls to be made, which will multiply on top of each other.
+
+To fix this, we want game objects that are currently in a `stand` event not to be able to have another `stand` event called on them.
+
+We can do this by adding a `isStanding` flag to the `GameObject` class, to be consumed by the `Person` class.
+
+```tsx
+protected abstract isStanding: boolean;
+```
+
+Notice that we make it `protected` and `abstract` so that we can define it in the `Person` class and use it. We can't define it in `Person` because we need to check the flag in the `GameObject`'s `doBehaviorEvent()` method.
+
+Now, in the `startBehavior()` method of the `Person` class, we can set the flag to `true` if the behavior is a `stand` event, and set it back to `false` after it's done.
+
+```tsx
+startBehavior(state: State, behavior: BehaviorLoopEvent) {
+    // ... rest of code
+
+    if (behavior.type === 'stand') {
+        this.isStanding = true;
+
+        setTimeout(() => {
+            emitEvent('PersonStandingComplete', { whoId: this.id as string });
+            this.isStanding = false;
+        }, behavior.time);
+    }
+}
+```
+
+Now, we just add this check to the `doBehaviorEvent()` method of the `GameObject` class.
+
+```tsx
+async doBehaviorEvent(map: OverworldMap) {
+    // If we're in a cutscene or there's no behavior loop, bail out
+    if (map.isCutscenePlaying || this.behaviorLoop.length === 0 || this.isStanding) {
+        return;
+    }
+
+    // ... rest of code
+}
+```
+
+#### Message Event
+
+Now, it's time to add a `message` event to the `OverworldEvent` system, similar to `stand` and `walk`.
+
+This event will allow NPCs and other game objects to display a message to the player.
