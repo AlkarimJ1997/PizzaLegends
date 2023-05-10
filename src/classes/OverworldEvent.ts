@@ -1,6 +1,6 @@
 import { OverworldMap } from './OverworldMap';
 import { Person } from './Person';
-import { BehaviorLoopEvent, Detail } from '../models/types';
+import { BehaviorLoopEvent, Detail, Text } from '../models/types';
 import { Message } from './Message';
 import { oppositeDirection, getElement } from '../utils/utils';
 import { SceneTransition } from './SceneTransition';
@@ -90,7 +90,7 @@ export class OverworldEvent {
 		}
 
 		const messageInstance = new Message({
-			text: this.event.text as string,
+			textLines: this.event.textLines as Text[],
 			onComplete: () => resolve(),
 		});
 

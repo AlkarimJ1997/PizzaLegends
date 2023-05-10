@@ -1,6 +1,22 @@
 import { GameObject } from '../classes/GameObject';
 import { OverworldMap } from '../classes/OverworldMap';
 
+// Talking Types
+export enum SPEEDS {
+	Pause = 500,
+	Slow = 90,
+	Normal = 60,
+	Fast = 30,
+	SuperFast = 10,
+}
+
+export type Text = {
+	speed: SPEEDS;
+	string: string;
+	pause?: boolean;
+	classes?: string[];
+};
+
 // OverworldMap types
 export type GameObjects = {
 	[key: string]: GameObject;
@@ -33,9 +49,9 @@ export type BehaviorLoopEvent = {
 	direction?: string;
 	time?: number;
 	retry?: true;
-	text?: string;
+	textLines?: Text[];
 	faceHero?: string;
-    map?: string;
+	map?: string;
 };
 
 export type TalkEvent = {

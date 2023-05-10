@@ -49,11 +49,20 @@
 
 /* Typewriter styles */
 .message span {
-    opacity: 0;
+	opacity: 0;
 }
 
 .message span.revealed {
-    opacity: 1;
+	opacity: 1;
+}
+
+.message span.green {
+	color: var(--clr-green);
+}
+
+.message span.red {
+	color: var(--clr-red);
+    text-transform: uppercase;
 }
 
 @keyframes slideIn {

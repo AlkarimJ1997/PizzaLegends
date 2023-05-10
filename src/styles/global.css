@@ -5,6 +5,8 @@
 	--clr-light: hsl(0 0% 97%);
 	--clr-dark: hsl(240, 2%, 23%);
 	--clr-border: hsl(199, 54%, 17%);
+    --clr-green: hsl(145, 63%, 42%);
+	--clr-red: hsl(0, 100%, 60%);
 
 	--ff-body: 'Dosis', monospace;
     

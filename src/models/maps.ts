@@ -1,5 +1,6 @@
 import { Person } from '../classes/Person';
 import { withGrid, asGridCoord } from '../utils/utils';
+import { SPEEDS } from './types';
 
 window.OverworldMaps = {
 	DemoRoom: {
@@ -24,8 +25,15 @@ window.OverworldMaps = {
 				talking: [
 					{
 						events: [
-							{ type: 'message', text: "I'm busy...", faceHero: 'npcA' },
-							{ type: 'message', text: 'Go away!' },
+							{
+								type: 'message',
+								textLines: [
+									{ speed: SPEEDS.Normal, string: "I'm busy..." },
+									{ speed: SPEEDS.Pause, string: '', pause: true },
+									{ speed: SPEEDS.Fast, string: 'Go away!' },
+								],
+								faceHero: 'npcA',
+							},
 							{ type: 'walk', direction: 'up', who: 'hero' },
 						],
 					},
@@ -56,7 +64,16 @@ window.OverworldMaps = {
 					events: [
 						{ who: 'npcB', type: 'walk', direction: 'left' },
 						{ who: 'npcB', type: 'stand', direction: 'up', time: 500 },
-						{ type: 'message', text: "You can't be in there!" },
+						{
+							type: 'message',
+							textLines: [
+								{
+									speed: SPEEDS.Fast,
+									string: "You can't be in there!",
+									classes: ['red'],
+								},
+							],
+						},
 						{ who: 'npcB', type: 'walk', direction: 'right' },
 						{ who: 'npcB', type: 'stand', direction: 'down', time: 100 },
 						{ who: 'hero', type: 'walk', direction: 'down' },
@@ -86,7 +103,13 @@ window.OverworldMaps = {
 				src: '../assets/images/characters/people/npc3.png',
 				talking: [
 					{
-						events: [{ type: 'message', text: 'You made it!', faceHero: 'npcB' }],
+						events: [
+							{
+								type: 'message',
+								textLines: [{ speed: SPEEDS.Normal, string: 'You made it!' }],
+								faceHero: 'npcB',
+							},
+						],
 					},
 				],
 			}),

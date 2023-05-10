@@ -1,39 +1,46 @@
+import { Text } from '../models/types';
+
 type RevealingTextConfig = {
 	element: HTMLParagraphElement;
-	text: string;
-	speed?: number;
+	textLines: Text[];
 };
 
 type Characters = {
 	span: HTMLSpanElement;
+	isSpace: boolean;
 	delayAfter: number;
+	classes: string[];
 };
 
 export class RevealingText {
 	element: HTMLParagraphElement;
-	text: string;
-	speed!: number;
+	textLines: Text[];
+	characters!: Characters[];
 	timeout: number | null;
 	isDone: boolean;
 
 	constructor(config: RevealingTextConfig) {
 		this.element = config.element;
-		this.text = config.text;
-		this.speed = config.speed || 60;
+		this.textLines = config.textLines;
 
 		this.timeout = null;
 		this.isDone = false;
 	}
 
-	revealOneCharacter(characters: Characters[]) {
-		const next = characters.splice(0, 1)[0];
+	revealOneCharacter() {
+		const next = this.characters.splice(0, 1)[0];
 
 		next.span.classList.add('revealed');
+		next.classes.forEach(className => {
+			next.span.classList.add(className);
+		});
 
-		if (characters.length > 0) {
+		const delay = next.isSpace ? 0 : next.delayAfter;
+
+		if (this.characters.length > 0) {
 			this.timeout = setTimeout(() => {
-				this.revealOneCharacter(characters);
-			}, next.delayAfter);
+				this.revealOneCharacter();
+			}, delay);
 		} else {
 			this.isDone = true;
 		}
@@ -43,30 +50,50 @@ export class RevealingText {
 		if (this.timeout) clearTimeout(this.timeout);
 
 		this.isDone = true;
+
 		this.element.querySelectorAll('span').forEach(span => {
 			span.classList.add('revealed');
+		});
+
+		this.characters.forEach(config => {
+			config.classes.forEach(className => {
+				config.span.classList.add(className);
+			});
 		});
 	}
 
 	init() {
-		const characters: Characters[] = [];
+		this.characters = [];
 
-		this.text.split('').forEach(character => {
-			const span = document.createElement('span');
+		// Add spaces between text lines
+		this.textLines.forEach((line, index) => {
+			if (index < this.textLines.length - 1) {
+				line.string += ' ';
+			}
 
-			span.textContent = character;
+			line.string.split('').forEach(character => {
+				const span = document.createElement('span');
 
-			this.element.appendChild(span);
+				span.textContent = character;
 
-			characters.push({
-				span,
-				delayAfter: character === ' ' ? 0 : this.speed,
+				this.element.appendChild(span);
+
+				this.characters.push({
+					span,
+					isSpace: character === ' ' && !line.pause,
+					delayAfter: line.speed,
+					classes: line.classes || [],
+				});
 			});
 		});
 
 		// Wait for the slide in animation to finish
-		this.element.parentElement?.addEventListener('animationend', () => {
-            this.revealOneCharacter(characters);
-        }, { once: true })
+		this.element.parentElement?.addEventListener(
+			'animationend',
+			() => {
+				this.revealOneCharacter();
+			},
+			{ once: true }
+		);
 	}
 }

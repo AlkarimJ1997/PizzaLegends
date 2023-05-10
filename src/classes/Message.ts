@@ -1,22 +1,23 @@
 import { KeyPressListener } from './KeyPressListener';
 import { RevealingText } from './RevealingText';
 import { getElement } from '../utils/utils';
+import { Text } from '../models/types';
 import '../styles/Message.css';
 
 type MessageConfig = {
-	text: string;
+	textLines: Text[];
 	onComplete: () => void;
 };
 
 export class Message {
-	text: string;
+	textLines: Text[];
 	onComplete: () => void;
 	element: HTMLDivElement | null;
 	actionListener?: KeyPressListener;
 	revealingText?: RevealingText;
 
-	constructor({ text, onComplete }: MessageConfig) {
-		this.text = text;
+	constructor({ textLines, onComplete }: MessageConfig) {
+		this.textLines = textLines;
 		this.onComplete = onComplete;
 		this.element = null;
 	}
@@ -42,7 +43,7 @@ export class Message {
 		// Add revealing text
 		this.revealingText = new RevealingText({
 			element: getElement<HTMLParagraphElement>('.message__text', this.element),
-			text: this.text,
+			textLines: this.textLines,
 		});
 
 		// Close message on click
