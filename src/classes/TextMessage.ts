@@ -22,7 +22,11 @@ export class TextMessage {
 		// Set the content
 		this.element.innerHTML = `
             <p class='message__text'>${this.text}</p>
-            <button class='message__btn'>Next</button>
+            <div class='ellipsis'>
+                <span class='dot'>.</span>
+                <span class='dot'>.</span>
+                <span class='dot'>.</span>
+            </div>
             <svg
                 class='message__corner'
                 viewBox='0 0 65 62'
