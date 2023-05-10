@@ -1,6 +1,7 @@
 import { OverworldMap } from './OverworldMap';
 import { DirectionInput } from './DirectionInput';
 import { KeyPressListener } from './KeyPressListener';
+import { getElement } from '../utils/utils';
 import { OverworldMapConfig } from '../models/types';
 
 type OverworldConfig = {
@@ -17,7 +18,7 @@ export class Overworld {
 
 	constructor(public config: OverworldConfig) {
 		this.element = this.config.element as HTMLElement;
-		this.canvas = this.element.querySelector('.game__canvas') as HTMLCanvasElement;
+		this.canvas = getElement<HTMLCanvasElement>('.game__canvas');
 		this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
 		this.currentAnimationFrame = 0;
 	}
@@ -119,7 +120,8 @@ export class Overworld {
 		// 	{ who: 'npcA', type: 'walk', direction: 'up' },
 		// 	{ who: 'npcA', type: 'walk', direction: 'left' },
 		// 	{ who: 'hero', type: 'stand', direction: 'right', time: 200 },
-		// 	{ type: 'message', text: 'WHY HELLO THERE!' },
+		// 	{ type: 'message', text: 'This is the very first message!' },
+        //     { type: 'changeMap', map: 'Kitchen' },
 		// ]);
 	}
 }

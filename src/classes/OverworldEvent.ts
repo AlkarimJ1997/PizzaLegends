@@ -2,7 +2,8 @@ import { OverworldMap } from './OverworldMap';
 import { Person } from './Person';
 import { BehaviorLoopEvent, Detail } from '../models/types';
 import { Message } from './Message';
-import { oppositeDirection } from '../utils/utils';
+import { oppositeDirection, getElement } from '../utils/utils';
+import { SceneTransition } from './SceneTransition';
 
 type OverworldEventConfig = {
 	map: OverworldMap;
@@ -93,19 +94,25 @@ export class OverworldEvent {
 			onComplete: () => resolve(),
 		});
 
-		messageInstance.init(document.querySelector('.game') as HTMLDivElement);
+		messageInstance.init(getElement<HTMLDivElement>('.game'));
 	}
 
 	changeMap(resolve: () => void) {
-		this.map.overworld?.startMap(window.OverworldMaps[this.event.map as string]);
-		resolve();
+		const sceneTransition = new SceneTransition();
+
+		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
+			this.map.overworld?.startMap(window.OverworldMaps[this.event.map as string]);
+			resolve();
+
+			sceneTransition.fadeOut();
+		});
 	}
 
 	init() {
 		const eventHandlers: Record<string, OverworldEventMethod> = {
 			stand: this.stand.bind(this),
 			walk: this.walk.bind(this),
-            message: this.message.bind(this),
+			message: this.message.bind(this),
 			changeMap: this.changeMap.bind(this),
 		};
 

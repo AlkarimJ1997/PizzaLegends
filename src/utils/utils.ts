@@ -11,6 +11,13 @@ export const createImage = (src: string): Promise<HTMLImageElement> => {
 	});
 };
 
+export const getElement = <T extends HTMLElement>(
+	selector: string,
+	parent: Document | HTMLElement = document
+): T => {
+	return parent.querySelector(selector) as T;
+};
+
 export const withGrid = (n: number) => n * 16;
 
 export const asGridCoord = (x: number, y: number) => `${x * 16},${y * 16}`;

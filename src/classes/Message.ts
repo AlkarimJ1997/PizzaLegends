@@ -1,4 +1,7 @@
 import { KeyPressListener } from './KeyPressListener';
+import { RevealingText } from './RevealingText';
+import { getElement } from '../utils/utils';
+import '../styles/Message.css';
 
 type MessageConfig = {
 	text: string;
@@ -10,6 +13,7 @@ export class Message {
 	onComplete: () => void;
 	element: HTMLDivElement | null;
 	actionListener?: KeyPressListener;
+	revealingText?: RevealingText;
 
 	constructor({ text, onComplete }: MessageConfig) {
 		this.text = text;
@@ -24,7 +28,7 @@ export class Message {
 
 		// Set the content
 		this.element.innerHTML = `
-            <p class='message__text'>${this.text}</p>
+            <p class='message__text'></p>
             <div class='message__corner'>
                 <svg
                     viewBox='0 0 65 62'
@@ -35,6 +39,12 @@ export class Message {
             </div>
         `;
 
+		// Add revealing text
+		this.revealingText = new RevealingText({
+			element: getElement<HTMLParagraphElement>('.message__text', this.element),
+			text: this.text,
+		});
+
 		// Close message on click
 		this.element.addEventListener('click', () => {
 			this.done();
@@ -42,18 +52,25 @@ export class Message {
 
 		// Enter key closes message
 		this.actionListener = new KeyPressListener('Enter', () => {
-			this.actionListener?.unbind();
 			this.done();
 		});
 	}
 
 	done() {
+		if (!this.revealingText?.isDone) {
+			this.revealingText?.warpToDone();
+			return;
+		}
+
 		this.element?.remove();
+		this.actionListener?.unbind();
 		this.onComplete();
 	}
 
 	init(container: HTMLDivElement) {
 		this.createElement();
 		container.appendChild(this.element as HTMLDivElement);
+
+		this.revealingText?.init();
 	}
 }
