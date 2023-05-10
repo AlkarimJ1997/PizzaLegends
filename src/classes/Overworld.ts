@@ -115,16 +115,17 @@ export class Overworld {
 		this.startGameLoop();
 
 		this.map.startCutscene([
-			{
-				type: 'message',
-				textLines: [
-					{ speed: SPEEDS.Slow, string: 'Oh, hello!' },
-					{ speed: SPEEDS.Pause, string: '', pause: true },
-					{ speed: SPEEDS.Normal, string: 'Have you seen my pet' },
-					{ speed: SPEEDS.Fast, string: 'frog', classes: ['green'] },
-					{ speed: SPEEDS.Normal, string: 'around here?' },
-				],
-			},
+            { type: 'battle' }
+			// {
+			// 	type: 'message',
+			// 	textLines: [
+			// 		{ speed: SPEEDS.Slow, string: 'Oh, hello!' },
+			// 		{ speed: SPEEDS.Pause, string: '', pause: true },
+			// 		{ speed: SPEEDS.Normal, string: 'Have you seen my pet' },
+			// 		{ speed: SPEEDS.Fast, string: 'frog', classes: ['green'] },
+			// 		{ speed: SPEEDS.Normal, string: 'around here?' },
+			// 	],
+			// },
 			// { who: 'hero', type: 'walk', direction: 'down' },
 			// { who: 'hero', type: 'walk', direction: 'down' },
 			// { who: 'npcA', type: 'walk', direction: 'up' },

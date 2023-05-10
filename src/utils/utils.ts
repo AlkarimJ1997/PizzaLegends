@@ -1,11 +1,12 @@
 import { Detail } from '../models/types';
 
+export const getSrc = (src: string) => new URL(src, import.meta.url).href;
+
 export const createImage = (src: string): Promise<HTMLImageElement> => {
 	return new Promise((resolve, reject) => {
-		const url = new URL(src, import.meta.url);
 		const image = new Image();
 
-		image.src = url.href;
+		image.src = getSrc(src);
 		image.onload = () => resolve(image);
 		image.onerror = reject;
 	});

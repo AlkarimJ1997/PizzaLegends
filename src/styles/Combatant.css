@@ -1,0 +1,143 @@
+.combatant {
+	position: absolute;
+	width: 67px;
+	height: 14px;
+	background: url(../assets/images/ui/Combatant-plate.png) no-repeat no-repeat;
+}
+
+/* Scaling */
+.battle .combatant {
+	transform: scale(2);
+}
+
+/* Active States */
+.battle .combatant[data-active='false'] {
+	opacity: 0;
+}
+
+.battle .combatant[data-active='true'] {
+	opacity: 1;
+}
+
+/* Positioning */
+.combatant[data-team='player'] {
+	inset: 70px auto auto 46px;
+}
+
+.combatant[data-team='enemy'] {
+	inset: 28px 77px auto auto;
+}
+
+.combatant__wrapper {
+	position: absolute;
+	inset: auto auto 1px 3px;
+	width: 22px;
+	height: 12px;
+	overflow: hidden;
+}
+
+.battle .combatant__wrapper {
+	display: none;
+}
+
+.combatant__image {
+	position: absolute;
+	inset: auto auto -7px -11px;
+	display: block;
+}
+
+/* Name and Type */
+.combatant__name {
+	position: absolute;
+	inset: -8px auto auto -2px;
+	background-color: var(--clr-dark);
+	padding-inline: 2px;
+	font-size: 5px;
+	color: var(--clr-light);
+	white-space: nowrap;
+	border-radius: 2px;
+}
+
+.combatant__type {
+	position: absolute;
+	inset: -2px auto auto 3px;
+	width: 16px;
+	height: 16px;
+}
+
+/* Life Bar */
+.combatant__life-container {
+	position: absolute;
+	inset: 4px auto auto 19.5px;
+	width: 26.5px;
+	height: 3px;
+}
+
+.combatant__life-container > rect {
+	transition: width 0.2s;
+}
+
+/* XP Bar */
+.combatant__xp-container {
+	position: absolute;
+	inset: 8px auto auto 20px;
+	width: 26px;
+	height: 2px;
+}
+
+/* Level */
+.combatant__level {
+	position: absolute;
+	inset: -1px 2px auto auto;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 17px;
+	height: 12px;
+	background: var(--clr-level-bg);
+	font-size: 8px;
+	border: 1px solid var(--clr-level-border);
+}
+
+/* Status */
+.combatant__status {
+	position: absolute;
+	inset: auto auto -3px 47px;
+	background: var(--clr-dark);
+	padding-inline: 2px;
+	font-size: 5px;
+	color: var(--clr-light);
+}
+
+.combatant__status[data-status='saucy'] {
+	color: var(--clr-red);
+}
+
+.combatant__status[data-status='clumsy'] {
+	background-color: purple;
+}
+
+/* Show the Pizzas themselves */
+.pizza {
+	position: absolute;
+	background: url(../assets/images/characters/pizzas/pizza-shadow.png) no-repeat
+		no-repeat;
+	transform: scale(2);
+}
+
+.pizza[data-team='player'] {
+	inset: auto auto 73px 51px;
+}
+
+.pizza[data-team='enemy'] {
+	inset: 47px 100px auto auto;
+}
+
+/* Don't show inactive Pizzas */
+.pizza[data-active='false'] {
+	opacity: 0;
+}
+
+.pizza[data-active='true'] {
+	opacity: 1;
+}

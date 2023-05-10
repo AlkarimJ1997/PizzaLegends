@@ -1,16 +1,24 @@
 :root {
+    /* Colors */
 	--clr-primary: hsl(204, 70%, 53%);
 	--clr-secondary: hsl(204, 85%, 37%);
 	--clr-accent: hsl(194, 36%, 71%);
 	--clr-light: hsl(0 0% 97%);
 	--clr-dark: hsl(240, 2%, 23%);
 	--clr-border: hsl(199, 54%, 17%);
-    --clr-green: hsl(145, 63%, 42%);
+	--clr-green: hsl(145, 63%, 42%);
 	--clr-red: hsl(0, 100%, 60%);
 
+    /* Battle Colors */
+    --clr-level-bg: hsl(30, 100%, 90%);
+    --clr-level-border: hsl(30, 100%, 20%);
+    --clr-level-border: hsl(30, 26%, 42%);
+
+    /* Fonts */
 	--ff-body: 'Dosis', monospace;
-    
-    --mapTransitionSpeed: 400ms;
+    --ff-battle: 'Share Tech Mono', monospace;
+
+	--mapTransitionSpeed: 400ms;
 }
 
 /* CSS RESET */
@@ -22,7 +30,7 @@
 	box-sizing: border-box;
 }
 
-img,
+/* img, */
 video,
 picture,
 canvas,
@@ -67,25 +75,49 @@ a {
 }
 
 /* Media Queries */
-@media (width <= 55em) {
+@media (max-width: 60em) {
+	.game:has(.battle) {
+		transform: scale(2);
+	}
+}
+
+@media (max-width: 55em) {
 	.game {
 		transform: scale(2.5);
 	}
 }
 
-@media (width <= 40em) {
+@media (max-width: 50em) {
+	.game:has(.battle) {
+		transform: scale(1.5);
+	}
+}
+
+@media (max-width: 40em) {
 	.game {
 		transform: scale(2);
 	}
 }
 
-@media (width <= 32em) {
+@media (max-width: 35em) {
+	.game:has(.battle) {
+		transform: scale(1.25);
+	}
+}
+
+@media (max-width: 32em) {
 	.game {
 		transform: scale(1.5);
 	}
 }
 
-@media (width <= 23em) {
+@media (max-width: 30em) {
+	.game:has(.battle) {
+		transform: scale(1);
+	}
+}
+
+@media (max-width: 23em) {
 	.message {
 		--maxWidth: 230px;
 	}

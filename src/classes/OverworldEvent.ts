@@ -4,6 +4,7 @@ import { BehaviorLoopEvent, Detail, Text } from '../models/types';
 import { Message } from './Message';
 import { oppositeDirection, getElement } from '../utils/utils';
 import { SceneTransition } from './SceneTransition';
+import { Battle } from './Battle/Battle';
 
 type OverworldEventConfig = {
 	map: OverworldMap;
@@ -108,12 +109,32 @@ export class OverworldEvent {
 		});
 	}
 
+    battle(resolve: () => void) {
+        const sceneTransition = new SceneTransition();
+
+        sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
+            const battle = new Battle({
+                onComplete: () => {
+                    resolve();
+                }
+            })
+
+            battle.init(getElement<HTMLDivElement>('.game'));
+
+            // After battle is over
+            sceneTransition.fadeOut();
+        });
+
+
+    }
+
 	init() {
 		const eventHandlers: Record<string, OverworldEventMethod> = {
 			stand: this.stand.bind(this),
 			walk: this.walk.bind(this),
 			message: this.message.bind(this),
 			changeMap: this.changeMap.bind(this),
+            battle: this.battle.bind(this),
 		};
 
 		return new Promise<void>(resolve => {

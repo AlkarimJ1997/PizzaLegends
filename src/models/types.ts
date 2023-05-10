@@ -81,3 +81,15 @@ export type PersonConfig = GameObjectConfig & {
 export type Detail = {
 	whoId: string;
 };
+
+// Pizza types
+export type PizzaType = 'normal' | 'spicy' | 'veggie' | 'fungi' | 'chill';
+
+export type TeamType = 'player' | 'enemy';
+
+export type PizzaConfig = {
+	name: string;
+	type: PizzaType;
+	src: string;
+	icon: string;
+};

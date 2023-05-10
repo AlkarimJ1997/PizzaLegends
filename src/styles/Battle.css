@@ -1,0 +1,35 @@
+.battle {
+	image-rendering: pixelated;
+	position: absolute;
+	inset: 0;
+	background-image: url(../assets/images/maps/StreetBattle.png);
+	background-size: cover;
+	font-family: var(--ff-battle);
+}
+
+.battle__hero,
+.battle__enemy {
+	position: absolute;
+	width: 32px;
+	height: 32px;
+	background: url(../assets/images/characters/shadow.png) no-repeat no-repeat;
+	transform: scale(2);
+	overflow: hidden;
+}
+
+.battle__hero img,
+.battle__enemy img {
+	pointer-events: none;
+}
+
+.battle__hero img {
+	transform: translateY(-64px); /* make hero face upwards */
+}
+
+.battle__hero {
+	inset: auto auto 57px 1px;
+}
+
+.battle__enemy {
+	inset: 42px -1px auto auto;
+}
