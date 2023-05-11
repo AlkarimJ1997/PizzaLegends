@@ -1,3 +1,9 @@
+<style>
+    summary {
+        user-select: none;
+    }
+</style>
+
 # Pizza Legends
 
 This repository contains the code for a 2D RPG game called Pizza Legends. It was made following this [tutorial](https://www.youtube.com/watch?v=fyi4vfbKEeo) by Drew Conley.
@@ -34,6 +40,14 @@ npm run dev
 - [x] [Create the player](#create-the-player)
 - [x] [Create a shadow](#create-a-shadow)
 - [x] [Draw the shadow below the player](#draw-the-shadow-below-the-player)
+
+<details>
+    <summary>Set up the project</summary>
+
+    I used [Vite](https://vitejs.dev/) to set up the project. It's a build tool that allows you to use modern JavaScript features without having to worry about compatibility issues. It also has a built-in development server that allows you to hot reload your code.
+
+    From there, we removed any boilerplate code and started the server using `npm run dev`.
+</details>
 
 #### Set up the project
 
@@ -2362,3 +2376,15 @@ init() {
     });
 }
 ```
+
+### Day 10
+
+- [x] Typewriter effect
+- [x] Scene Transitions
+
+<details>
+    <summary>Typewriter Effect</summary>
+
+    This is expandable content.
+
+</details>
