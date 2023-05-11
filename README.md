@@ -42,24 +42,20 @@ npm run dev
 - [x] [Draw the shadow below the player](#draw-the-shadow-below-the-player)
 
 <details>
-    <summary>Set up the project</summary>
-
-    I used [Vite](https://vitejs.dev/) to set up the project. It's a build tool that allows you to use modern JavaScript features without having to worry about compatibility issues. It also has a built-in development server that allows you to hot reload your code.
-
-    From there, we removed any boilerplate code and started the server using `npm run dev`.
-</details>
-
-#### Set up the project
+  <summary>Set up the project</summary>
 
 I used [Vite](https://vitejs.dev/) to set up the project. It's a build tool that allows you to use modern JavaScript features without having to worry about compatibility issues. It also has a built-in development server that allows you to hot reload your code.
 
 From there, we removed any boilerplate code and started the server using `npm run dev`.
 
-#### Create the map
+</details>
+
+<details>
+  <summary>Create the map</summary>
 
 To create the map, and other visual elements, we used a `canvas` element.
 
-```tsx
+```ts
 <div className='game'>
 	<canvas className='game__canvas' width={352} height={198}></canvas>
 </div>
@@ -136,6 +132,8 @@ useEffect(() => {
 ```
 
 Notice the `useRef()` hook was used to follow best practices when working with the DOM in TypeScript React.
+
+</details>
 
 #### Pixelate the map
 
