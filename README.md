@@ -2688,6 +2688,102 @@ npm run dev
 </details>
 
 <details>
-    <summary>Scene Transitions</summary></br>
+  <summary>Scene Transitions</summary></br>
 
+  To create scene transitions when we change maps or when we enter a battle, we'll create a new class called `SceneTransition`.
+
+  But first, let's make our CSS:
+
+  ```css
+  .transition {
+    position: absolute;
+    inset: 0;
+    background-color: var(--clr-primary);
+    opacity: 0;
+    animation: fadeIn var(--mapTransitionSpeed) forwards;
+  }
+
+  .transition.fade-out {
+    animation: fadeOut var(--mapTransitionSpeed) forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  ```
+
+  This will create a black overlay that fades in and out. We'll use this to transition between scenes.
+
+  Now, let's create our `SceneTransition` class:
+
+  ```ts
+  export class SceneTransition {
+    element: HTMLDivElement | null;
+
+    constructor() {
+      this.element = null;
+    }
+
+    createElement() {
+      this.element = document.createElement('div');
+      this.element.classList.add('transition');
+    }
+
+    fadeOut() {
+      this.element?.classList.add('fade-out');
+
+      this.element?.addEventListener('animationend', () => {
+          this.element?.remove();
+      }, { once: true })
+    }
+
+    init(container: HTMLDivElement, callback: () => void) {
+      this.createElement();
+      container.appendChild(this.element as HTMLDivElement);
+
+      this.element?.addEventListener('animationend', () => {
+          callback();
+      }, { once: true })
+    }
+  }
+  ```
+
+  All we do here is create a `div` for the transition to live, add the animation class to it, and call a callback function when the animation is done.
+
+  Let's add this to our `changeMap()` method in `OverworldEvent`:
+
+  ```ts
+  changeMap(resolve: () => void) {
+		const sceneTransition = new SceneTransition();
+
+		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
+			this.map.overworld?.startMap(window.OverworldMaps[this.event.map as string]);
+			resolve();
+
+			sceneTransition.fadeOut();
+		});
+	}
+  ```
+
+  Notice that our passed in callback will actually change the map because we want the order of events to be:
+
+  1. Fade in
+  2. Change map
+  3. Fade out
+
+  After we change the map, we call `fadeOut()` on our `SceneTransition` instance to fade out the transition, which will then remove itself from the DOM.
 </details>
