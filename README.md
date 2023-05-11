@@ -2439,8 +2439,252 @@ npm run dev
 - [x] Scene Transitions
 
 <details>
-    <summary>Typewriter Effect</summary></br>
+  <summary>Typewriter Effect</summary></br>
 
+  Now, we are going to add a typewriter effect to our messages. First, we need to change the structure of our `message` event.
+
+  ```ts
+  {
+    type: 'message',
+    textLines: [
+      { speed: SPEEDS.Slow, string: 'Oh, hello!' },
+      { speed: SPEEDS.Pause, string: '', pause: true },
+      { speed: SPEEDS.Normal, string: 'Have you seen my pet' },
+      { speed: SPEEDS.Fast, string: 'frog', classes: ['green'] },
+      { speed: SPEEDS.Normal, string: 'around here?' },
+    ],
+  }
+  ```
+
+  Notice that we now have an array of `textLines` instead of a single `text` property. Each `textLine` has a `speed` property, which is the speed of the typewriter effect, a `string` property, which is the text to display, and a `classes` property, which is an array of classes to apply to the text.
+
+  This is much more modular and allows us to make our speech more dynamic. 
+  
+  With classes like `green` or `red`, we can make a specific word stand out. 
+  
+  With the `pause` property, we can pause the typewriter effect for a moment to imitate a pause in speech.
+
+  Now, let's update our `message()` method in `OverworldEvent` and the `Message` class to handle this new structure.
+
+  ```ts
+  type MessageConfig = {
+    textLines: Text[];
+    onComplete: () => void;
+  };
+  
+  export class Message {
+    textLines: Text[];
+
+    // ... rest of class
+  }
+  ```
+
+  ```ts
+  message(resolve: () => void) {
+		if (this.event.faceHero) {
+			const hero = this.map.gameObjects.hero;
+			const obj = this.map.gameObjects[this.event.faceHero];
+
+			obj.direction = oppositeDirection(hero.direction);
+		}
+
+		const messageInstance = new Message({
+			textLines: this.event.textLines as Text[],
+			onComplete: () => resolve(),
+		});
+
+		messageInstance.init(getElement<HTMLDivElement>('.game'));
+	}
+  ```
+
+  Notice the update in our types. We now have an array of `Text` objects instead of a single `string`. The types will look as follows:
+
+  ```ts
+  export enum SPEEDS {
+    Pause = 500,
+	  Slow = 90,
+	  Normal = 60,
+	  Fast = 30,
+	  SuperFast = 10,
+  }
+
+  export type Text = {
+    speed: SPEEDS;
+    string: string;
+    pause?: boolean;
+    classes?: string[];
+  };
+  ```
+
+  We are going to be creating `span` elements for each character and revealing them with `setTimeout`, so the bigger the number, the slower the typewriter effect.
+
+  We'll use the following CSS to initially hide the `span` elements and reveal them when needed.
+
+  ```css
+  .message span {
+    opacity: 0;
+  }
+
+  .message span.revealed {
+    opacity: 1;
+  }
+
+  .message span.green {
+    color: var(--clr-green);
+  }
+
+  .message span.red {
+    color: var(--clr-red);
+      text-transform: uppercase;
+  }
+  ```
+
+  From here, we can create a new class called `RevealingText` that will handle the typewriter effect.
+
+  ```ts
+  export class RevealingText {
+    element: HTMLParagraphElement;
+    textLines: Text[];
+    characters!: Characters[];
+    timeout: number | null;
+    isDone: boolean;
+
+    constructor(config: RevealingTextConfig) {
+      this.element = config.element;
+      this.textLines = config.textLines;
+
+      this.timeout = null;
+      this.isDone = false;
+    }
+
+    revealOneCharacter() {
+      const next = this.characters.splice(0, 1)[0];
+
+      next.span.classList.add('revealed');
+      next.classes.forEach(className => {
+        next.span.classList.add(className);
+      });
+
+      const delay = next.isSpace ? 0 : next.delayAfter;
+
+      if (this.characters.length > 0) {
+        this.timeout = setTimeout(() => {
+          this.revealOneCharacter();
+        }, delay);
+      } else {
+        this.isDone = true;
+      }
+    }
+
+    warpToDone() {
+      if (this.timeout) clearTimeout(this.timeout);
+
+      this.isDone = true;
+
+      this.element.querySelectorAll('span').forEach(span => {
+        span.classList.add('revealed');
+      });
+
+      this.characters.forEach(config => {
+        config.classes.forEach(className => {
+          config.span.classList.add(className);
+        });
+      });
+    }
+
+    init() {
+      this.characters = [];
+
+      // Add spaces between text lines
+      this.textLines.forEach((line, index) => {
+        if (index < this.textLines.length - 1) {
+          line.string += ' ';
+        }
+
+        line.string.split('').forEach(character => {
+          const span = document.createElement('span');
+
+          span.textContent = character;
+
+          this.element.appendChild(span);
+
+          this.characters.push({
+            span,
+            isSpace: character === ' ' && !line.pause,
+            delayAfter: line.speed,
+            classes: line.classes || [],
+          });
+        });
+      });
+
+      // Wait for the slide in animation to finish
+      this.element.parentElement?.addEventListener(
+        'animationend',
+        () => {
+          this.revealOneCharacter();
+        },
+        { once: true }
+      );
+	  }
+  }
+  ```
+
+  This class splits the text into individual characters and creates a `span` element for each one. It then adds the `revealed` class to each `span` element one by one to reveal the text using `setTimeout`. Notice that we also add a space between each text line for readability.
+
+  Also, since we have a slide in animation for our message, we need to wait for that to finish before we start revealing the text. We do this by adding an event listener to the parent element of our message.
+
+  We also have an `isDone` flag that we can use to check when the typewriter effect is done. This is essential for our `Message` class because we need the `Enter` key to have two functions. If the text is still revealing, the `Enter` key should skip the typewriter effect and reveal the text immediately. If the text is done revealing, the `Enter` key should close the message.
+
+  Let's add this functionality to our `Message` class, as well as an instance of `RevealingText`.
+
+  ```ts
+  export class Message {
+    textLines: Text[];
+    onComplete: () => void;
+    element: HTMLDivElement | null;
+    actionListener?: KeyPressListener;
+    revealingText?: RevealingText;
+
+    constructor({ textLines, onComplete }: MessageConfig) {
+      // ... constructor code
+    }
+
+    createElement() {
+      // ... creating the element and innerHTML
+
+      // Add revealing text
+      this.revealingText = new RevealingText({
+        element: getElement<HTMLParagraphElement>('.message__text', this.element),
+        textLines: this.textLines,
+      });
+
+      // Close message on click
+      this.element.addEventListener('click', () => {
+        this.done();
+      });
+
+      // Enter key closes message
+      this.actionListener = new KeyPressListener('Enter', () => {
+        this.done();
+      });
+    }
+
+    done() {
+      if (!this.revealingText?.isDone) {
+        this.revealingText?.warpToDone();
+        return;
+      }
+
+      this.element?.remove();
+      this.actionListener?.unbind();
+      this.onComplete();
+    }
+  }
+  ```
+
+  First, we make sure we leave our message blank in the innerHTML. Then we create an instance of `RevealingText` and pass in the `textLines` array and the element we want to add the spans to, our `p` tag in this case.
+
+  Also, notice that our `done()` method now checks if the text is done revealing. If it isn't, we call the `warpToDone()` method on our `RevealingText` instance. This will immediately reveal the text and add the appropriate classes to the `span` elements. If the text is done revealing, we close the message as per usual.
 </details>
 
 <details>
