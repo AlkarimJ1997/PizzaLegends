@@ -1987,13 +1987,13 @@ npm run dev
 
   ```tsx
   export class Message {
-    textLines: Text[];
+    text: string;
     onComplete: () => void;
     element: HTMLDivElement | null;
     actionListener?: KeyPressListener;
 
-    constructor({ textLines, onComplete }: MessageConfig) {
-      this.textLines = textLines;
+    constructor({ text, onComplete }: MessageConfig) {
+      this.text = text;
       this.onComplete = onComplete;
       this.element = null;
     }
@@ -2047,7 +2047,7 @@ npm run dev
   ```tsx
   message(resolve: () => void) {
       const messageInstance = new Message({
-        textLines: this.event.textLines as Text[],
+        text: this.event.text,
         onComplete: () => resolve(),
       });
 
