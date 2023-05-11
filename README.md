@@ -2787,3 +2787,340 @@ npm run dev
 
   After we change the map, we call `fadeOut()` on our `SceneTransition` instance to fade out the transition, which will then remove itself from the DOM.
 </details>
+
+### Day 11
+
+- [x] Battle UI
+
+<details>
+  <summary>Battle UI</summary>
+
+  We are going to start by creating 4 new classes:
+
+  - `Battle`
+  - `Combatant`
+  - `Team`
+  - `SubmissionMenu`
+
+  Let's start with creating the `battle` event.
+
+  ```ts
+  { type: 'battle' }
+  ```
+
+  We'll be adding more to this later, but for now, let's create the `battle()` method in `OverworldEvent`:
+
+  ```ts
+  battle(resolve: () => void) {
+		const sceneTransition = new SceneTransition();
+
+		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
+			const battle = new Battle({
+				onComplete: () => {
+					resolve();
+				},
+			});
+
+			battle.init(getElement<HTMLDivElement>('.game'));
+
+			// After battle is over
+			sceneTransition.fadeOut();
+		});
+	}
+  ```
+
+  Notice how we're reusing our `SceneTransition` class to fade in and out of the battle. We also pass in a callback to the `Battle` class that will resolve the promise when the battle is over.
+
+  Now, before we create the `Battle` class, let's create our Pizzadex (a Pokedex for our different pizzas). We'll do so by appending an object to the `window` object:
+
+  ```ts
+    window.PizzaTypes = {
+    normal: 'normal',
+    spicy: 'spicy',
+    veggie: 'veggie',
+    fungi: 'fungi',
+    chill: 'chill',
+  };
+
+  window.Pizzas = {
+    s001: {
+      name: 'Slice Samurai',
+      type: window.PizzaTypes.normal,
+      src: getSrc('../assets/images/characters/pizzas/s001.png'),
+      icon: getSrc('../assets/images/icons/spicy.png'),
+    },
+    v001: {
+      name: 'Call Me Kale',
+      type: window.PizzaTypes.veggie,
+      src: getSrc('../assets/images/characters/pizzas/v001.png'),
+      icon: getSrc('../assets/images/icons/veggie.png'),
+    },
+    f001: {
+      name: 'Portobello Express',
+      type: window.PizzaTypes.fungi,
+      src: getSrc('../assets/images/characters/pizzas/f001.png'),
+      icon: getSrc('../assets/images/icons/fungi.png'),
+    },
+  };
+  ```
+
+  From here, let's create our `Battle` class. Initially, a lot of the data will be hard coded, but we'll be able to refactor it later.
+
+  ```ts
+  export class Battle {
+    element!: HTMLDivElement;
+    onComplete: () => void;
+
+    combatants: Combatants;
+    activeCombatants: ActiveCombatants;
+
+    constructor({ onComplete }: BattleConfig) {
+      this.onComplete = onComplete;
+
+      this.combatants = {
+        player1: new Combatant(
+          {
+            ...window.Pizzas.s001,
+            team: 'player',
+            hp: 30,
+            maxHp: 50,
+            xp: 75,
+            maxXp: 100,
+            level: 1,
+            status: {
+              type: 'clumsy',
+              expiresIn: 3,
+            },
+          },
+          this
+        ),
+        enemy1: new Combatant(
+          {
+            ...window.Pizzas.v001,
+            team: 'enemy',
+            hp: 20,
+            maxHp: 50,
+            xp: 20,
+            maxXp: 100,
+            level: 1,
+          },
+          this
+        ),
+        enemy2: new Combatant(
+          {
+            ...window.Pizzas.f001,
+            team: 'enemy',
+            hp: 25,
+            maxHp: 50,
+            xp: 30,
+            maxXp: 100,
+            level: 1,
+          },
+          this
+        ),
+      };
+
+      this.activeCombatants = {
+        player: 'player1',
+        enemy: 'enemy1',
+      };
+    }
+
+    createElement() {
+      this.element = document.createElement('div');
+      this.element.classList.add('battle');
+
+      const heroSrc = getSrc('../assets/images/characters/people/hero.png');
+      const enemySrc = getSrc('../assets/images/characters/people/npc3.png');
+
+      this.element.innerHTML = `
+              <div class='battle__hero'>
+                  <img src='${heroSrc}' alt='Hero' />
+              </div>
+              <div class='battle__enemy'>
+                  <img src='${enemySrc}' alt='Enemy' />
+              </div>
+          `;
+    }
+
+    init(container: HTMLDivElement) {
+      this.createElement();
+      container.appendChild(this.element as HTMLDivElement);
+
+      Object.keys(this.combatants).forEach(key => {
+        const combatant = this.combatants[key];
+
+        combatant.id = key;
+        combatant.init(this.element);
+      });
+    }
+  }
+  ```
+
+  Pretty simple here. `combatants` is an object that contains all of the combatants in the battle. `activeCombatants` is an object that contains the active combatants for each team. We'll use this to determine who to show in the battle.
+
+  From there, we dynamically create a DOM element as per usual, and we also dynamically give an `id` to each combatant which we'll use in the `Combatant` class.
+
+  Notice that the `Combatant` class takes many configuration properties as well as a reference to the `Battle` class.
+
+  Finally, let's create the `Combatant` class:
+
+  ```ts
+  export class Combatant {
+    id!: string;
+    name: string;
+    type: PizzaType;
+    src: string;
+    icon: string;
+    team: TeamType;
+    hp: number;
+    maxHp: number;
+    xp: number;
+    maxXp: number;
+    level: number;
+    status?: {
+      type: string;
+      expiresIn: number;
+    };
+
+    battle: Battle;
+
+    hudElement!: HTMLDivElement;
+    pizzaElement!: HTMLImageElement;
+    hpFills!: NodeListOf<SVGRectElement>;
+    xpFills!: NodeListOf<SVGRectElement>;
+
+    constructor(config: CombatantConfig, battle: Battle) {
+      // config is HP, maxHP, XP, name, actions, etc.
+      this.id = config.id;
+      this.name = config.name;
+      this.type = config.type;
+      this.src = config.src;
+      this.icon = config.icon;
+      this.team = config.team;
+      this.hp = config.hp;
+      this.maxHp = config.maxHp;
+      this.xp = config.xp;
+      this.maxXp = config.maxXp;
+      this.level = config.level;
+      this.status = config.status;
+
+      this.battle = battle;
+    }
+
+    get hpPercentage() {
+      return Math.max(0, Math.min(100, (this.hp / this.maxHp) * 100));
+    }
+
+    get xpPercentage() {
+      return (this.xp / this.maxXp) * 100;
+    }
+
+    get isActive() {
+      return this.battle.activeCombatants[this.team] === this.id;
+    }
+
+    private setProperty<T extends keyof CombatantConfig>(
+      property: T,
+      value: CombatantConfig[T]
+    ) {
+      (this as CombatantProperty)[property] = value;
+    }
+
+    createElement() {
+      this.hudElement = document.createElement('div');
+      this.hudElement.classList.add('combatant');
+      this.hudElement.setAttribute('data-combatant', this.id);
+      this.hudElement.setAttribute('data-team', this.team);
+
+      this.hudElement.innerHTML = `
+        <p class='combatant__name'>${this.name}</p>
+        <p class='combatant__level'></p>
+        <div class='combatant__wrapper'>
+          <img class='combatant__image' src='${this.src}' alt='${this.name}' />
+        </div>
+        <img class='combatant__type' src='${this.icon}' alt='${this.type}' />
+        <svg viewBox='0 0 26 3' class='combatant__life-container'>
+          <rect x=0 y=0 width='0%' height=1 fill='#82ff71' />
+          <rect x=0 y=1 width='0%' height=2 fill='#3ef126' />
+        </svg>
+        <svg viewBox='0 0 26 2' class='combatant__xp-container'>
+          <rect x=0 y=0 width='0%' height=1 fill='#ffd76a' />
+          <rect x=0 y=1 width='0%' height=1 fill='#ffc934' />
+        </svg>
+        <p class='combatant__status'></p>
+      `;
+
+      this.pizzaElement = document.createElement('img');
+      this.pizzaElement.classList.add('pizza');
+      this.pizzaElement.setAttribute('src', getSrc(this.src));
+      this.pizzaElement.setAttribute('alt', this.name);
+      this.pizzaElement.setAttribute('data-team', this.team);
+
+      this.hpFills = this.hudElement.querySelectorAll(
+        '.combatant__life-container > rect'
+      );
+
+      this.xpFills = this.hudElement.querySelectorAll(
+        '.combatant__xp-container > rect'
+      );
+    }
+
+    update(changes: Partial<CombatantConfig> = {}) {
+      Object.keys(changes).forEach((key: string) => {
+        const propertyKey = key as keyof CombatantConfig;
+
+        this.setProperty(propertyKey, changes[propertyKey]);
+      });
+
+      // Update active state
+      this.hudElement.setAttribute('data-active', `${this.isActive}`);
+      this.pizzaElement.setAttribute('data-active', `${this.isActive}`);
+
+      // Update the HP
+      this.hpFills.forEach(rect => {
+        rect.style.width = `${this.hpPercentage}%`;
+      });
+
+      // Update the XP
+      this.xpFills.forEach(rect => {
+        rect.style.width = `${this.xpPercentage}%`;
+      });
+
+      // Update the Level
+      getElement('.combatant__level', this.hudElement).innerText = `${this.level}`;
+    }
+
+    init(container: HTMLDivElement) {
+      this.createElement();
+      container.append(this.hudElement);
+      container.append(this.pizzaElement);
+      this.update();
+    }
+  }
+  ```
+
+  A rather long class, but let's break it down.
+
+  The constructor is just a bunch of grunt work to set up the properties of the combatant. We also pass in a reference to the `Battle` class so that we can use it later.
+
+  `hpPercentage()` and `xpPercentage()` are just getters that calculate the percentage of HP and XP remaining so we can set the `width` of the SVG elements.
+
+  `isActive()` is a getter that checks if the combatant is the active combatant for their team so we can show the pizza on the screen using CSS.
+
+  `setProperty()` is a helper method that uses generics so we can dynamically update properties on the class in the `update` method.
+
+  `createElement()` just creates the DOM elements as usual. Notice that we have multiple elements this time, one for the HUD itself, and one for the pizza. The HUD will include SVG elements for the HP and XP bars.
+
+  We also create references to the HP and XP bars so we can update them later.
+
+  `update()` is where the magic happens. We pass in an object of changes that we want to make to the combatant. We then loop through each key in the object and use the `setProperty()` method to update the property on the class for any incoming changes.
+
+  We then update the active state of the combatant, the HP and XP bars, and the level.
+
+  Finally, we have the `init()` method which creates the DOM elements, appends them to the container, and calls `update()` to set the initial state.
+</details>
+
+### Day 12
+
+

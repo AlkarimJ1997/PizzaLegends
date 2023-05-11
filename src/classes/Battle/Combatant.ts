@@ -93,22 +93,22 @@ export class Combatant {
 		this.hudElement.setAttribute('data-team', this.team);
 
 		this.hudElement.innerHTML = `
-            <p class='combatant__name'>${this.name}</p>
-            <p class='combatant__level'></p>
-            <div class='combatant__wrapper'>
-                <img class='combatant__image' src='${this.src}' alt='${this.name}' />
-            </div>
-            <img class='combatant__type' src='${this.icon}' alt='${this.type}' />
-            <svg viewBox='0 0 26 3' class='combatant__life-container'>
-                <rect x=0 y=0 width='0%' height=1 fill='#82ff71' />
-                <rect x=0 y=1 width='0%' height=2 fill='#3ef126' />
-            </svg>
-            <svg viewBox='0 0 26 2' class='combatant__xp-container'>
-                <rect x=0 y=0 width='0%' height=1 fill='#ffd76a' />
-                <rect x=0 y=1 width='0%' height=1 fill='#ffc934' />
-            </svg>
-            <p class='combatant__status'></p>
-        `;
+      <p class='combatant__name'>${this.name}</p>
+      <p class='combatant__level'></p>
+      <div class='combatant__wrapper'>
+        <img class='combatant__image' src='${this.src}' alt='${this.name}' />
+      </div>
+      <img class='combatant__type' src='${this.icon}' alt='${this.type}' />
+      <svg viewBox='0 0 26 3' class='combatant__life-container'>
+        <rect x=0 y=0 width='0%' height=1 fill='#82ff71' />
+        <rect x=0 y=1 width='0%' height=2 fill='#3ef126' />
+      </svg>
+      <svg viewBox='0 0 26 2' class='combatant__xp-container'>
+        <rect x=0 y=0 width='0%' height=1 fill='#ffd76a' />
+        <rect x=0 y=1 width='0%' height=1 fill='#ffc934' />
+      </svg>
+      <p class='combatant__status'></p>
+    `;
 
 		this.pizzaElement = document.createElement('img');
 		this.pizzaElement.classList.add('pizza');
@@ -134,7 +134,7 @@ export class Combatant {
 
 		// Update active state
 		this.hudElement.setAttribute('data-active', `${this.isActive}`);
-        this.pizzaElement.setAttribute('data-active', `${this.isActive}`);
+		this.pizzaElement.setAttribute('data-active', `${this.isActive}`);
 
 		// Update the HP
 		this.hpFills.forEach(rect => {

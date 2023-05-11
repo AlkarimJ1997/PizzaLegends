@@ -109,24 +109,22 @@ export class OverworldEvent {
 		});
 	}
 
-    battle(resolve: () => void) {
-        const sceneTransition = new SceneTransition();
+	battle(resolve: () => void) {
+		const sceneTransition = new SceneTransition();
 
-        sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
-            const battle = new Battle({
-                onComplete: () => {
-                    resolve();
-                }
-            })
+		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
+			const battle = new Battle({
+				onComplete: () => {
+					resolve();
+				},
+			});
 
-            battle.init(getElement<HTMLDivElement>('.game'));
+			battle.init(getElement<HTMLDivElement>('.game'));
 
-            // After battle is over
-            sceneTransition.fadeOut();
-        });
-
-
-    }
+			// After battle is over
+			sceneTransition.fadeOut();
+		});
+	}
 
 	init() {
 		const eventHandlers: Record<string, OverworldEventMethod> = {
@@ -134,7 +132,7 @@ export class OverworldEvent {
 			walk: this.walk.bind(this),
 			message: this.message.bind(this),
 			changeMap: this.changeMap.bind(this),
-            battle: this.battle.bind(this),
+			battle: this.battle.bind(this),
 		};
 
 		return new Promise<void>(resolve => {

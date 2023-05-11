@@ -1,5 +1,6 @@
-import '../../styles/Battle.css';
 import { Combatant } from './Combatant';
+import { getSrc } from '../../utils/utils';
+import '../../styles/Battle.css';
 
 type BattleConfig = {
 	onComplete: () => void;
@@ -77,24 +78,17 @@ export class Battle {
 		this.element = document.createElement('div');
 		this.element.classList.add('battle');
 
-		const heroImage = new URL(
-			'../../assets/images/characters/people/hero.png',
-			import.meta.url
-		);
-
-		const enemyImage = new URL(
-			'../../assets/images/characters/people/npc3.png',
-			import.meta.url
-		);
+		const heroSrc = getSrc('../assets/images/characters/people/hero.png');
+		const enemySrc = getSrc('../assets/images/characters/people/npc3.png');
 
 		this.element.innerHTML = `
-            <div class='battle__hero'>
-                <img src='${heroImage.href}' alt='Hero' />
-            </div>
-            <div class='battle__enemy'>
-                <img src='${enemyImage.href}' alt='Enemy' />
-            </div>
-        `;
+      <div class='battle__hero'>
+        <img src='${heroSrc}' alt='Hero' />
+      </div>
+      <div class='battle__enemy'>
+        <img src='${enemySrc}' alt='Enemy' />
+      </div>
+    `;
 	}
 
 	init(container: HTMLDivElement) {
