@@ -4,7 +4,6 @@
 	inset: 0;
 	background-image: url(../assets/images/maps/StreetBattle.png);
 	background-size: cover;
-	font-family: var(--ff-battle);
 }
 
 .battle__hero,

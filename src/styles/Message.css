@@ -62,7 +62,6 @@
 
 .message span.red {
 	color: var(--clr-red);
-    text-transform: uppercase;
 }
 
 @keyframes slideIn {

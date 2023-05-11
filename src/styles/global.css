@@ -1,5 +1,5 @@
 :root {
-    /* Colors */
+	/* Colors */
 	--clr-primary: hsl(204, 70%, 53%);
 	--clr-secondary: hsl(204, 85%, 37%);
 	--clr-accent: hsl(194, 36%, 71%);
@@ -7,16 +7,16 @@
 	--clr-dark: hsl(240, 2%, 23%);
 	--clr-border: hsl(199, 54%, 17%);
 	--clr-green: hsl(145, 63%, 42%);
-	--clr-red: hsl(0, 100%, 60%);
+	--clr-red: hsl(0, 100%, 61%);
 
-    /* Battle Colors */
-    --clr-level-bg: hsl(30, 100%, 90%);
-    --clr-level-border: hsl(30, 100%, 20%);
-    --clr-level-border: hsl(30, 26%, 42%);
+	/* Battle Colors */
+	--clr-level-bg: hsl(30, 100%, 90%);
+	/* --clr-level-border: hsl(30, 100%, 20%); */
+	--clr-level-border: hsl(30, 26%, 42%);
 
-    /* Fonts */
-	--ff-body: 'Dosis', monospace;
-    --ff-battle: 'Share Tech Mono', monospace;
+	/* Fonts */
+	/* --ff-body: 'Dosis', monospace; */
+	--ff-body: 'Share Tech Mono', monospace;
 
 	--mapTransitionSpeed: 400ms;
 }
