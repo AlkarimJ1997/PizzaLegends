@@ -1,17 +1,17 @@
 import { Combatant } from './Combatant';
-import { SubmissionEvent } from '../../models/types';
+import { Submission } from '../../models/types';
 import '../../styles/SubmissionMenu.css';
 
 type SubmissionMenuConfig = {
 	caster: Combatant;
 	enemy: Combatant;
-	onComplete: (submission: SubmissionEvent) => void;
+	onComplete: (submission: Submission) => void;
 };
 
 export class SubmissionMenu {
 	caster: Combatant;
 	enemy: Combatant;
-	onComplete: (submission: SubmissionEvent) => void;
+	onComplete: (submission: Submission) => void;
 
 	constructor({ caster, enemy, onComplete }: SubmissionMenuConfig) {
 		this.caster = caster;

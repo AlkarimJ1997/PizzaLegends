@@ -8,8 +8,8 @@ window.Actions = {
 				type: 'message',
 				textLines: [{ speed: SPEEDS.Fast, string: '{CASTER} uses {ACTION}!' }],
 			},
-			// { type: 'animation', animation: 'TODO' },
-			// { type: 'stateChange', damage: 10 },
+			{ type: 'animation', animation: 'spin' },
+			{ type: 'stateChange', damage: 10 },
 		],
 	},
 };

@@ -58,3 +58,5 @@ export const oppositeDirection = (direction: string) => {
 			return 'up';
 	}
 };
+
+export const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

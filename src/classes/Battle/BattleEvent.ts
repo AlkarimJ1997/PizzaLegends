@@ -2,9 +2,10 @@ import { Message } from '../Message';
 import { Combatant } from './Combatant';
 import { Battle } from './Battle';
 import { SubmissionMenu } from './SubmissionMenu';
-import { BattleEventType, SubmissionEvent } from '../../models/types';
+import { BattleEventType, Submission } from '../../models/types';
+import { wait } from '../../utils/utils';
 
-type Resolve = (submission?: SubmissionEvent) => void;
+type Resolve = (submission?: Submission) => void;
 
 export class BattleEvent {
 	event: BattleEventType;
@@ -37,6 +38,28 @@ export class BattleEvent {
 		message.init(this.battle.element);
 	}
 
+	async stateChange(resolve: Resolve) {
+		const { caster, target, damage } = this.event;
+
+		if (damage) {
+			// Modify the target to have less HP
+			target?.update({
+				hp: target.hp - damage,
+			});
+
+			// Start blinking the Pizza
+			target?.pizzaElement.classList.add('blinking');
+		}
+
+		// Wait a little bit
+		await wait(600);
+
+		// Stop blinking the Pizza
+		target?.pizzaElement.classList.remove('blinking');
+
+		resolve();
+	}
+
 	submissionMenu(resolve: Resolve) {
 		const menu = new SubmissionMenu({
 			caster: this.event.caster as Combatant,
@@ -48,6 +71,14 @@ export class BattleEvent {
 		});
 
 		menu.init(this.battle.element);
+	}
+
+	animation(resolve: Resolve) {
+		if (!this.event.animation) return resolve();
+
+		const fn = window.BattleAnimations[this.event.animation];
+
+		fn(this.event, resolve);
 	}
 
 	init(resolve: Resolve) {

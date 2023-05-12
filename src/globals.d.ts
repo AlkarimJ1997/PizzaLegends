@@ -12,6 +12,9 @@ declare global {
 		Actions: {
 			[key: string]: ActionConfig;
 		};
+		BattleAnimations: {
+			[key: string]: (event: BattleEventType, onComplete: () => void) => void;
+		};
 	}
 
 	interface DocumentEventMap {

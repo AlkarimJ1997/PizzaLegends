@@ -32,3 +32,50 @@
 .battle__enemy {
 	inset: 42px -1px auto auto;
 }
+
+/* Battle Animations */
+.blinking {
+	animation: blinking 0.3s steps(2, start) infinite;
+}
+
+.spin-left {
+	animation: spinLeft 0.8s;
+}
+
+.spin-right {
+	animation: spinRight 0.8s;
+}
+
+@keyframes blinking {
+	to {
+		visibility: hidden;
+	}
+}
+
+@keyframes spinLeft {
+	0% {
+		transform: translate3d(0, 0, 0) rotate(0deg) scale(2);
+	}
+
+	25% {
+		transform: translate3d(-100%, 25%, 0) rotate(45deg) scale(2);
+	}
+
+	100% {
+		transform: translate3d(0, 0, 0) scale(2);
+	}
+}
+
+@keyframes spinRight {
+	0% {
+		transform: translate3d(0, 0, 0) rotate(0deg) scale(2);
+	}
+
+	25% {
+		transform: translate3d(155px, -30px, 0) rotate(45deg) scale(2);
+	}
+
+	100% {
+		transform: translate3d(0, 0, 0) scale(2);
+	}
+}
