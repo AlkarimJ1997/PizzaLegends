@@ -3123,4 +3123,400 @@ npm run dev
 
 ### Day 12
 
+- [x] Turn System
 
+<details>
+  <summary>Turn System</summary>
+
+  This is the big one, definitely the most complicated part of the game, but we'll try to simplify it as much as possible.
+
+  The turn system in the game will be a queue of BattleEvents that are awaited one after another. Once all the battle events for a player has been resolved, it will go to the enemy, then back to the player, and so on until the battle is over.
+
+  We'll start by pre-instantiating a `TurnCycle` class in the `Battle` class. It's probably the easiest way to grasp what's going on.
+
+  ```ts
+  init(container: HTMLDivElement) {
+    this.createElement();
+    container.appendChild(this.element as HTMLDivElement);
+
+    Object.keys(this.combatants).forEach(key => {
+      const combatant = this.combatants[key];
+
+      combatant.id = key;
+      combatant.init(this.element);
+    });
+
+    this.turnCycle = new TurnCycle({
+      battle: this,
+      onNewEvent: (event: BattleEventType) => {
+        return new Promise<void | Submission>(resolve => {
+          const battleEvent = new BattleEvent(event, this);
+          battleEvent.init(resolve);
+        });
+      },
+    });
+
+    this.turnCycle.init();
+  }
+  ```
+
+  Notice that we instantiate a `TurnCycle` after the battle starts, which takes a reference to the `Battle` class and a function called `onNewEvent`. This function takes a `BattleEvent` and returns a `Promise` that is to be awaited. That promise will either return `void` or a `Submission` object, which we'll get to later.
+
+  Now, let's look at the `TurnCycle` class.
+
+  ```ts
+  type TurnCycleConfig = {
+    battle: Battle;
+    onNewEvent: (event: BattleEventType) => Promise<void | Submission>;
+  };
+
+  export class TurnCycle {
+    battle: Battle;
+    onNewEvent: (event: BattleEventType) => Promise<void | Submission>;
+    currentTeam: 'player' | 'enemy';
+
+    constructor({ battle, onNewEvent }: TurnCycleConfig) {
+      this.battle = battle;
+      this.onNewEvent = onNewEvent;
+      this.currentTeam = 'player';
+    }
+
+    async turn() {
+      // Get the caster
+      const casterId = this.battle.activeCombatants[this.currentTeam];
+      const caster = this.battle.combatants[casterId];
+
+      // Get the enemy
+      const oppositeTeam = caster.team === 'player' ? 'enemy' : 'player';
+      const enemyId = this.battle.activeCombatants[oppositeTeam];
+      const enemy = this.battle.combatants[enemyId];
+
+      const submission = await this.onNewEvent({
+        type: 'submissionMenu',
+        caster,
+        enemy,
+      });
+
+      const resultingEvents = (submission?.action.success || []) as BattleEventType[];
+
+      for (const event of resultingEvents) {
+        const newEvent = {
+          ...event,
+          action: submission?.action,
+          caster,
+          target: submission?.target,
+        };
+
+        if (submission) newEvent.submission = submission;
+
+        await this.onNewEvent(newEvent);
+      }
+
+      // Change the current team and go to the next turn
+      this.currentTeam = this.currentTeam === 'player' ? 'enemy' : 'player';
+      this.turn();
+    }
+
+    async init() {
+      await this.onNewEvent({
+        type: 'message',
+        textLines: [
+          { speed: SPEEDS.Normal, string: 'The battle is' },
+          { speed: SPEEDS.Fast, string: 'starting!', classes: ['green'] },
+        ],
+      });
+
+      this.turn();
+    }
+  }
+  ```
+
+  Notice that we also create a `currentTeam` property that keeps track of whose turn it currently is (player or enemy).
+
+  We start the battle with a message that says `The battle is starting!`, that is also a `BattleEvent` but is just like an `OverworldEvent` except you see it in the battle scene.
+
+  Then we call `turn()` which is an async function that will loop forever until the battle is over.
+
+  Inside the `turn()` function, we get references to the caster `Combatant` and the enemy `Combatant` using properties from the `Battle` class.
+
+  We then pass these references to the a new `BattleEvent` called `submissionMenu` which is the menu that the player uses to select their action.
+  
+  Remember that all `onNewEvent` does is create a new `BattleEvent`, initialize it, and return a `Promise` that is to be awaited.
+
+  Let's pause on the `turn()` method for a moment and look at the `BattleEvent` class. For now, we are just going to look at the `submissionMenu()` method.
+
+  ```ts
+  submissionMenu(resolve: SubmissionResolve) {
+		if (!this.event.caster || !this.event.enemy) return resolve();
+
+		const menu = new SubmissionMenu({
+			caster: this.event.caster,
+			enemy: this.event.enemy,
+			onComplete: submission => {
+				// submission { what move to use, who to use it on }
+				resolve(submission);
+			},
+		});
+
+		menu.init(this.battle.element);
+	}
+  ```
+
+  All we do here is pass the `caster` and `enemy` references we got in `turn()` and pass them to a new `SubmissionMenu` class. We also pass a callback function called `onComplete` that will be called when the player selects an action.
+
+  But notice this callback isn't one we usually see. It includes a parameter called `submission` which is an object that contains the `action` and the `target`. This is because the player can select an action, then select a target, then select another action, then select another target, and so on. So we need to keep track of the action and target as the player is selecting them.
+
+  It's important to understand the concept here. This `submission` object so to speak will be returned by the resolver, which we'll use in the `turn()` method.
+
+  Now let's quickly look at the `SubmissionMenu` class.
+
+  ```ts
+  type SubmissionMenuConfig = {
+    caster: Combatant;
+    enemy: Combatant;
+    onComplete: (submission: Submission) => void;
+  };
+
+  export class SubmissionMenu {
+    caster: Combatant;
+    enemy: Combatant;
+    onComplete: (submission: Submission) => void;
+
+    constructor({ caster, enemy, onComplete }: SubmissionMenuConfig) {
+      this.caster = caster;
+      this.enemy = enemy;
+      this.onComplete = onComplete;
+    }
+
+    decide() {
+      this.onComplete({
+        action: window.Actions[this.caster.actions[0]],
+        target: this.enemy,
+      });
+    }
+
+    init(container: HTMLDivElement) {
+      this.decide();
+    }
+  }
+  ```
+
+  For now, this class doesn't do a lot. We are hardcoding the same action (which is a move called `Fling`, i.e. `this.caster.actions[0]`) and the same target (the enemy `Combatant`) every time. But this is where we would create a UI that allows the player to select an action and a target.
+
+  But what exactly are these `Actions`? Let's quickly look at our window objects.
+
+  ```ts
+  window.PizzaTypes = {
+    normal: 'normal',
+    spicy: 'spicy',
+    veggie: 'veggie',
+    fungi: 'fungi',
+    chill: 'chill',
+  };
+
+  window.Pizzas = {
+    s001: {
+      name: 'Slice Samurai',
+      type: window.PizzaTypes.normal,
+      src: getSrc('../assets/images/characters/pizzas/s001.png'),
+      icon: getSrc('../assets/images/icons/spicy.png'),
+      actions: ['damage1'],
+    },
+    v001: {
+      name: 'Call Me Kale',
+      type: window.PizzaTypes.veggie,
+      src: getSrc('../assets/images/characters/pizzas/v001.png'),
+      icon: getSrc('../assets/images/icons/veggie.png'),
+      actions: ['damage1'],
+    },
+    f001: {
+      name: 'Portobello Express',
+      type: window.PizzaTypes.fungi,
+      src: getSrc('../assets/images/characters/pizzas/f001.png'),
+      icon: getSrc('../assets/images/icons/fungi.png'),
+      actions: ['damage1'],
+    },
+  };
+  ```
+
+  REMEMBER that these pizza properties are spread into the configuration objects for each `Combatant` in the `Battle Class`, assigned in the `Combatant` class.
+
+  Long story short, each `Combatant` has these `actions` which are an array of strings with names of moves that they can use. But what actually is `damage1`? It's a key in the `Actions` window object. Let's look at that.
+
+  ```ts
+  window.Actions = {
+    damage1: {
+      name: 'Fling',
+      success: [
+        {
+          type: 'message',
+          textLines: [{ speed: SPEEDS.Fast, string: '{CASTER} uses {ACTION}!' }],
+        },
+        { type: 'animation', animation: 'spin' },
+        { type: 'stateChange', damage: 10 },
+      ],
+    },
+  };
+  ```
+
+  Each `Action` has a `name` for the move to be shown in the `message` event, and a `success` array of `BattleEvent` objects that will be executed when the move is successful.
+
+  Later on, we'll have properties like `failure`, etc. for things to happen when the move fails, but for now, we just have `success`.
+
+  Now there's two more tidbits to notice here. 
+  
+  First, notice that the `textLines` property of the `message` event has `{CASTER}` and `{ACTION}` in it. These are special strings that will be replaced with the `name` of the `caster` and the `name` of the `action` dynamically.
+
+  Let's see where that happens back in our `BattleEvent` class.
+
+  ```ts
+  message(resolve: VoidResolve) {
+		const textLines =
+			this.event.textLines?.map(line => {
+				return {
+					...line,
+					string: line.string
+						.replace('{CASTER}', this.event.caster?.name || '')
+						.replace('{TARGET}', this.event.target?.name || '')
+						.replace('{ACTION}', this.event.action?.name || ''),
+				};
+			}) || [];
+
+		const message = new Message({
+			textLines,
+			onComplete: () => {
+				resolve();
+			},
+		});
+
+		message.init(this.battle.element);
+	}
+  ```
+
+  Notice that before we actually instantiate a new `Message`, we are replacing those special strings with the `name` of the `caster`, `target`, and `action`.
+
+  Finally, we have two more `BattleEvent`s to look at. The `animation` and `stateChange` events. Luckily, these are pretty simple.
+
+  ```ts
+  async stateChange(resolve: VoidResolve) {
+		const { caster, target, damage } = this.event;
+
+		if (damage) {
+			// Modify the target to have less HP
+			target?.update({
+				hp: target.hp - damage,
+			});
+
+			// Start blinking the Pizza
+			target?.pizzaElement.classList.add('blinking');
+		}
+
+		// Wait a little bit
+		await wait(600);
+
+		// Stop blinking the Pizza
+		target?.pizzaElement.classList.remove('blinking');
+
+		resolve();
+	}
+  ```
+
+  `stateChange()` basically does five things.
+
+  1. Update the `hp` of the `target` (decrease it by the incoming damage)
+  2. Add a blinking CSS effect to the attacked Pizza
+  3. Wait a little bit (so that the player can see the blinking)
+  4. Remove the blinking CSS effect
+  5. Resolve the promise
+
+  Notice that we use the `update()` method of the `Combatant` class that we defined a while back, which will incorporate UI changes in real time.
+
+  Also, `wait()` is just a trivial utility function that uses a `setTimeout()` to wait a given amount of time before continuing code execution.
+
+  ```ts
+  export const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  ```
+
+  Finally, we have the `animation` event. Before we look at this, let's look at another added window object which holds battle animations we create.
+
+  ```ts
+  window.BattleAnimations = {
+    async spin(event: BattleEventType, onComplete: () => void) {
+      const element = event.caster?.pizzaElement;
+      const animationClass =
+        event.caster?.team === 'player' ? 'spin-right' : 'spin-left';
+
+      element?.classList.add(animationClass);
+
+      // Remove the animation when it's done
+      element?.addEventListener(
+        'animationend',
+        () => {
+          element.classList.remove(animationClass);
+        },
+        { once: true }
+      );
+
+      // Continue turn cycle right around when Pizzas collide
+      await wait(100);
+      onComplete();
+    },
+  };
+  ```
+
+  For now, we only have one animation called `spin`. Remember that each `Combatant` has a `pizzaElement` property that we can use here. We apply the appropriate direction for the spin animation based on whose attack it is, and remove it when the animation is done.
+
+  We also wait 100ms before continuing the turn cycle, so that the Pizzas can collide before the next turn starts.
+
+  That's pretty much everything! Now let's finish off with the rest of the `turn()` method in the `Battle` class.
+
+  ```ts
+  async turn() {
+		// Get the caster
+		const casterId = this.battle.activeCombatants[this.currentTeam];
+		const caster = this.battle.combatants[casterId];
+
+		// Get the enemy
+		const oppositeTeam = caster.team === 'player' ? 'enemy' : 'player';
+		const enemyId = this.battle.activeCombatants[oppositeTeam];
+		const enemy = this.battle.combatants[enemyId];
+
+		const submission = await this.onNewEvent({
+			type: 'submissionMenu',
+			caster,
+			enemy,
+		});
+
+		const resultingEvents = (submission?.action.success || []) as BattleEventType[];
+
+		for (const event of resultingEvents) {
+			const newEvent = {
+				...event,
+				action: submission?.action,
+				caster,
+				target: submission?.target,
+			};
+
+			if (submission) newEvent.submission = submission;
+
+			await this.onNewEvent(newEvent);
+		}
+
+		// Change the current team and go to the next turn
+		this.currentTeam = this.currentTeam === 'player' ? 'enemy' : 'player';
+		this.turn();
+	}
+  ```
+
+  So as we saw, if the `BattleEvent` is a `submissionMenu`, we'll get back a `submission` object that has the `action` and `target` that the player chose.
+
+  In the `action` object, we have the `success` array of `BattleEvent`s that we want to execute. So we loop through those and execute them one by one by using `await`.
+
+  Notice how we append references to the `action` and `target` to the `newEvent` object. This is so that we can use them in the `message()` method of the `BattleEvent` class if needed.
+
+  Finally, we change the `currentTeam` and call `turn()` again to start the next turn.
+
+  Notice that right now, we don't have any way to end the battle. We'll add that in the next section.
+</details>
+
+### Day 13

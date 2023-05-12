@@ -2,7 +2,7 @@ import { Combatant } from './Combatant';
 import { getSrc } from '../../utils/utils';
 import { TurnCycle } from './TurnCycle';
 import { BattleEvent } from './BattleEvent';
-import { BattleEventType } from '../../models/types';
+import { BattleEventType, Submission } from '../../models/types';
 import '../../styles/Battle.css';
 
 type BattleConfig = {
@@ -110,7 +110,7 @@ export class Battle {
 		this.turnCycle = new TurnCycle({
 			battle: this,
 			onNewEvent: (event: BattleEventType) => {
-				return new Promise(resolve => {
+				return new Promise<void | Submission>(resolve => {
 					const battleEvent = new BattleEvent(event, this);
 					battleEvent.init(resolve);
 				});

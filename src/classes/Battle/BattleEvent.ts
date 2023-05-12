@@ -1,5 +1,4 @@
 import { Message } from '../Message';
-import { Combatant } from './Combatant';
 import { Battle } from './Battle';
 import { SubmissionMenu } from './SubmissionMenu';
 import { BattleEventType, Submission } from '../../models/types';
@@ -19,8 +18,6 @@ export class BattleEvent {
 	}
 
 	message(resolve: VoidResolve) {
-		console.log(this.event);
-
 		const textLines =
 			this.event.textLines?.map(line => {
 				return {
@@ -65,9 +62,11 @@ export class BattleEvent {
 	}
 
 	submissionMenu(resolve: SubmissionResolve) {
+		if (!this.event.caster || !this.event.enemy) return resolve();
+
 		const menu = new SubmissionMenu({
-			caster: this.event.caster as Combatant,
-			enemy: this.event.enemy as Combatant,
+			caster: this.event.caster,
+			enemy: this.event.enemy,
 			onComplete: submission => {
 				// submission { what move to use, who to use it on }
 				resolve(submission);
