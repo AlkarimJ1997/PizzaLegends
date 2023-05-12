@@ -9,6 +9,7 @@ type CombatantConfig = {
 	type: PizzaType;
 	src: string;
 	icon: string;
+  actions: string[];
 	team: TeamType;
 	hp: number;
 	maxHp: number;
@@ -31,6 +32,7 @@ export class Combatant {
 	type: PizzaType;
 	src: string;
 	icon: string;
+  actions: string[];
 	team: TeamType;
 	hp: number;
 	maxHp: number;
@@ -56,6 +58,7 @@ export class Combatant {
 		this.type = config.type;
 		this.src = config.src;
 		this.icon = config.icon;
+    this.actions = config.actions;
 		this.team = config.team;
 		this.hp = config.hp;
 		this.maxHp = config.maxHp;

@@ -6,9 +6,12 @@ declare global {
 		PizzaTypes: {
 			[key: string]: string;
 		};
-        Pizzas: {
-            [key: string]: PizzaConfig;
-        };
+		Pizzas: {
+			[key: string]: PizzaConfig;
+		};
+		Actions: {
+			[key: string]: ActionConfig;
+		};
 	}
 
 	interface DocumentEventMap {
