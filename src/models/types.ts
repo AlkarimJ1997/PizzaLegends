@@ -96,6 +96,11 @@ export type PizzaConfig = {
 };
 
 // Battle types
+export type SubmissionEvent = {
+	action: ActionConfig;
+	target: Combatant;
+};
+
 export type BattleEventType = {
 	type: string;
 	textLines?: Text[];
@@ -103,7 +108,9 @@ export type BattleEventType = {
 	enemy?: Combatant;
 };
 
-export type SubmissionEvent = {
-	action: string[];
-	target: Combatant;
+export type ActionConfig = {
+	[key: string]: {
+		name: string;
+		success: BattleEventType[];
+	};
 };

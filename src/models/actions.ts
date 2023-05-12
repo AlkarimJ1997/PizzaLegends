@@ -6,7 +6,7 @@ window.Actions = {
 		success: [
 			{
 				type: 'message',
-				textLines: [{ speed: SPEEDS.Normal, string: '{CASTER} uses {ACTION}!' }],
+				textLines: [{ speed: SPEEDS.Fast, string: '{CASTER} uses {ACTION}!' }],
 			},
 			// { type: 'animation', animation: 'TODO' },
 			// { type: 'stateChange', damage: 10 },
