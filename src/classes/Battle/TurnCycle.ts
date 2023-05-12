@@ -1,14 +1,14 @@
 import { Battle } from './Battle';
-import { BattleEventType, SPEEDS, SubmissionEvent } from '../../models/types';
+import { BattleEventType, Submission, SPEEDS } from '../../models/types';
 
 type TurnCycleConfig = {
 	battle: Battle;
-	onNewEvent: (event: BattleEventType) => Promise<void | SubmissionEvent>;
+	onNewEvent: (event: BattleEventType) => Promise<void | Submission>;
 };
 
 export class TurnCycle {
 	battle: Battle;
-	onNewEvent: (event: BattleEventType) => Promise<void | SubmissionEvent>;
+	onNewEvent: (event: BattleEventType) => Promise<void | Submission>;
 	currentTeam: 'player' | 'enemy';
 
 	constructor({ battle, onNewEvent }: TurnCycleConfig) {
@@ -38,11 +38,12 @@ export class TurnCycle {
 		for (const event of resultingEvents) {
 			const newEvent = {
 				...event,
-				submission,
 				action: submission?.action,
 				caster,
 				target: submission?.target,
 			};
+
+			if (submission) newEvent.submission = submission;
 
 			await this.onNewEvent(newEvent);
 		}

@@ -5,7 +5,9 @@ import { SubmissionMenu } from './SubmissionMenu';
 import { BattleEventType, Submission } from '../../models/types';
 import { wait } from '../../utils/utils';
 
-type Resolve = (submission?: Submission) => void;
+type VoidResolve = () => void;
+type SubmissionResolve = (submission?: Submission) => void;
+type BattleEventMethod = (resolve: VoidResolve | SubmissionResolve) => void;
 
 export class BattleEvent {
 	event: BattleEventType;
@@ -16,15 +18,17 @@ export class BattleEvent {
 		this.battle = battle;
 	}
 
-	message(resolve: Resolve) {
+	message(resolve: VoidResolve) {
+		console.log(this.event);
+
 		const textLines =
 			this.event.textLines?.map(line => {
 				return {
 					...line,
 					string: line.string
-						.replace('{CASTER}', this.event.caster?.name)
-						.replace('{TARGET}', this.event.target?.name)
-						.replace('{ACTION}', this.event.action?.name),
+						.replace('{CASTER}', this.event.caster?.name || '')
+						.replace('{TARGET}', this.event.target?.name || '')
+						.replace('{ACTION}', this.event.action?.name || ''),
 				};
 			}) || [];
 
@@ -38,7 +42,7 @@ export class BattleEvent {
 		message.init(this.battle.element);
 	}
 
-	async stateChange(resolve: Resolve) {
+	async stateChange(resolve: VoidResolve) {
 		const { caster, target, damage } = this.event;
 
 		if (damage) {
@@ -60,7 +64,7 @@ export class BattleEvent {
 		resolve();
 	}
 
-	submissionMenu(resolve: Resolve) {
+	submissionMenu(resolve: SubmissionResolve) {
 		const menu = new SubmissionMenu({
 			caster: this.event.caster as Combatant,
 			enemy: this.event.enemy as Combatant,
@@ -73,7 +77,7 @@ export class BattleEvent {
 		menu.init(this.battle.element);
 	}
 
-	animation(resolve: Resolve) {
+	animation(resolve: VoidResolve) {
 		if (!this.event.animation) return resolve();
 
 		const fn = window.BattleAnimations[this.event.animation];
@@ -81,7 +85,14 @@ export class BattleEvent {
 		fn(this.event, resolve);
 	}
 
-	init(resolve: Resolve) {
-		this[this.event.type](resolve);
+	init(resolve: VoidResolve | SubmissionResolve) {
+		const eventHandlers: Record<string, BattleEventMethod> = {
+			message: this.message.bind(this),
+			stateChange: this.stateChange.bind(this),
+			submissionMenu: this.submissionMenu.bind(this),
+			animation: this.animation.bind(this),
+		};
+
+		eventHandlers[this.event.type](resolve);
 	}
 }

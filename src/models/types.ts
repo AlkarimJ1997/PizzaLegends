@@ -97,7 +97,7 @@ export type PizzaConfig = {
 
 // Battle types
 export type Submission = {
-	action: ActionConfig;
+	action: Action;
 	target: Combatant;
 };
 
@@ -106,15 +106,14 @@ export type BattleEventType = {
 	textLines?: Text[];
 	caster?: Combatant;
 	target?: Combatant;
-  enemy?: Combatant; // TODO: Remove this?
+	enemy?: Combatant; // TODO: Remove this?
 	submission?: Submission;
+	action?: Action;
 	damage?: number;
 	animation?: string;
 };
 
-export type ActionConfig = {
-	[key: string]: {
-		name: string;
-		success: BattleEventType[];
-	};
+export type Action = {
+	name: string;
+	success: BattleEventType[];
 };
