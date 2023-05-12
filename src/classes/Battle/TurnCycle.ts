@@ -33,7 +33,9 @@ export class TurnCycle {
 			enemy,
 		});
 
-		const resultingEvents = (submission?.action.success || []) as BattleEventType[];
+		const resultingEvents = caster.getReplacedEvents(
+			submission?.action.success || []
+		);
 
 		for (const event of resultingEvents) {
 			const newEvent = {

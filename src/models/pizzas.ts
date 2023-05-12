@@ -14,7 +14,7 @@ window.Pizzas = {
 		type: window.PizzaTypes.normal,
 		src: getSrc('../assets/images/characters/pizzas/s001.png'),
 		icon: getSrc('../assets/images/icons/spicy.png'),
-		actions: ['damage1'],
+		actions: ['clumsyStatus', 'saucyStatus', 'damage1'],
 	},
 	v001: {
 		name: 'Call Me Kale',

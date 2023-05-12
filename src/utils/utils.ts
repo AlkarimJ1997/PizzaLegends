@@ -60,3 +60,7 @@ export const oppositeDirection = (direction: string) => {
 };
 
 export const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+export const randomFromArray = <T>(array: T[]) => {
+	return array[Math.floor(Math.random() * array.length)];
+};

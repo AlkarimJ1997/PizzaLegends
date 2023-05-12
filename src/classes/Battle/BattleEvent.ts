@@ -15,6 +15,8 @@ export class BattleEvent {
 	constructor(event: BattleEventType, battle: Battle) {
 		this.event = event;
 		this.battle = battle;
+
+        console.log(this.event);
 	}
 
 	message(resolve: VoidResolve) {
@@ -40,7 +42,13 @@ export class BattleEvent {
 	}
 
 	async stateChange(resolve: VoidResolve) {
-		const { caster, target, damage, recover } = this.event;
+		const { caster, target, damage, recover, status, action } = this.event;
+		let who = this.event.onCaster ? caster : target;
+
+		if (action?.targetType === 'friendly') {
+            // Here, we could also add teammate logic
+			who = caster;
+		}
 
 		if (damage) {
 			target?.update({ hp: target.hp - damage });
@@ -48,12 +56,23 @@ export class BattleEvent {
 		}
 
 		if (recover) {
-			const who = this.event.onCaster ? caster : target;
-
 			if (who) {
 				const newHp = Math.min(who.hp + recover, who.maxHp);
 				who.update({ hp: newHp });
 			}
+		}
+
+		if (status) {
+			console.log(status);
+			who?.update({
+				status: { ...status },
+			});
+		}
+
+		if (status === null) {
+			who?.update({
+				status: null,
+			});
 		}
 
 		// Wait a little bit, then stop blinking the Pizza

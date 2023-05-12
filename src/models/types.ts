@@ -111,11 +111,17 @@ export type BattleEventType = {
 	action?: Action;
 	damage?: number;
 	animation?: string;
-  recover?: number;
-  onCaster?: boolean;
+    color?: string;
+	recover?: number;
+	onCaster?: boolean;
+    status?: {
+        type: string;
+        expiresIn: number;
+    } | null;
 };
 
 export type Action = {
 	name: string;
+    targetType?: string;
 	success: BattleEventType[];
 };

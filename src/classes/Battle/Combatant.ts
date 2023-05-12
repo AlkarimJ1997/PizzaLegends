@@ -1,6 +1,6 @@
 import { Battle } from './Battle';
-import { PizzaType, SPEEDS, TeamType } from '../../models/types';
-import { getElement, getSrc } from '../../utils/utils';
+import { BattleEventType, PizzaType, SPEEDS, TeamType } from '../../models/types';
+import { getElement, getSrc, randomFromArray } from '../../utils/utils';
 import '../../styles/Combatant.css';
 
 type CombatantConfig = {
@@ -19,7 +19,7 @@ type CombatantConfig = {
 	status?: {
 		type: string;
 		expiresIn: number;
-	};
+	} | null;
 };
 
 type CombatantProperty = {
@@ -42,7 +42,7 @@ export class Combatant {
 	status?: {
 		type: string;
 		expiresIn: number;
-	};
+	} | null;
 
 	battle: Battle;
 
@@ -165,6 +165,21 @@ export class Combatant {
 		statusElement.style.display = 'none';
 	}
 
+	getReplacedEvents(originalEvents: BattleEventType[]) {
+		const randomChance = [true, false, false];
+
+		if (this.status?.type === 'clumsy' && randomFromArray(randomChance)) {
+			return [
+				{
+					type: 'message',
+					textLines: [{ speed: SPEEDS.Fast, string: `${this.name} flops over!` }],
+				},
+			];
+		}
+
+		return originalEvents;
+	}
+
 	getPostEvents() {
 		if (this.status?.type === 'saucy') {
 			return [
@@ -183,15 +198,15 @@ export class Combatant {
 	}
 
 	decrementStatus() {
-		if (!this.status) return;
+		if (!this.status) return null;
 
 		if (this.status.expiresIn > 0) {
 			this.status.expiresIn -= 1;
 
-			if (this.status.expiresIn !== 0) return;
+			if (this.status.expiresIn !== 0) return null;
 
 			const { type } = this.status;
-			this.update({ status: undefined });
+			this.update({ status: null });
 
 			return {
 				type: 'message',

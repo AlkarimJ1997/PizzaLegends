@@ -12,4 +12,45 @@ window.Actions = {
 			{ type: 'stateChange', damage: 10 },
 		],
 	},
+	saucyStatus: {
+		name: 'Tomato Squeeze',
+		targetType: 'friendly',
+		success: [
+			{
+				type: 'message',
+				textLines: [{ speed: SPEEDS.Fast, string: '{CASTER} uses {ACTION}!' }],
+			},
+			{
+				type: 'stateChange',
+				status: {
+					type: 'saucy',
+					expiresIn: 3,
+				},
+			},
+		],
+	},
+	clumsyStatus: {
+		name: 'Olive Oil',
+		success: [
+			{
+				type: 'message',
+				textLines: [{ speed: SPEEDS.Fast, string: '{CASTER} uses {ACTION}!' }],
+			},
+			{ type: 'animation', animation: 'glob', color: 'var(--clr-olive-oil)' },
+			{
+				type: 'stateChange',
+				status: {
+					type: 'clumsy',
+					expiresIn: 3,
+				},
+			},
+			{ type: 'animation', animation: 'slip' },
+			{
+				type: 'message',
+				textLines: [
+					{ speed: SPEEDS.Fast, string: '{TARGET} is slipping all around!' },
+				],
+			},
+		],
+	},
 };

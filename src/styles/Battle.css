@@ -46,6 +46,26 @@
 	animation: spinRight 0.8s;
 }
 
+.slip {
+	animation: slip 2s ease-in-out forwards;
+}
+
+.glob-orb {
+	position: absolute;
+	width: 32px;
+	height: 32px;
+}
+
+.glob-orb-left {
+	inset: 56px auto auto 227px;
+	animation: globOrbLeft 1s forwards;
+}
+
+.glob-orb-right {
+	inset: 104px auto auto 70px;
+	animation: globOrbRight 1s forwards;
+}
+
 @keyframes blinking {
 	to {
 		visibility: hidden;
@@ -77,5 +97,71 @@
 
 	100% {
 		transform: translate3d(0, 0, 0) scale(2);
+	}
+}
+
+@keyframes globOrbLeft {
+	0% {
+		opacity: 1;
+		transform: translate3d(0, 0, 0) scale(0.5);
+	}
+
+	50% {
+		opacity: 1;
+		transform: translate3d(-10px, -50px, 0) scale(1);
+	}
+
+	80% {
+		opacity: 1;
+		transform: translate3d(-174px, 47px, 0) scale(1);
+	}
+
+	100% {
+		opacity: 0;
+		transform: translate3d(-174px, 47px, 0) scale(3);
+	}
+}
+
+@keyframes globOrbRight {
+	0% {
+		opacity: 1;
+		transform: translate3d(0, 0, 0) scale(0.5);
+	}
+
+	50% {
+		opacity: 1;
+		transform: translate3d(10px, -80px, 0) scale(1);
+	}
+
+	80% {
+		opacity: 1;
+		transform: translate3d(149px, -47px, 0) scale(1);
+	}
+
+	100% {
+		opacity: 0;
+		transform: translate3d(149px, -47px, 0) scale(3);
+	}
+}
+
+@keyframes slip {
+	0% {
+		transform: translate3d(0, 0, 0) rotate(0deg) scale(2);
+	}
+
+	25% {
+		transform: translate3d(30px, 0, 0) rotate(15deg) scale(2);
+	}
+
+	50% {
+		transform: translate3d(-20px, 0, 0) rotate(-10deg) scale(2);
+	}
+
+	75% {
+		transform: translate3d(30px, 0, 0) rotate(15deg) scale(2);
+	}
+
+	100% {
+		transform: translate3d(0, 0, 0) rotate(0deg) scale(2);
 	}
 }
