@@ -37,6 +37,7 @@ window.Actions = {
 				textLines: [{ speed: SPEEDS.Fast, string: '{CASTER} uses {ACTION}!' }],
 			},
 			{ type: 'animation', animation: 'glob', color: 'var(--clr-olive-oil)' },
+			{ type: 'animation', animation: 'slip' },
 			{
 				type: 'stateChange',
 				status: {
@@ -44,7 +45,6 @@ window.Actions = {
 					expiresIn: 3,
 				},
 			},
-			{ type: 'animation', animation: 'slip' },
 			{
 				type: 'message',
 				textLines: [

@@ -1,5 +1,5 @@
 import { BattleEventType } from './types';
-import { getElement, wait } from '../utils/utils';
+import { getElement, getSrc, wait } from '../utils/utils';
 
 window.BattleAnimations = {
 	async spin(event: BattleEventType, onComplete: () => void) {
@@ -33,9 +33,9 @@ window.BattleAnimations = {
 		);
 
 		element.innerHTML = `
-            <svg viewBox='0 0 32 32' width='32' height='32'>
-                <circle cx='16' cy='16' r='16' fill='${event.color}' />
-            </svg>
+            <img 
+                src="${getSrc('../assets/images/animations/glob.png')}" 
+                alt="Glob Orb" />
         `;
 
 		element.addEventListener('animationend', () => {

@@ -52,8 +52,11 @@
 
 .glob-orb {
 	position: absolute;
-	width: 32px;
-	height: 32px;
+}
+
+.glob-orb > img {
+    width: 50px;
+    aspect-ratio: 1 / 1;
 }
 
 .glob-orb-left {
