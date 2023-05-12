@@ -8,6 +8,7 @@
 	--clr-border: hsl(199, 54%, 17%);
 	--clr-green: hsl(145, 63%, 42%);
 	--clr-red: hsl(0, 100%, 61%);
+  --clr-orange: hsl(30, 100%, 60%);
 
 	/* Battle Colors */
 	--clr-level-bg: hsl(30, 100%, 90%);

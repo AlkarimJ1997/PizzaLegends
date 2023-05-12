@@ -40,22 +40,24 @@ export class BattleEvent {
 	}
 
 	async stateChange(resolve: VoidResolve) {
-		const { caster, target, damage } = this.event;
+		const { caster, target, damage, recover } = this.event;
 
 		if (damage) {
-			// Modify the target to have less HP
-			target?.update({
-				hp: target.hp - damage,
-			});
-
-			// Start blinking the Pizza
+			target?.update({ hp: target.hp - damage });
 			target?.pizzaElement.classList.add('blinking');
 		}
 
-		// Wait a little bit
-		await wait(600);
+		if (recover) {
+			const who = this.event.onCaster ? caster : target;
 
-		// Stop blinking the Pizza
+			if (who) {
+				const newHp = Math.min(who.hp + recover, who.maxHp);
+				who.update({ hp: newHp });
+			}
+		}
+
+		// Wait a little bit, then stop blinking the Pizza
+		await wait(600);
 		target?.pizzaElement.classList.remove('blinking');
 
 		resolve();

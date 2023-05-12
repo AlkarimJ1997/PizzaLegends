@@ -68,6 +68,15 @@
 	color: var(--clr-red);
 }
 
+.message span.orange {
+	color: var(--clr-orange);
+}
+
+.message span.dance {
+  display: inline-block;
+	animation: dance 0.75s linear;
+}
+
 @keyframes slideIn {
 	from {
 		opacity: 0;
@@ -89,5 +98,45 @@
 	to {
 		opacity: 1;
 		transform: translate(0%, 250%);
+	}
+}
+
+/* @keyframes dance {
+  0% {
+    transform: translateY(0px);
+  }
+
+  25% {
+    transform: translateY(-10px);
+  }
+
+  50% {
+    transform: translateY(0px);
+  }
+
+  75% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+} */
+
+@keyframes dance {
+	0% {
+		transform: translateX(0);
+	}
+	25% {
+		transform: translateX(0.5rem);
+	}
+	50% {
+		transform: translateX(0);
+	}
+	75% {
+		transform: translateX(-0.5rem);
+	}
+	100% {
+		transform: translateX(0);
 	}
 }

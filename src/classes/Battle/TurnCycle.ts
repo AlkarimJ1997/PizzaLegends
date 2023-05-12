@@ -48,6 +48,27 @@ export class TurnCycle {
 			await this.onNewEvent(newEvent);
 		}
 
+		// Check for post events (e.g. status effects)
+		const postEvents = caster.getPostEvents() as BattleEventType[];
+
+		for (const event of postEvents) {
+			const newEvent = {
+				...event,
+				action: submission?.action,
+				caster,
+				target: submission?.target,
+			};
+
+			if (submission) newEvent.submission = submission;
+
+			await this.onNewEvent(newEvent);
+		}
+
+		// Check for status expiration
+		const expiredEvent = caster.decrementStatus();
+
+		if (expiredEvent) await this.onNewEvent(expiredEvent);
+
 		// Change the current team and go to the next turn
 		this.currentTeam = this.currentTeam === 'player' ? 'enemy' : 'player';
 		this.turn();

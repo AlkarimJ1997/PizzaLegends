@@ -1,5 +1,5 @@
 import { Battle } from './Battle';
-import { PizzaType, TeamType } from '../../models/types';
+import { PizzaType, SPEEDS, TeamType } from '../../models/types';
 import { getElement, getSrc } from '../../utils/utils';
 import '../../styles/Combatant.css';
 
@@ -9,7 +9,7 @@ type CombatantConfig = {
 	type: PizzaType;
 	src: string;
 	icon: string;
-  actions: string[];
+	actions: string[];
 	team: TeamType;
 	hp: number;
 	maxHp: number;
@@ -32,7 +32,7 @@ export class Combatant {
 	type: PizzaType;
 	src: string;
 	icon: string;
-  actions: string[];
+	actions: string[];
 	team: TeamType;
 	hp: number;
 	maxHp: number;
@@ -58,7 +58,7 @@ export class Combatant {
 		this.type = config.type;
 		this.src = config.src;
 		this.icon = config.icon;
-    this.actions = config.actions;
+		this.actions = config.actions;
 		this.team = config.team;
 		this.hp = config.hp;
 		this.maxHp = config.maxHp;
@@ -151,6 +151,58 @@ export class Combatant {
 
 		// Update the Level
 		getElement('.combatant__level', this.hudElement).innerText = `${this.level}`;
+
+		// Update the Status
+		const statusElement = getElement('.combatant__status', this.hudElement);
+
+		if (this.status) {
+			statusElement.innerText = this.status.type;
+			statusElement.style.display = 'block';
+			return;
+		}
+
+		statusElement.innerText = '';
+		statusElement.style.display = 'none';
+	}
+
+	getPostEvents() {
+		if (this.status?.type === 'saucy') {
+			return [
+				{
+					type: 'message',
+					textLines: [
+						{ speed: SPEEDS.Fast, string: "Feelin'" },
+						{ speed: SPEEDS.Fast, string: 'saucy!', classes: ['orange', 'dance'] },
+					],
+				},
+				{ type: 'stateChange', recover: 5, onCaster: true },
+			];
+		}
+
+		return [];
+	}
+
+	decrementStatus() {
+		if (!this.status) return;
+
+		if (this.status.expiresIn > 0) {
+			this.status.expiresIn -= 1;
+
+			if (this.status.expiresIn !== 0) return;
+
+			const { type } = this.status;
+			this.update({ status: undefined });
+
+			return {
+				type: 'message',
+				textLines: [
+					{
+						speed: SPEEDS.Fast,
+						string: `${this.name} is no longer ${type}!`,
+					},
+				],
+			};
+		}
 	}
 
 	init(container: HTMLDivElement) {

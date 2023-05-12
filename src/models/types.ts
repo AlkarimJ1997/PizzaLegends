@@ -111,6 +111,8 @@ export type BattleEventType = {
 	action?: Action;
 	damage?: number;
 	animation?: string;
+  recover?: number;
+  onCaster?: boolean;
 };
 
 export type Action = {

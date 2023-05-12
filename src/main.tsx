@@ -3,7 +3,7 @@ import App from './App.tsx';
 import './models/maps.ts';
 import './models/pizzas.ts';
 import './models/actions.ts';
-import './models/battleAnimations.ts';
+import './models/animations.ts';
 import './styles/global.css';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<App />);

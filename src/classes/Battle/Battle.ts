@@ -41,8 +41,8 @@ export class Battle {
 					maxXp: 100,
 					level: 1,
 					status: {
-						type: 'clumsy',
-						expiresIn: 3,
+						type: 'saucy',
+						expiresIn: 1,
 					},
 				},
 				this
