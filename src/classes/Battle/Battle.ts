@@ -2,6 +2,7 @@ import { Combatant } from './Combatant';
 import { getSrc } from '../../utils/utils';
 import { TurnCycle } from './TurnCycle';
 import { BattleEvent } from './BattleEvent';
+import { BattleEventType } from '../../models/types';
 import '../../styles/Battle.css';
 
 type BattleConfig = {
@@ -23,6 +24,8 @@ export class Battle {
 
 	combatants: Combatants;
 	activeCombatants: ActiveCombatants;
+
+	turnCycle!: TurnCycle;
 
 	constructor({ onComplete }: BattleConfig) {
 		this.onComplete = onComplete;
@@ -106,7 +109,7 @@ export class Battle {
 
 		this.turnCycle = new TurnCycle({
 			battle: this,
-			onNewEvent: event => {
+			onNewEvent: (event: BattleEventType) => {
 				return new Promise(resolve => {
 					const battleEvent = new BattleEvent(event, this);
 					battleEvent.init(resolve);

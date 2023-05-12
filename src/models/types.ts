@@ -1,3 +1,4 @@
+import { Combatant } from '../classes/Battle/Combatant';
 import { GameObject } from '../classes/GameObject';
 import { OverworldMap } from '../classes/OverworldMap';
 
@@ -92,4 +93,17 @@ export type PizzaConfig = {
 	type: PizzaType;
 	src: string;
 	icon: string;
+};
+
+// Battle types
+export type BattleEventType = {
+	type: string;
+	textLines?: Text[];
+	caster?: Combatant;
+	enemy?: Combatant;
+};
+
+export type SubmissionEvent = {
+	action: string[];
+	target: Combatant;
 };

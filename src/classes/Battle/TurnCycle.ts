@@ -1,7 +1,17 @@
+import { Battle } from './Battle';
 import { SPEEDS } from '../../models/types';
 
+type TurnCycleConfig = {
+	battle: Battle;
+	onNewEvent: any;
+};
+
 export class TurnCycle {
-	constructor({ battle, onNewEvent }) {
+	battle: Battle;
+	onNewEvent: any;
+	currentTeam: 'player' | 'enemy';
+
+	constructor({ battle, onNewEvent }: TurnCycleConfig) {
 		this.battle = battle;
 		this.onNewEvent = onNewEvent;
 		this.currentTeam = 'player';
