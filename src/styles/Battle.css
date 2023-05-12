@@ -69,6 +69,24 @@
 	animation: globOrbRight 1s forwards;
 }
 
+.shield {
+    position: absolute;
+    animation: blinking 0.5s steps(2, start) infinite;
+}
+
+.shield > img {
+    width: 42px;
+    aspect-ratio: 1 / 1;
+}
+
+.shield-left {
+    inset: auto auto 52px 46px;
+}
+
+.shield-right {
+    inset: 50px 95px auto auto;
+}
+
 @keyframes blinking {
 	to {
 		visibility: hidden;

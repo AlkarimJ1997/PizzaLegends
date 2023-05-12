@@ -16,7 +16,7 @@ export class BattleEvent {
 		this.event = event;
 		this.battle = battle;
 
-        console.log(this.event);
+		console.log(this.event);
 	}
 
 	message(resolve: VoidResolve) {
@@ -42,17 +42,14 @@ export class BattleEvent {
 	}
 
 	async stateChange(resolve: VoidResolve) {
-		const { caster, target, damage, recover, status, action } = this.event;
-		let who = this.event.onCaster ? caster : target;
-
-		if (action?.targetType === 'friendly') {
-            // Here, we could also add teammate logic
-			who = caster;
-		}
+		const { caster, target, damage, recover, status } = this.event;
+		const who = this.event.onCaster ? caster : target;
 
 		if (damage) {
-			target?.update({ hp: target.hp - damage });
-			target?.pizzaElement.classList.add('blinking');
+			if (target && target.status?.type !== 'protected') {
+				target.update({ hp: target.hp - damage });
+				target.pizzaElement.classList.add('blinking');
+			}
 		}
 
 		if (recover) {
@@ -63,7 +60,6 @@ export class BattleEvent {
 		}
 
 		if (status) {
-			console.log(status);
 			who?.update({
 				status: { ...status },
 			});

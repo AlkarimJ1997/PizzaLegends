@@ -19,11 +19,22 @@ export const getElement = <T extends HTMLElement>(
 	return parent.querySelector(selector) as T;
 };
 
+export const getElements = <T extends HTMLElement>(
+	selector: string,
+	parent: Document | HTMLElement = document
+): T[] => {
+	return Array.from(parent.querySelectorAll(selector)) as T[];
+};
+
 export const withGrid = (n: number) => n * 16;
 
 export const asGridCoord = (x: number, y: number) => `${x * 16},${y * 16}`;
 
-export const nextPosition = (initialX: number, initialY: number, dir: string) => {
+export const nextPosition = (
+	initialX: number,
+	initialY: number,
+	dir: string
+) => {
 	const size = 16;
 
 	switch (dir) {
@@ -59,7 +70,8 @@ export const oppositeDirection = (direction: string) => {
 	}
 };
 
-export const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+export const wait = (ms: number) =>
+	new Promise(resolve => setTimeout(resolve, ms));
 
 export const randomFromArray = <T>(array: T[]) => {
 	return array[Math.floor(Math.random() * array.length)];

@@ -63,4 +63,30 @@ window.BattleAnimations = {
 
 		onComplete();
 	},
+	async shield(event: BattleEventType, onComplete: () => void) {
+		const { caster } = event;
+
+		const element = document.createElement('div');
+
+		element.classList.add('shield');
+		element.classList.add(
+			caster?.team === 'player' ? 'shield-left' : 'shield-right'
+		);
+
+		element.innerHTML = `
+            <img
+                src="${getSrc('../assets/images/animations/shield.png')}"
+                alt="Shield"
+            />
+        `;
+
+		setTimeout(() => {
+            element.remove();
+        }, 2000);
+
+		getElement('.battle').appendChild(element);
+
+		await wait(820);
+		onComplete();
+	},
 };

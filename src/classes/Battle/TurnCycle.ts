@@ -77,13 +77,13 @@ export class TurnCycle {
 	}
 
 	async init() {
-		await this.onNewEvent({
-			type: 'message',
-			textLines: [
-				{ speed: SPEEDS.Normal, string: 'The battle is' },
-				{ speed: SPEEDS.Fast, string: 'starting!', classes: ['green'] },
-			],
-		});
+		// await this.onNewEvent({
+		// 	type: 'message',
+		// 	textLines: [
+		// 		{ speed: SPEEDS.Normal, string: 'The battle is' },
+		// 		{ speed: SPEEDS.Fast, string: 'starting!', classes: ['green'] },
+		// 	],
+		// });
 
 		this.turn();
 	}

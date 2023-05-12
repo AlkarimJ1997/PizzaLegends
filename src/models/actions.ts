@@ -53,4 +53,22 @@ window.Actions = {
 			},
 		],
 	},
+	protect1: {
+		name: 'Pizza Shield',
+		targetType: 'friendly',
+		success: [
+			{
+				type: 'message',
+				textLines: [{ speed: SPEEDS.Fast, string: '{CASTER} uses {ACTION}!' }],
+			},
+			{ type: 'animation', animation: 'shield' },
+			{
+				type: 'stateChange',
+				status: {
+					type: 'protected',
+					expiresIn: 2,
+				},
+			},
+		],
+	},
 };

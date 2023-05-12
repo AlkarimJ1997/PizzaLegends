@@ -20,6 +20,7 @@ type CombatantConfig = {
 		type: string;
 		expiresIn: number;
 	} | null;
+	isPlayerControlled: boolean;
 };
 
 type CombatantProperty = {
@@ -43,6 +44,7 @@ export class Combatant {
 		type: string;
 		expiresIn: number;
 	} | null;
+	isPlayerControlled: boolean;
 
 	battle: Battle;
 
@@ -66,6 +68,7 @@ export class Combatant {
 		this.maxXp = config.maxXp;
 		this.level = config.level;
 		this.status = config.status;
+		this.isPlayerControlled = config.isPlayerControlled;
 
 		this.battle = battle;
 	}
@@ -173,6 +176,15 @@ export class Combatant {
 				{
 					type: 'message',
 					textLines: [{ speed: SPEEDS.Fast, string: `${this.name} flops over!` }],
+				},
+			];
+		}
+
+		if (this.status?.type === 'protected') {
+			return [
+				{
+					type: 'message',
+					textLines: [{ speed: SPEEDS.Fast, string: `${this.name} is protected!` }],
 				},
 			];
 		}
