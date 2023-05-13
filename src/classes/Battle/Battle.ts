@@ -1,8 +1,7 @@
 import { Combatant } from './Combatant';
-import { getSrc } from '../../utils/utils';
 import { TurnCycle } from './TurnCycle';
 import { BattleEvent } from './BattleEvent';
-import { BattleEventType, Submission } from '../../models/types';
+import { getSrc } from '../../utils/utils';
 import '../../styles/Battle.css';
 
 type BattleConfig = {

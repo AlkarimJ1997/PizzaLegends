@@ -1,8 +1,6 @@
-import { Text } from '../models/types';
-
 type RevealingTextConfig = {
 	element: HTMLParagraphElement;
-	textLines: Text[];
+	textLines: TextObj[];
 };
 
 type Characters = {
@@ -14,7 +12,7 @@ type Characters = {
 
 export class RevealingText {
 	element: HTMLParagraphElement;
-	textLines: Text[];
+	textLines: TextObj[];
 	characters!: Characters[];
 	timeout: number | null;
 	isDone: boolean;

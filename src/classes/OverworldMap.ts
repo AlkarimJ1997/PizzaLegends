@@ -1,14 +1,5 @@
-import { Overworld } from './Overworld';
-import { GameObject } from './GameObject';
-import { createImage, withGrid, nextPosition } from '../utils/utils';
-import { BehaviorLoopEvent } from '../models/types';
 import { OverworldEvent } from './OverworldEvent';
-import {
-	GameObjects,
-	Walls,
-	CutsceneSpaces,
-	OverworldMapConfig,
-} from '../models/types';
+import { createImage, withGrid, nextPosition } from '../utils/utils';
 
 export class OverworldMap {
 	overworld: Overworld | null;
@@ -58,7 +49,7 @@ export class OverworldMap {
 
 			// TODO: determine if object should actually be mounted
 			gameObject.id = key;
-			gameObject.mount(this);
+			gameObject.mount(this as OverworldMap);
 		});
 	}
 

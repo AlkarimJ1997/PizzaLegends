@@ -1,34 +1,13 @@
-import { Battle } from './Battle';
-import { BattleEventType, PizzaType, SPEEDS, TeamType } from '../../models/types';
+import { SPEEDS } from '../../data/enums';
 import { getElement, getSrc, randomFromArray } from '../../utils/utils';
 import '../../styles/Combatant.css';
-
-type CombatantConfig = {
-	id: string;
-	name: string;
-	type: PizzaType;
-	src: string;
-	icon: string;
-	actions: string[];
-	team: TeamType;
-	hp: number;
-	maxHp: number;
-	xp: number;
-	maxXp: number;
-	level: number;
-	status?: {
-		type: string;
-		expiresIn: number;
-	} | null;
-	isPlayerControlled: boolean;
-};
 
 type CombatantProperty = {
 	[P in keyof CombatantConfig]: CombatantConfig[P];
 };
 
 export class Combatant {
-	id!: string;
+	id?: string;
 	name: string;
 	type: PizzaType;
 	src: string;
@@ -44,7 +23,7 @@ export class Combatant {
 		type: string;
 		expiresIn: number;
 	} | null;
-	isPlayerControlled: boolean;
+	isPlayerControlled?: boolean;
 
 	battle: Battle;
 
@@ -85,7 +64,7 @@ export class Combatant {
 		return this.battle.activeCombatants[this.team] === this.id;
 	}
 
-	private setProperty<T extends keyof CombatantConfig>(
+	setProperty<T extends keyof CombatantConfig>(
 		property: T,
 		value: CombatantConfig[T]
 	) {
@@ -95,7 +74,7 @@ export class Combatant {
 	createElement() {
 		this.hudElement = document.createElement('div');
 		this.hudElement.classList.add('combatant');
-		this.hudElement.setAttribute('data-combatant', this.id);
+		this.hudElement.setAttribute('data-combatant', this.id || '');
 		this.hudElement.setAttribute('data-team', this.team);
 
 		this.hudElement.innerHTML = `
@@ -153,7 +132,10 @@ export class Combatant {
 		});
 
 		// Update the Level
-		getElement('.combatant__level', this.hudElement).innerText = `${this.level}`;
+		getElement(
+			'.combatant__level',
+			this.hudElement
+		).innerText = `${this.level}`;
 
 		// Update the Status
 		const statusElement = getElement('.combatant__status', this.hudElement);
@@ -175,7 +157,9 @@ export class Combatant {
 			return [
 				{
 					type: 'message',
-					textLines: [{ speed: SPEEDS.Fast, string: `${this.name} flops over!` }],
+					textLines: [
+						{ speed: SPEEDS.Fast, string: `${this.name} flops over!` },
+					],
 				},
 			];
 		}
@@ -184,7 +168,9 @@ export class Combatant {
 			return [
 				{
 					type: 'message',
-					textLines: [{ speed: SPEEDS.Fast, string: `${this.name} is protected!` }],
+					textLines: [
+						{ speed: SPEEDS.Fast, string: `${this.name} is protected!` },
+					],
 				},
 			];
 		}
@@ -199,7 +185,11 @@ export class Combatant {
 					type: 'message',
 					textLines: [
 						{ speed: SPEEDS.Fast, string: "Feelin'" },
-						{ speed: SPEEDS.Fast, string: 'saucy!', classes: ['orange', 'dance'] },
+						{
+							speed: SPEEDS.Fast,
+							string: 'saucy!',
+							classes: ['orange', 'dance'],
+						},
 					],
 				},
 				{ type: 'stateChange', recover: 5, onCaster: true },

@@ -1,8 +1,8 @@
 import { OverworldMap } from './OverworldMap';
 import { DirectionInput } from './DirectionInput';
 import { KeyPressListener } from './KeyPressListener';
+import { SPEEDS } from '../data/enums';
 import { getElement } from '../utils/utils';
-import { OverworldMapConfig, SPEEDS } from '../models/types';
 
 type OverworldConfig = {
 	element: HTMLElement;
@@ -115,7 +115,7 @@ export class Overworld {
 		this.startGameLoop();
 
 		this.map.startCutscene([
-      { type: 'battle' }
+			{ type: 'battle' },
 			// {
 			// 	type: 'message',
 			// 	textLines: [

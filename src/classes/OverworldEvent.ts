@@ -1,10 +1,7 @@
-import { OverworldMap } from './OverworldMap';
-import { Person } from './Person';
-import { BehaviorLoopEvent, Detail, Text } from '../models/types';
 import { Message } from './Message';
-import { oppositeDirection, getElement } from '../utils/utils';
 import { SceneTransition } from './SceneTransition';
 import { Battle } from './Battle/Battle';
+import { oppositeDirection, getElement } from '../utils/utils';
 
 type OverworldEventConfig = {
 	map: OverworldMap;
@@ -91,7 +88,7 @@ export class OverworldEvent {
 		}
 
 		const messageInstance = new Message({
-			textLines: this.event.textLines as Text[],
+			textLines: this.event.textLines as TextObj[],
 			onComplete: () => resolve(),
 		});
 
@@ -102,7 +99,9 @@ export class OverworldEvent {
 		const sceneTransition = new SceneTransition();
 
 		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
-			this.map.overworld?.startMap(window.OverworldMaps[this.event.map as string]);
+			this.map.overworld?.startMap(
+				window.OverworldMaps[this.event.map as string]
+			);
 			resolve();
 
 			sceneTransition.fadeOut();

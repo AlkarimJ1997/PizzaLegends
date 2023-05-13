@@ -1,7 +1,5 @@
 import { Message } from '../Message';
-import { Battle } from './Battle';
 import { SubmissionMenu } from './SubmissionMenu';
-import { BattleEventType, Submission } from '../../models/types';
 import { wait } from '../../utils/utils';
 
 type VoidResolve = () => void;

@@ -1,6 +1,4 @@
-import { Combatant } from './Combatant';
 import { KeyboardMenu } from '../KeyboardMenu';
-import { Submission, Action } from '../../models/types';
 import '../../styles/SubmissionMenu.css';
 
 type SubmissionMenuConfig = {

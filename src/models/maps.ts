@@ -1,6 +1,6 @@
 import { Person } from '../classes/Person';
+import { SPEEDS } from '../data/enums';
 import { withGrid, asGridCoord } from '../utils/utils';
-import { SPEEDS } from './types';
 
 window.OverworldMaps = {
 	DemoRoom: {

@@ -1,4 +1,3 @@
-import { BattleEventType } from './types';
 import { getElement, getSrc, wait } from '../utils/utils';
 
 window.BattleAnimations = {

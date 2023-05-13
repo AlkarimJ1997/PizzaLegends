@@ -1,14 +1,8 @@
 import { GameObject } from './GameObject';
-import { BehaviorLoopEvent, PersonConfig, State } from '../models/types';
 import { emitEvent } from '../utils/utils';
 
-type DirectionUpdate = {
-	[key: string]: ['x' | 'y', 1 | -1];
-};
-
 export class Person extends GameObject {
-	protected isStanding: boolean;
-
+	isStanding: boolean;
 	movingProgressRemaining: number;
 	isPlayerControlled: boolean;
 	directionUpdate: DirectionUpdate;

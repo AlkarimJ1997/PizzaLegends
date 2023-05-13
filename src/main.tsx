@@ -1,9 +1,11 @@
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
-import './models/maps.ts';
-import './models/pizzas.ts';
-import './models/actions.ts';
-import './models/animations.ts';
+import './models/actions';
+import './models/animations';
+import './models/maps';
+import './models/pizzas';
 import './styles/global.css';
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(<App />);
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+	<App />
+);

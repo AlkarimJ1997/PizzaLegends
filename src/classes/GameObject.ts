@@ -1,12 +1,5 @@
-import { OverworldMap } from './OverworldMap';
 import { OverworldEvent } from './OverworldEvent';
 import { Sprite } from './Sprite';
-import {
-	GameObjectConfig,
-	State,
-	BehaviorLoopEvent,
-	TalkEvent,
-} from '../models/types';
 
 export abstract class GameObject {
 	protected abstract isStanding: boolean;

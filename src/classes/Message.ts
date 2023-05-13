@@ -1,16 +1,15 @@
 import { KeyPressListener } from './KeyPressListener';
 import { RevealingText } from './RevealingText';
 import { getElement } from '../utils/utils';
-import { Text } from '../models/types';
 import '../styles/Message.css';
 
 type MessageConfig = {
-	textLines: Text[];
+	textLines: TextObj[];
 	onComplete: () => void;
 };
 
 export class Message {
-	textLines: Text[];
+	textLines: TextObj[];
 	onComplete: () => void;
 	element: HTMLDivElement | null;
 	actionListener?: KeyPressListener;
