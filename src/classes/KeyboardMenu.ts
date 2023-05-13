@@ -1,6 +1,6 @@
-import '../styles/KeyboardMenu.css';
-import { getElement, getElements } from '../utils/utils';
 import { KeyPressListener } from './KeyPressListener';
+import { getElement, getElements } from '../utils/utils';
+import '../styles/KeyboardMenu.css';
 
 type Page = {
 	label: string;
