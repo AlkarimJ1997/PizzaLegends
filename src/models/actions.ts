@@ -74,7 +74,7 @@ window.Actions = {
 				type: 'stateChange',
 				status: {
 					type: 'protected',
-					expiresIn: 2,
+					expiresIn: 1,
 				},
 			},
 		],

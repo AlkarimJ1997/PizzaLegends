@@ -14,7 +14,7 @@ window.Pizzas = {
 		type: PizzaType.Veggie,
 		src: getSrc('../assets/images/characters/pizzas/v001.png'),
 		icon: getSrc('../assets/images/icons/veggie.png'),
-		actions: ['protect1', 'damage1'],
+		actions: ['damage1'],
 	},
 	f001: {
 		name: 'Portobello Express',

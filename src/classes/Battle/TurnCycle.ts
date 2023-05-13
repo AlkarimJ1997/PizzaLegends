@@ -1,4 +1,4 @@
-import { SPEEDS } from "../../data/enums";
+import { SPEEDS } from '../../data/enums';
 
 type TurnCycleConfig = {
 	battle: Battle;
@@ -26,6 +26,18 @@ export class TurnCycle {
 		const enemyId = this.battle.activeCombatants[oppositeTeam];
 		const enemy = this.battle.combatants[enemyId];
 
+		// Check for pre events (e.g. protection expiring)
+		const preEvents = caster.getPreEvents();
+
+		for (const event of preEvents) {
+			const newEvent = {
+				...event,
+				caster,
+			};
+
+			await this.onNewEvent(newEvent);
+		}
+
 		const submission = await this.onNewEvent({
 			type: 'submissionMenu',
 			caster,
@@ -50,7 +62,7 @@ export class TurnCycle {
 		}
 
 		// Check for post events (e.g. status effects)
-		const postEvents = caster.getPostEvents() as BattleEventType[];
+		const postEvents = caster.getPostEvents();
 
 		for (const event of postEvents) {
 			const newEvent = {

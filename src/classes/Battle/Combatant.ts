@@ -150,6 +150,26 @@ export class Combatant {
 		statusElement.style.display = 'none';
 	}
 
+	getPreEvents() {
+		if (this.status?.type === 'protected' && this.status.expiresIn === 1) {
+			this.update({ status: null });
+
+			return [
+				{
+					type: 'message',
+					textLines: [
+						{
+							speed: SPEEDS.Fast,
+							string: `${this.name} is no longer protected!`,
+						},
+					],
+				},
+			];
+		}
+
+		return [];
+	}
+
 	getReplacedEvents(originalEvents: BattleEventType[]) {
 		const randomChance = [true, false, false];
 
@@ -159,17 +179,6 @@ export class Combatant {
 					type: 'message',
 					textLines: [
 						{ speed: SPEEDS.Fast, string: `${this.name} flops over!` },
-					],
-				},
-			];
-		}
-
-		if (this.status?.type === 'protected') {
-			return [
-				{
-					type: 'message',
-					textLines: [
-						{ speed: SPEEDS.Fast, string: `${this.name} is protected!` },
 					],
 				},
 			];
@@ -196,11 +205,26 @@ export class Combatant {
 			];
 		}
 
+		const oppositeTeam = this.team === 'player' ? 'enemy' : 'player';
+		const targetId = this.battle.activeCombatants[oppositeTeam];
+		const target = this.battle.combatants[targetId];
+
+		if (target.status?.type === 'protected') {
+			return [
+				{
+					type: 'message',
+					textLines: [
+						{ speed: SPEEDS.Fast, string: `${target.name} is protected!` },
+					],
+				},
+			];
+		}
+
 		return [];
 	}
 
 	decrementStatus() {
-		if (!this.status) return null;
+		if (!this.status || this.status.type === 'protected') return null;
 
 		if (this.status.expiresIn > 0) {
 			this.status.expiresIn -= 1;

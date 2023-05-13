@@ -13,8 +13,6 @@ export class BattleEvent {
 	constructor(event: BattleEventType, battle: Battle) {
 		this.event = event;
 		this.battle = battle;
-
-		console.log(this.event);
 	}
 
 	message(resolve: VoidResolve) {
