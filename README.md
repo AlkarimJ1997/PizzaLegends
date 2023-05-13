@@ -3520,3 +3520,156 @@ npm run dev
 </details>
 
 ### Day 13
+
+- [x] Adding Status Effects
+
+<details>
+  <summary>Adding Status Effects</summary></br>
+
+  Now that our turn system is working, we can add status effects to the game. We'll focus on `saucy` which restores HP every turn, and `clumsy` which makes the Pizza have a chance to miss their attack.
+
+  Let's start by showing our active status on the UI. Let's add the following lines to the `update()` method of the `Combatant` class.
+
+  ```ts
+  update(changes: Partial<CombatantConfig> = {}) {
+		// ... rest of code
+
+		// Update the Status
+		const statusElement = getElement('.combatant__status', this.hudElement);
+
+		if (this.status) {
+			statusElement.innerText = this.status.type;
+			statusElement.style.display = 'block';
+			return;
+		}
+
+		statusElement.innerText = '';
+		statusElement.style.display = 'none';
+	}
+  ```
+
+  Here, if there's an active status, we'll show it on the UI. Otherwise, we'll hide it.
+
+  Now, we need to add events that take place after normal `BattleEvent`s. We'll call these `postEvents`. Let's consume these in the `turn()` method of the `TurnCycle` class.
+
+  We'll do so right after `await`ing all the resulting events.
+
+  ```ts
+  const postEvents = caster.getPostEvents() as BattleEventType[];
+
+  for (const event of postEvents) {
+    const newEvent = {
+      ...event,
+      action: submission?.action,
+      caster,
+      target: submission?.target,
+    };
+
+    if (submission) newEvent.submission = submission;
+
+    await this.onNewEvent(newEvent);
+  }
+  ```
+
+  Notice the similarity to the `resultingEvents` loop. We'll also need to add a `getPostEvents()` method to the `Combatant` class.
+
+  ```ts
+  getPostEvents() {
+		if (this.status?.type === 'saucy') {
+			return [
+				{
+					type: 'message',
+					textLines: [
+						{ speed: SPEEDS.Fast, string: "Feelin'" },
+						{ speed: SPEEDS.Fast, string: 'saucy!', classes: ['orange', 'dance'] },
+					],
+				},
+				{ type: 'stateChange', recover: 5, onCaster: true },
+			];
+		}
+
+		return [];
+	}
+  ```
+
+  Now, if the `Combatant` has the `saucy` status, we'll return a `message` event that says "Feelin' saucy!" and a `stateChange` event that restores 5 HP to the `Combatant`.
+
+  But we actually have to handle these new parameters in the `stateChange()` method of the `BattleEvent` class.
+
+  ```ts
+  async stateChange(resolve: VoidResolve) {
+		const { caster, target, damage, recover, status } = this.event;
+		const who = this.event.onCaster ? caster : target;
+
+		if (damage) {
+			if (target && target.status?.type !== 'protected') {
+				target.update({ hp: target.hp - damage });
+				target.pizzaElement.classList.add('blinking');
+			}
+		}
+
+		if (recover) {
+			if (who) {
+				const newHp = Math.min(who.hp + recover, who.maxHp);
+				who.update({ hp: newHp });
+			}
+		}
+
+		// Wait a little bit, then stop blinking the Pizza
+		await wait(600);
+		target?.pizzaElement.classList.remove('blinking');
+
+		resolve();
+	}
+  ```
+
+  Now, if the `BattleEvent` has a `recover` property, we'll restore that much HP to the `Combatant`. But if the HP would go over the `maxHp`, we'll just set it to the `maxHp`.
+
+  Now, we have to actually handle decrementing the status effect every turn. Remember it has an `expiresIn` property that we have to decrement every turn.
+
+  Let's create a new `decrementStatus()` method in the `Combatant` class.
+
+  ```ts
+  decrementStatus() {
+		if (!this.status) return null;
+
+		if (this.status.expiresIn > 0) {
+			this.status.expiresIn -= 1;
+
+			if (this.status.expiresIn !== 0) return null;
+
+			const { type } = this.status;
+			this.update({ status: null });
+
+			return {
+				type: 'message',
+				textLines: [
+					{
+						speed: SPEEDS.Fast,
+						string: `${this.name} is no longer ${type}!`,
+					},
+				],
+			};
+		}
+	}
+  ```
+
+  Pretty simple here. We decrement the status effect if we have one, and once it reaches 0, we remove it from the `Combatant` and return a `message` event that says that the status effect has ended.
+
+  Let's call this in our turn cycle now.
+
+  ```ts
+  const expiredEvent = caster.decrementStatus();
+
+  if (expiredEvent) await this.onNewEvent(expiredEvent);
+
+  // Change the current team and go to the next turn
+  this.currentTeam = this.currentTeam === 'player' ? 'enemy' : 'player';
+  this.turn();
+  ```
+
+  But how do we actually get these status effects applied in the first place? Let's add a new action that will do so.
+
+  
+
+</details>
