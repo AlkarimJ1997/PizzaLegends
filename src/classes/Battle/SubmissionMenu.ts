@@ -29,6 +29,9 @@ export class SubmissionMenu {
 			handler: () => {
 				this.keyboardMenu.setOptions(this.getPages().root);
 			},
+            right: () => {
+                return '🔙';
+            }
 		};
 
 		return {
@@ -39,15 +42,18 @@ export class SubmissionMenu {
 					handler: () => {
 						this.keyboardMenu.setOptions(this.getPages().attacks);
 					},
-					// right: () => {
-					// 	return 'Something';
-					// },
+					right: () => {
+						return '💥';
+					},
 				},
 				{
 					label: 'Items',
 					description: 'Use an item',
 					handler: () => {
 						this.keyboardMenu.setOptions(this.getPages().items);
+					},
+					right: () => {
+						return '🎒';
 					},
 				},
 				{
@@ -56,6 +62,9 @@ export class SubmissionMenu {
 					handler: () => {
 						// Do something when chosen
 					},
+                    right: () => {
+                        return '🔄';
+                    }
 				},
 			],
 			attacks: [
@@ -68,6 +77,9 @@ export class SubmissionMenu {
 						handler: () => {
 							this.menuSubmit(action);
 						},
+                        right: () => {
+                            return action.icon;
+                        }
 					};
 				}),
 				backOption,

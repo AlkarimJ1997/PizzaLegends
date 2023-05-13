@@ -70,21 +70,7 @@
 }
 
 .shield {
-    position: absolute;
-    animation: blinking 0.5s steps(2, start) infinite;
-}
-
-.shield > img {
-    width: 42px;
-    aspect-ratio: 1 / 1;
-}
-
-.shield-left {
-    inset: auto auto 52px 46px;
-}
-
-.shield-right {
-    inset: 50px 95px auto auto;
+    animation: shield 1.5s steps(3);
 }
 
 @keyframes blinking {
@@ -185,4 +171,18 @@
 	100% {
 		transform: translate3d(0, 0, 0) rotate(0deg) scale(2);
 	}
+}
+
+@keyframes shield {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(2);
+    }
+
+    100% {
+        transform: scale(3);
+    }
 }

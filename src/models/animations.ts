@@ -64,29 +64,21 @@ window.BattleAnimations = {
 		onComplete();
 	},
 	async shield(event: BattleEventType, onComplete: () => void) {
-		const { caster } = event;
+		const element = event.caster?.pizzaElement;
 
-		const element = document.createElement('div');
+		element?.classList.add('shield');
 
-		element.classList.add('shield');
-		element.classList.add(
-			caster?.team === 'player' ? 'shield-left' : 'shield-right'
+		// Remove the animation when it's done
+		element?.addEventListener(
+			'animationend',
+			() => {
+				element.classList.remove('shield');
+			},
+			{ once: true }
 		);
 
-		element.innerHTML = `
-            <img
-                src="${getSrc('../assets/images/animations/shield.png')}"
-                alt="Shield"
-            />
-        `;
-
-		setTimeout(() => {
-            element.remove();
-        }, 2000);
-
-		getElement('.battle').appendChild(element);
-
-		await wait(820);
+		// Continue turn cycle right around when Pizzas collide
+		await wait(1300);
 		onComplete();
 	},
 };

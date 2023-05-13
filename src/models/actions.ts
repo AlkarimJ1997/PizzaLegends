@@ -3,6 +3,8 @@ import { SPEEDS } from './types';
 window.Actions = {
 	damage1: {
 		name: 'Fling',
+        description: 'Fling yourself at your opponent',
+        icon: '🍕',
 		success: [
 			{
 				type: 'message',
@@ -14,6 +16,8 @@ window.Actions = {
 	},
 	saucyStatus: {
 		name: 'Tomato Squeeze',
+        description: 'Squeeze tomato sauce for an HP boost',
+        icon: '🍅',
 		targetType: 'friendly',
 		success: [
 			{
@@ -31,6 +35,8 @@ window.Actions = {
 	},
 	clumsyStatus: {
 		name: 'Olive Oil',
+        description: 'Spray olive oil to make your opponent slip',
+        icon: '🫒',
 		success: [
 			{
 				type: 'message',
@@ -55,6 +61,8 @@ window.Actions = {
 	},
 	protect1: {
 		name: 'Pizza Shield',
+        description: 'Protect yourself from damage',
+        icon: '🛡️',
 		targetType: 'friendly',
 		success: [
 			{
