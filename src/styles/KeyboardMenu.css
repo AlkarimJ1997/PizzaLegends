@@ -32,7 +32,9 @@
 .keyboard-menu .option .right {
 	position: absolute;
 	inset: 0 2px 0 auto;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
 }
 
 /* Description Box */
