@@ -4287,4 +4287,332 @@ npm run dev
 
 <details>
   <summary>Pizza Lineups</summary></br>
+
+  Now, we are going to finally implement the `Swap` action. This will allow us to switch out to other Pizzas in our lineup.
+
+  First, let's add the action in the `turn()` method of `TurnCycle`.
+
+  ```ts
+  async turn() {
+    // ... other code
+
+    const submission = await this.onNewEvent({
+      type: 'submissionMenu',
+      caster,
+      enemy,
+    });
+
+		// Stop here if we are replacing this Pizza
+		if (submission && 'replacement' in submission) {
+			await this.onNewEvent({
+				type: 'replace',
+				replacement: submission.replacement,
+			});
+
+			await this.onNewEvent({
+				type: 'message',
+				textLines: [
+					{
+						speed: SPEEDS.Normal,
+						string: `Go get 'em, ${submission?.replacement?.name}!`,
+					},
+				],
+			});
+
+			// Change the current team and go to the next turn
+			this.nextTurn();
+			return;
+		}
+
+    // ... other code
+  }
+  ```
+
+  Here, after we receive the submission, we check if the `replacement` property is in the submission. If it is, we send a `replace` event and pass the chosen replacement which will be a `Combatant`, and then a `message` event. 
+  
+  Then, we change the current team and go to the next turn.
+
+  But to actually be able to send this `replacement` property, we need to add it to the `SubmissionMenu` class.
+
+  ```ts
+  constructor({ caster, enemy, replacements, onComplete, items }) {
+    this.replacements = replacements;
+    // ... other code
+  }
+  ```
+
+  After adding it to the constructor, we need to pass it into the `submissionMenu()` method in `BattleEvent`.
+
+  ```ts
+  submissionMenu(resolve: SubmissionResolve) {
+		const { caster, enemy } = this.event;
+		const { items, combatants } = this.battle;
+		const possibleCombatants = Object.values(combatants) as Combatant[];
+
+		if (!caster || !enemy) return resolve();
+
+		const menu = new SubmissionMenu({
+			caster,
+			enemy,
+			items,
+			replacements: possibleCombatants.filter(c => {
+				const sameTeam = c.team === caster.team;
+				const notCaster = c.id !== caster.id;
+				const alive = c.hp > 0;
+
+				return sameTeam && notCaster && alive;
+			}),
+			onComplete: submission => {
+				resolve(submission as Submission);
+			},
+		});
+
+		menu.init(this.battle.element);
+	}
+  ```
+
+  Here, we filter the `combatants` from the `Battle` class to only include the ones that are on the same team as the `caster`, are not the `caster`, and are alive.
+
+  Now, in our `getPages()` method in `SubmissionMenu`, we need to dynamically add the `replacements`.
+
+  ```ts
+  replacements: [
+    ...this.replacements.map(replacement => {
+      return {
+        label: replacement.name,
+        description: replacement.description,
+        handler: () => {
+          this.menuSubmitReplacement(replacement);
+        },
+        right: () => {
+          const iconImg = document.createElement('img');
+
+          iconImg.src = replacement.icon;
+          iconImg.alt = replacement.type;
+
+          return iconImg.outerHTML;
+        },
+      };
+    }),
+    backOption,
+  ],
+  ```
+
+  Nothing we haven't seen before here, except for the `menuSubmitReplacement()` method. Let's look at that now.
+
+  ```ts
+  menuSubmitReplacement(replacement: Combatant) {
+		this.keyboardMenu?.end();
+		this.onComplete({ replacement });
+	}
+  ```
+
+  Very similar to the `menuSubmit()` method, except we are passing the `replacement` property only which will be a `Combatant`.
+
+  Now, we need to add the `replace` event to the `BattleEvent` class.
+
+  ```ts
+  async replace(resolve: VoidResolve) {
+		const { replacement } = this.event;
+		const prevCombatantId = this.battle.activeCombatants[replacement?.team];
+		const prevCombatant = this.battle.combatants[prevCombatantId];
+
+		// Clear out the old combatant and update the DOM
+		this.battle.activeCombatants[replacement?.team] = null;
+		prevCombatant?.update();
+
+		// Wait a little bit so the player can see it
+		await wait(400);
+
+		// Add the new combatant and update the DOM
+		this.battle.activeCombatants[replacement?.team] = replacement?.id;
+		replacement?.update();
+
+		// Wait a little bit so the player can see it, then resolve
+		await wait(400);
+		resolve();
+	}
+  ```
+
+  All we do here is change the `activeCombatants` property of the `Battle` class to the new `replacement` and then update the DOM. Then, we wait a little bit and resolve.
+
+  Okay, now, we want to actually handle the situation in which a Pizza faints and we need to replace it. Let's start in the `turn()` method of `TurnCycle`.
+
+  We need to do/check three things here.
+
+  1. Did the target faint?
+  2. Do we have a winning team?
+  3. If not, send out the next Pizza
+
+  Also, **_make sure to do this right after `resultingEvents` but before `postEvents`_**.
+
+  As this will be when the attack has just finished landing.
+
+  ```ts
+  const targetDead = submission && submission.target.hp <= 0;
+
+  if (targetDead) {
+    await this.onNewEvent({
+      type: 'message',
+      textLines: [
+        { speed: SPEEDS.Normal, string: `${submission.target.name} has` },
+        { speed: SPEEDS.Fast, string: 'fainted!', classes: ['red'] },
+      ],
+    });
+  }
+  ```
+
+  Pretty simple so far. We check if the `target` has fainted and if it has, we send a `message` event.
+
+  Now, we need to check if the team has won. Let's create a method in `TurnCycle` to do this.
+
+  ```ts
+  getWinningTeam() {
+		const aliveTeams: AliveTeams = {};
+		const combatants = Object.values(this.battle.combatants) as Combatant[];
+
+		combatants.forEach(c => {
+			if (c.hp > 0) aliveTeams[c.team] = true;
+		});
+
+		if (!aliveTeams.player) return 'enemy';
+		if (!aliveTeams.enemy) return 'player';
+
+		return null;
+	}
+  ```
+
+  Here, we add the `team` property of each `Combatant` to the `aliveTeams` object if it is alive. Then, we check if the `player` or `enemy` team is not alive. If it isn't, we return the opposite team. If both are alive, we return `null`.
+
+  Now, let's use this method in the `turn()` method.
+
+  ```ts
+  // Do we have a winning team?
+  const winner = this.getWinningTeam();
+
+  if (winner) {
+    await this.onNewEvent({
+      type: 'message',
+      textLines: [
+        { speed: SPEEDS.Normal, string: 'The battle is' },
+        { speed: SPEEDS.Fast, string: 'over!', classes: ['green'] },
+      ],
+    });
+
+    return;
+  }
+  ```
+
+  Simple here as well. If we have a winner, we send a `message` event and return meaning end the battle (for now).
+
+  Now, this next code will only execute if we don't have a winner, meaning we have a replacement to send out.
+
+  ```ts
+  // If not, bring in a replacement
+  if (targetDead) {
+    const replacement = (await this.onNewEvent({
+      type: 'replacementMenu',
+      team: submission.target.team,
+    })) as unknown as Combatant;
+
+    await this.onNewEvent({
+      type: 'replace',
+      replacement,
+    });
+
+    await this.onNewEvent({
+      type: 'message',
+      textLines: [
+        {
+          speed: SPEEDS.Normal,
+          string: `Go get 'em, ${replacement.name}!`,
+        },
+      ],
+    });
+  }
+  ```
+
+  Here, we create a new `replacementMenu` event and wait for the player to select a `replacement`. Then, we send a `replace` event with the `replacement` and then send a `message` event.
+
+  Now, let's add the `replacementMenu` event to the `BattleEvent` class.
+
+  ```ts
+  replacementMenu(resolve: ReplacementResolve) {
+		const replacements = Object.values(this.battle.combatants) as Combatant[];
+
+		const menu = new ReplacementMenu({
+			replacements: replacements.filter(c => {
+				return c.team === this.event.team && c.hp > 0;
+			}),
+			onComplete: replacement => {
+				resolve(replacement as Combatant);
+			},
+		});
+
+		menu.init(this.battle.element);
+	}
+  ```
+
+  Very similar to the `submissionMenu()` method. We create a new `ReplacementMenu` and pass it the `replacements` that are on the same `team` as the `target` and are alive. Then, we pass it an `onComplete` callback that will resolve the `replacement` that the player selects.
+
+  Let's create the `ReplacementMenu` class now.
+
+  ```ts
+  export class ReplacementMenu {
+    replacements: Combatant[];
+    onComplete: (replacement: Combatant) => void;
+
+    keyboardMenu: KeyboardMenu | null = null;
+
+    constructor({ replacements, onComplete }: ReplacementMenuConfig) {
+      this.replacements = replacements;
+      this.onComplete = onComplete;
+    }
+
+    decide() {
+      this.menuSubmit(this.replacements[0]);
+    }
+
+    menuSubmit(replacement: Combatant) {
+      this.keyboardMenu?.end();
+      this.onComplete(replacement);
+    }
+
+    showMenu(container: HTMLDivElement) {
+      this.keyboardMenu = new KeyboardMenu();
+      this.keyboardMenu.init(container);
+      this.keyboardMenu.setOptions(
+        this.replacements.map(r => {
+          return {
+            label: r.name,
+            description: r.description,
+            handler: () => {
+              this.menuSubmit(r);
+            },
+          };
+        })
+      );
+    }
+
+    init(container: HTMLDivElement) {
+          if (this.replacements[0].isPlayerControlled) {
+              this.showMenu(container);
+              return;
+          }
+
+          this.decide();
+    }
+  }
+  ```
+
+  Very similar to the `SubmissionMenu` class. We have a `replacements` property that is an array of `Combatants` and an `onComplete` callback that will resolve the `replacement` that the player selects.
+
+  We reuse our `KeyboardMenu` class here. We create a new `KeyboardMenu` and set the options of the `KeyboardMenu` to the `replacements` that we have.
+
+  Then, we have the `init()` method. If the first `replacement` is player controlled, we show the menu. Otherwise, we call the `decide()` method.
 </details>
+
+### Day 17
+
+- [x] Team UI
+
