@@ -6,6 +6,7 @@ import { Team } from './Team';
 import '../../styles/Battle.css';
 
 type BattleConfig = {
+	enemy: EnemyConfig;
 	onComplete: () => void;
 };
 
@@ -14,93 +15,64 @@ type Combatants = {
 };
 
 type ActiveCombatants = {
-	player: string;
-	enemy: string;
+	player: string | null;
+	enemy: string | null;
 };
 
 export class Battle {
 	element!: HTMLDivElement;
+	enemy: EnemyConfig;
 	onComplete: () => void;
 
-	combatants: Combatants;
+	combatants: Combatants = {};
 	activeCombatants: ActiveCombatants;
-	items: Item[];
+	items: Item[] = [];
+	usedInstanceIds: { [key: string]: boolean };
 
 	playerTeam!: Team;
 	enemyTeam!: Team;
 	turnCycle!: TurnCycle;
 
-	constructor({ onComplete }: BattleConfig) {
+	constructor({ enemy, onComplete }: BattleConfig) {
+		this.enemy = enemy;
 		this.onComplete = onComplete;
 
-		this.combatants = {
-			player1: new Combatant(
-				{
-					...window.Pizzas.s001,
-					team: 'player',
-					hp: 30,
-					maxHp: 50,
-					xp: 75,
-					maxXp: 100,
-					level: 1,
-					status: {
-						type: 'saucy',
-						expiresIn: 1,
-					},
-					isPlayerControlled: true,
-				},
-				this
-			),
-			player2: new Combatant(
-				{
-					...window.Pizzas.s002,
-					team: 'player',
-					hp: 30,
-					maxHp: 50,
-					xp: 75,
-					maxXp: 100,
-					level: 1,
-					isPlayerControlled: true,
-				},
-				this
-			),
-			enemy1: new Combatant(
-				{
-					...window.Pizzas.v001,
-					team: 'enemy',
-					hp: 1,
-					maxHp: 50,
-					xp: 20,
-					maxXp: 100,
-					level: 1,
-				},
-				this
-			),
-			enemy2: new Combatant(
-				{
-					...window.Pizzas.f001,
-					team: 'enemy',
-					hp: 25,
-					maxHp: 50,
-					xp: 30,
-					maxXp: 100,
-					level: 1,
-				},
-				this
-			),
-		};
-
 		this.activeCombatants = {
-			player: 'player1',
-			enemy: 'enemy1',
+			player: null,
+			enemy: null,
 		};
 
-		this.items = [
-			{ actionId: 'item_recoverStatus', instanceId: 'p1', team: 'player' },
-			{ actionId: 'item_recoverStatus', instanceId: 'p2', team: 'player' },
-			{ actionId: 'item_recoverStatus', instanceId: 'p3', team: 'enemy' },
-			{ actionId: 'item_recoverHp', instanceId: 'p4', team: 'player' },
-		];
+		window.playerState.lineup.forEach(id => {
+			this.addCombatant(id, 'player', window.playerState.pizzas[id]);
+		});
+
+		Object.keys(this.enemy.pizzas).forEach(key => {
+			this.addCombatant(`e_${key}`, 'enemy', this.enemy.pizzas[key]);
+		});
+
+		window.playerState.items.forEach((item: Item) => {
+			this.items.push({
+				...item,
+				team: 'player',
+			});
+		});
+
+		this.usedInstanceIds = {};
+	}
+
+	addCombatant(id: string, team: TeamType, config: EnemyConfig) {
+		this.combatants[id] = new Combatant(
+			{
+				...window.Pizzas[config.pizzaId],
+				...config,
+				team,
+				isPlayerControlled: team === 'player',
+			},
+			this
+		);
+
+		// Populate first active combatant
+		this.activeCombatants[team] = this.activeCombatants[team] || id;
 	}
 
 	createElement() {
@@ -108,14 +80,14 @@ export class Battle {
 		this.element.classList.add('battle');
 
 		const heroSrc = getSrc('../assets/images/characters/people/hero.png');
-		const enemySrc = getSrc('../assets/images/characters/people/npc3.png');
+		const enemySrc = getSrc(this.enemy.src);
 
 		this.element.innerHTML = `
       <div class='battle__hero'>
         <img src='${heroSrc}' alt='Hero' />
       </div>
       <div class='battle__enemy'>
-        <img src='${enemySrc}' alt='Enemy' />
+        <img src='${enemySrc}' alt='${this.enemy.name}' />
       </div>
     `;
 	}
@@ -153,6 +125,32 @@ export class Battle {
 					const battleEvent = new BattleEvent(event, this);
 					battleEvent.init(resolve);
 				});
+			},
+			onWinner: winner => {
+				if (winner === 'player') {
+					const playerState = window.playerState;
+
+					// Update player state
+					Object.keys(playerState.pizzas).forEach(id => {
+						const playerPizza = playerState.pizzas[id];
+						const combatant = this.combatants[id];
+
+						if (combatant) {
+							playerPizza.hp = combatant.hp;
+							playerPizza.xp = combatant.xp;
+							playerPizza.maxXp = combatant.maxXp;
+							playerPizza.level = combatant.level;
+						}
+					});
+
+					// Get rid of items player used
+					playerState.items = playerState.items.filter((item: Item) => {
+						return !this.usedInstanceIds[item.instanceId];
+					});
+				}
+
+				this.element.remove();
+				this.onComplete();
 			},
 		});
 

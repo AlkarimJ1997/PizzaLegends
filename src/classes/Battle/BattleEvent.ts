@@ -67,8 +67,8 @@ export class BattleEvent {
 		// Wait a little bit, update teams, then stop blinking the Pizza
 		await wait(600);
 
-        this.battle.playerTeam.update();
-        this.battle.enemyTeam.update();
+		this.battle.playerTeam.update();
+		this.battle.enemyTeam.update();
 
 		target?.pizzaElement.classList.remove('blinking');
 
@@ -135,10 +135,39 @@ export class BattleEvent {
 		// Wait a little bit so the player can see it, then resolve
 		await wait(400);
 
-        this.battle.playerTeam.update();
-        this.battle.enemyTeam.update();
+		this.battle.playerTeam.update();
+		this.battle.enemyTeam.update();
 
 		resolve();
+	}
+
+	giveXp(resolve: VoidResolve) {
+		let amount = this.event.xp;
+		const { combatant } = this.event;
+
+		const step = () => {
+			if (!amount || !combatant) return resolve();
+
+			if (amount > 0) {
+				amount -= 1;
+				combatant.xp += 1;
+
+				// Check if we leveled up
+				if (combatant.xp === combatant.maxXp) {
+					combatant.xp = 0;
+					combatant.maxXp = 100;
+					combatant.level += 1;
+				}
+
+				combatant.update();
+				requestAnimationFrame(step);
+				return;
+			}
+
+			resolve();
+		};
+
+		requestAnimationFrame(step);
 	}
 
 	animation(resolve: VoidResolve) {
@@ -156,6 +185,7 @@ export class BattleEvent {
 			submissionMenu: this.submissionMenu,
 			replacementMenu: this.replacementMenu,
 			replace: this.replace,
+			giveXp: this.giveXp,
 			animation: this.animation,
 		};
 

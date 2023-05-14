@@ -15,7 +15,7 @@ export class Combatant {
 	icon: string;
 	actions: string[];
 	team: TeamType;
-	hp: number;
+	hp?: number;
 	maxHp: number;
 	xp: number;
 	maxXp: number;
@@ -37,13 +37,13 @@ export class Combatant {
 		// config is HP, maxHP, XP, name, actions, etc.
 		this.id = config.id;
 		this.name = config.name;
-        this.description = config.description;
+		this.description = config.description;
 		this.type = config.type;
 		this.src = config.src;
 		this.icon = config.icon;
 		this.actions = config.actions;
 		this.team = config.team;
-		this.hp = config.hp;
+		this.hp = config.hp || config.maxHp;
 		this.maxHp = config.maxHp;
 		this.xp = config.xp;
 		this.maxXp = config.maxXp;
@@ -64,6 +64,10 @@ export class Combatant {
 
 	get isActive() {
 		return this.battle.activeCombatants[this.team] === this.id;
+	}
+
+	get givesXp() {
+		return this.level * 20;
 	}
 
 	setProperty<T extends keyof CombatantConfig>(
@@ -247,7 +251,7 @@ export class Combatant {
 			};
 		}
 
-        return null;
+		return null;
 	}
 
 	init(container: HTMLDivElement) {

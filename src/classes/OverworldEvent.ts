@@ -113,6 +113,7 @@ export class OverworldEvent {
 
 		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
 			const battle = new Battle({
+                enemy: window.Enemies[this.event.enemyId as string],
 				onComplete: () => {
 					resolve();
 				},

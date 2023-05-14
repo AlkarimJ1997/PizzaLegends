@@ -4,6 +4,7 @@ import './models/actions';
 import './models/animations';
 import './models/maps';
 import './models/pizzas';
+import './models/enemies.ts';
 import './styles/global.css';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

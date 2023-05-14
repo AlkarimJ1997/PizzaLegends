@@ -4762,3 +4762,99 @@ npm run dev
 
 ### Day 18
 
+- [x] Giving XP to Pizzas
+- [x] Dynamic Enemies and Player State
+
+
+<details>
+  <summary>Giving XP to Pizzas</summary></br>
+
+  We are going to use a new `BattleEvent` called `giveXp` to give XP to the pizzas.
+
+  Let's first call it in the `turn()` method of `TurnCycle`.
+
+  ```ts
+  if (targetDead) {
+    await this.onNewEvent({
+      type: 'message',
+      textLines: [
+        { speed: SPEEDS.Normal, string: `${submission.target.name} has` },
+        { speed: SPEEDS.Fast, string: 'fainted!', classes: ['red'] },
+      ],
+    });
+
+    if (submission.target.team === 'enemy') {
+      const playerActiveId = this.battle.activeCombatants.player;
+      const activePizza = this.battle.combatants[playerActiveId];
+      const xp = submission.target.givesXp;
+
+      await this.onNewEvent({
+        type: 'message',
+        textLines: [
+          { speed: SPEEDS.Normal, string: `${activePizza.name} gained` },
+          { speed: SPEEDS.Fast, string: `${xp} XP!`, classes: ['green'] },
+        ],
+      });
+
+      await this.onNewEvent({
+        type: 'giveXp',
+        xp,
+        combatant: activePizza,
+      });
+    }
+  }
+  ```
+
+  Here, if the player was the one that attacked, we give their active pizza the XP.
+
+  Notice we are using a getter method on the `Combatant` called `givesXp`. This is just a simple getter that returns the XP the pizza gives when defeated.
+
+  ```ts
+  get givesXp() {
+		return this.level * 20;
+	}
+  ```
+
+  Now, let's add the `giveXp` event to the `BattleEvent` class.
+
+  ```ts
+  giveXp(resolve: VoidResolve) {
+		let amount = this.event.xp;
+		const { combatant } = this.event;
+
+		const step = () => {
+			if (!amount || !combatant) return resolve();
+
+			if (amount > 0) {
+				amount -= 1;
+				combatant.xp += 1;
+
+				// Check if we leveled up
+				if (combatant.xp === combatant.maxXp) {
+					combatant.xp = 0;
+					combatant.maxXp = 100;
+					combatant.level += 1;
+				}
+
+				combatant.update();
+				requestAnimationFrame(step);
+				return;
+			}
+
+			resolve();
+		};
+
+		requestAnimationFrame(step);
+	}
+  ```
+
+  Here, notice the difference in approach. We use `requestAnimationFrame` to animate the XP gain. This is because we want complete control on when the Pizza hits the level up point.
+
+  With this, we can now level up our pizzas!
+</details>
+
+<details>
+  <summary>Dynamic Enemies and Player State</summary></br>
+
+  Now, let's work on adding dynamic enemies and a player state to the battle. Currently, our battle is very static. Also, nothing persists after the battle is over.
+</details>

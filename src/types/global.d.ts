@@ -77,13 +77,14 @@ declare global {
 
 	interface Battle {
 		element: HTMLDivElement;
+        enemy: EnemyConfig;
 		onComplete: () => void;
 		combatants: Combatants;
 		activeCombatants: ActiveCombatants;
 		items: Item[];
 		turnCycle: TurnCycle;
-        playerTeam: Team;
-        enemyTeam: Team;
+		playerTeam: Team;
+		enemyTeam: Team;
 
 		createElement(): void;
 		init(container: HTMLDivElement): void;
@@ -119,6 +120,7 @@ declare global {
 		get hpPercentage(): number;
 		get xpPercentage(): number;
 		get isActive(): boolean;
+		get givesXp(): number;
 		setProperty<T extends keyof CombatantConfig>(
 			property: T,
 			value: CombatantConfig[T]
@@ -131,16 +133,16 @@ declare global {
 		init(container: HTMLDivElement): void;
 	}
 
-    interface Team {
-        team: TeamType;
-        name: string;
-        combatants: Combatant[];
-        element: HTMLDivElement;
+	interface Team {
+		team: TeamType;
+		name: string;
+		combatants: Combatant[];
+		element: HTMLDivElement;
 
-        createElement(): void;
-        update(): void;
-        init(container: HTMLDivElement): void;
-    }
+		createElement(): void;
+		update(): void;
+		init(container: HTMLDivElement): void;
+	}
 
 	// GameObject.ts types
 	type GameObjectConfig = {
@@ -166,6 +168,7 @@ declare global {
 		textLines?: TextObj[];
 		faceHero?: string;
 		map?: string;
+        enemyId?: string;
 	};
 
 	type TalkEvent = {
@@ -301,13 +304,15 @@ declare global {
 		} | null;
 		replacement?: Combatant;
 		team?: TeamType;
+		xp?: number;
+		combatant?: Combatant;
 	};
 
 	// Battle Event Handlers
 	type VoidResolve = () => void;
 	type SubmissionResolve = (submission?: Submission) => void;
 	type ReplacementResolve = (replacement: Combatant) => void;
-    type Resolve = VoidResolve | SubmissionResolve | ReplacementResolve;
+	type Resolve = VoidResolve | SubmissionResolve | ReplacementResolve;
 
 	type EventHandler = {
 		message: (resolve: VoidResolve) => void;
@@ -315,6 +320,7 @@ declare global {
 		submissionMenu: (resolve: SubmissionResolve) => void;
 		replacementMenu: (resolve: ReplacementResolve) => void;
 		replace: (resolve: VoidResolve) => void;
+		giveXp: (resolve: VoidResolve) => void;
 		animation: (resolve: VoidResolve) => void;
 	};
 
@@ -327,13 +333,35 @@ declare global {
 	type Item = {
 		actionId: string;
 		instanceId: string;
-		team: 'player' | 'enemy';
+		team?: 'player' | 'enemy';
 	};
 
 	type MappedItem = {
 		actionId: string;
 		instanceId: string;
 		quantity: number;
+	};
+
+	// window configurations
+	type ActionConfig = {
+		name: string;
+		description: string;
+		icon?: string;
+		targetType?: string;
+		success: BattleEventType[];
+	};
+
+	type EnemyConfig = {
+		name: string;
+		src: string;
+		pizzas: {
+			[key: string]: {
+				pizzaId: string;
+                hp?: number;
+				maxHp: number;
+				level: number;
+			};
+		};
 	};
 
 	// window Objects
@@ -353,6 +381,10 @@ declare global {
 		BattleAnimations: {
 			[key: string]: (event: BattleEventType, onComplete: () => void) => void;
 		};
+		Enemies: {
+			[key: string]: EnemyConfig;
+		};
+		playerState: PlayerState;
 	}
 
 	// Custom Events

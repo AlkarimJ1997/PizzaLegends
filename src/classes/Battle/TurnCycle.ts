@@ -3,6 +3,7 @@ import { SPEEDS } from '../../data/enums';
 type TurnCycleConfig = {
 	battle: Battle;
 	onNewEvent: (event: BattleEventType) => Promise<void | SubmissionReturn>;
+	onWinner: (winner: 'player' | 'enemy') => void;
 };
 
 type AliveTeams = {
@@ -13,11 +14,13 @@ type AliveTeams = {
 export class TurnCycle {
 	battle: Battle;
 	onNewEvent: (event: BattleEventType) => Promise<void | SubmissionReturn>;
+	onWinner: (winner: 'player' | 'enemy') => void;
 	currentTeam: 'player' | 'enemy';
 
-	constructor({ battle, onNewEvent }: TurnCycleConfig) {
+	constructor({ battle, onNewEvent, onWinner }: TurnCycleConfig) {
 		this.battle = battle;
 		this.onNewEvent = onNewEvent;
+		this.onWinner = onWinner;
 		this.currentTeam = 'player';
 	}
 
@@ -73,6 +76,10 @@ export class TurnCycle {
 
 		// Check for items
 		if (submission?.instanceId) {
+			// Add to list to persist to player state later
+			this.battle.usedInstanceIds[submission.instanceId] = true;
+
+			// Remove item from battle state
 			this.battle.items = this.battle.items.filter(item => {
 				return item.instanceId !== submission.instanceId;
 			});
@@ -106,6 +113,26 @@ export class TurnCycle {
 					{ speed: SPEEDS.Fast, string: 'fainted!', classes: ['red'] },
 				],
 			});
+
+			if (submission.target.team === 'enemy') {
+				const playerActiveId = this.battle.activeCombatants.player;
+				const activePizza = this.battle.combatants[playerActiveId];
+				const xp = submission.target.givesXp;
+
+				await this.onNewEvent({
+					type: 'message',
+					textLines: [
+						{ speed: SPEEDS.Normal, string: `${activePizza.name} gained` },
+						{ speed: SPEEDS.Fast, string: `${xp} XP!`, classes: ['green'] },
+					],
+				});
+
+				await this.onNewEvent({
+					type: 'giveXp',
+					xp,
+					combatant: activePizza,
+				});
+			}
 		}
 
 		// Do we have a winning team?
@@ -120,6 +147,7 @@ export class TurnCycle {
 				],
 			});
 
+			this.onWinner(winner);
 			return;
 		}
 
@@ -194,8 +222,10 @@ export class TurnCycle {
 		await this.onNewEvent({
 			type: 'message',
 			textLines: [
-				{ speed: SPEEDS.Normal, string: 'The battle is' },
-				{ speed: SPEEDS.Fast, string: 'starting!', classes: ['green'] },
+				{
+					speed: SPEEDS.Normal,
+					string: `${this.battle.enemy.name} wants to throw down!`,
+				},
 			],
 		});
 

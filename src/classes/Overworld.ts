@@ -114,24 +114,24 @@ export class Overworld {
 
 		this.startGameLoop();
 
-		this.map.startCutscene([
-			{ type: 'battle' },
-			// {
-			// 	type: 'message',
-			// 	textLines: [
-			// 		{ speed: SPEEDS.Slow, string: 'Oh, hello!' },
-			// 		{ speed: SPEEDS.Pause, string: '', pause: true },
-			// 		{ speed: SPEEDS.Normal, string: 'Have you seen my pet' },
-			// 		{ speed: SPEEDS.Fast, string: 'frog', classes: ['green'] },
-			// 		{ speed: SPEEDS.Normal, string: 'around here?' },
-			// 	],
-			// },
-			// { who: 'hero', type: 'walk', direction: 'down' },
-			// { who: 'hero', type: 'walk', direction: 'down' },
-			// { who: 'npcA', type: 'walk', direction: 'up' },
-			// { who: 'npcA', type: 'walk', direction: 'left' },
-			// { who: 'hero', type: 'stand', direction: 'right', time: 200 },
-			// { type: 'changeMap', map: 'Kitchen' },
-		]);
+		// this.map.startCutscene([
+		// 	{ type: 'battle', enemyId: 'beth' },
+		// 	{
+		// 		type: 'message',
+		// 		textLines: [
+		// 			{ speed: SPEEDS.Slow, string: 'Oh, hello!' },
+		// 			{ speed: SPEEDS.Pause, string: '', pause: true },
+		// 			{ speed: SPEEDS.Normal, string: 'Have you seen my pet' },
+		// 			{ speed: SPEEDS.Fast, string: 'frog', classes: ['green'] },
+		// 			{ speed: SPEEDS.Normal, string: 'around here?' },
+		// 		],
+		// 	},
+		// 	{ who: 'hero', type: 'walk', direction: 'down' },
+		// 	{ who: 'hero', type: 'walk', direction: 'down' },
+		// 	{ who: 'npcA', type: 'walk', direction: 'up' },
+		// 	{ who: 'npcA', type: 'walk', direction: 'left' },
+		// 	{ who: 'hero', type: 'stand', direction: 'right', time: 200 },
+		// 	{ type: 'changeMap', map: 'Kitchen' },
+		// ]);
 	}
 }

@@ -30,11 +30,12 @@ window.OverworldMaps = {
 								textLines: [
 									{ speed: SPEEDS.Normal, string: "I'm busy..." },
 									{ speed: SPEEDS.Pause, string: '', pause: true },
-									{ speed: SPEEDS.Fast, string: 'Go away!' },
+									// { speed: SPEEDS.Fast, string: 'Go away!' },
 								],
 								faceHero: 'npcA',
 							},
-							{ type: 'walk', direction: 'up', who: 'hero' },
+							{ type: 'battle', enemyId: 'beth' },
+							// { type: 'walk', direction: 'up', who: 'hero' },
 						],
 					},
 				],
@@ -42,7 +43,7 @@ window.OverworldMaps = {
 			npcB: new Person({
 				x: withGrid(8),
 				y: withGrid(5),
-				src: '../assets/images/characters/people/npc2.png',
+				src: '../assets/images/characters/people/erio.png',
 				// behaviorLoop: [
 				// 	{ type: 'walk', direction: 'left' },
 				// 	{ type: 'stand', direction: 'up', time: 800 },
@@ -50,6 +51,18 @@ window.OverworldMaps = {
 				// 	{ type: 'walk', direction: 'right' },
 				// 	{ type: 'walk', direction: 'down' },
 				// ],
+				talking: [
+					{
+						events: [
+							{
+								type: 'message',
+								textLines: [{ speed: SPEEDS.SuperFast, string: 'Bahaha!' }],
+								faceHero: 'npcB',
+							},
+							{ type: 'battle', enemyId: 'erio' },
+						],
+					},
+				],
 			}),
 		},
 		walls: {
