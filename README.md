@@ -4102,3 +4102,189 @@ npm run dev
   Then, we call the `onComplete()` method to actually run the action.
 </details>
 
+### Day 15
+
+- [x] Item System
+
+<details>
+  <summary>Item System</summary></br>
+
+  Now, we're going to add actual items that the player or enemy can use. Luckily for us, these are just actions. So let's go add a few.
+
+  ```ts
+  item_recoverStatus: {
+		name: 'Heating Lamp',
+		description: 'Feeling fresh and warm',
+		targetType: 'friendly',
+		success: [
+			{
+				type: 'message',
+				textLines: [
+					{ speed: SPEEDS.Fast, string: '{CASTER} used a {ACTION}!' },
+				],
+			},
+			{ type: 'stateChange', status: null },
+			{
+				type: 'message',
+				textLines: [
+					{ speed: SPEEDS.Fast, string: '{TARGET} is feeling' },
+					{ speed: SPEEDS.Fast, string: 'fresh!', classes: ['blue'] },
+				],
+			},
+		],
+	},
+	item_recoverHp: {
+		name: 'Parmesan',
+		description: 'Recover some HP',
+		targetType: 'friendly',
+		success: [
+			{
+				type: 'message',
+				textLines: [
+					{ speed: SPEEDS.Fast, string: '{CASTER} sprinkled some {ACTION}!' },
+				],
+			},
+			{ type: 'stateChange', recover: 10 },
+			{
+				type: 'message',
+				textLines: [
+					{ speed: SPEEDS.Fast, string: '{TARGET} recovered' },
+					{ speed: SPEEDS.Fast, string: '10 HP!', classes: ['green'] },
+				],
+			},
+		],
+	},
+  ```
+
+  Here, we add two items. One that recovers status and one that recovers HP.
+
+  We need to have a reference to the available items in the battle, so let's go add a `items` property to the `Battle` class.
+
+  ```ts
+  this.items = [
+    { actionId: 'item_recoverStatus', instanceId: 'p1', team: 'player' },
+    { actionId: 'item_recoverStatus', instanceId: 'p2', team: 'player' },
+    { actionId: 'item_recoverStatus', instanceId: 'p3', team: 'enemy' },
+    { actionId: 'item_recoverHp', instanceId: 'p4', team: 'player' },
+  ];
+  ```
+
+  Notice that each item has a unique `instanceId` so we can remove it once it's used.
+
+  Now, let's pass it into our `SubmissionMenu` class.
+
+  First, we pass it into the `submissionMenu()` method in `BattleEvent`.
+
+  ```ts
+  submissionMenu(resolve: SubmissionResolve) {
+		if (!this.event.caster || !this.event.enemy) return resolve();
+
+		const menu = new SubmissionMenu({
+			caster: this.event.caster,
+			enemy: this.event.enemy,
+			items: this.battle.items,
+			onComplete: submission => {
+				// submission { what move to use, who to use it on }
+				resolve(submission);
+			},
+		});
+
+		menu.init(this.battle.element);
+	}
+  ```
+
+  Now, in our constructor in `SubmissionMenu`, we are going to map each item. We do this so that we can add a quantity for multiple items.
+
+  ```ts
+  constructor({ caster, enemy, onComplete, items }: SubmissionMenuConfig) {
+		this.caster = caster;
+		this.enemy = enemy;
+		this.onComplete = onComplete;
+
+		const quantityMap: QuantityMap = {};
+
+		items.forEach(item => {
+			if (item.team !== caster.team) return;
+
+			const existing = quantityMap[item.actionId];
+
+			if (existing) {
+				existing.quantity += 1;
+			} else {
+				quantityMap[item.actionId] = {
+					actionId: item.actionId,
+					instanceId: item.instanceId,
+					quantity: 1,
+				};
+			}
+		}, {});
+
+		this.items = Object.values(quantityMap);
+	}
+  ```
+
+  Now, we'll dynamically add the items to the Items page in the `getPages()` method.
+
+  ```ts
+  items: [
+    ...this.items.map(item => {
+      const action = window.Actions[item.actionId];
+
+      return {
+        label: action.name,
+        description: action.description,
+        handler: () => {
+          this.menuSubmit(action, item.instanceId);
+        },
+        right: () => {
+          return `x${item.quantity}`;
+        },
+      };
+    }),
+    backOption,
+  ],
+  ```
+
+  We use our `right()` method to show the quantity of each item.
+
+  Now in our `menuSubmit()` method, we need to actually pass the `instanceId` to the `onComplete()` method.
+
+  ```ts
+  menuSubmit(action: Action, instanceId?: string) {
+		this.keyboardMenu?.end();
+
+		this.onComplete({
+			action,
+			target: action.targetType === 'friendly' ? this.caster : this.enemy,
+			instanceId,
+		});
+	}
+  ```
+
+  Finally, in the `turn()` method of `TurnCycle`, we want to deplete the quantity of the item after we receive our `submission`.
+
+  ```ts
+  const submission = await this.onNewEvent({
+    type: 'submissionMenu',
+    caster,
+    enemy,
+  });
+
+  // Check for items
+  if (submission?.instanceId) {
+    this.battle.items = this.battle.items.filter(item => {
+      return item.instanceId !== submission.instanceId;
+    });
+  }
+  ```
+
+  Notice that we can use the filter method here, because we are removing one item at a time. So in the `Battle` class, that item will be removed from the array, and therefore, the mapping in `SubmissionMenu` will be updated.
+</details>
+
+### Day 16
+
+- [x] Pizza Lineups
+
+<details>
+  <summary>Pizza Lineups</summary></br>
+</details>
