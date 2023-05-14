@@ -3670,6 +3670,446 @@ npm run dev
 
   But how do we actually get these status effects applied in the first place? Let's add a new action that will do so.
 
-  
+  ```ts
+  saucyStatus: {
+		name: 'Tomato Squeeze',
+		description: 'Squeeze tomato sauce for an HP boost',
+		icon: '🍅',
+		targetType: 'friendly',
+		success: [
+			{
+				type: 'message',
+				textLines: [{ speed: SPEEDS.Fast, string: '{CASTER} uses {ACTION}!' }],
+			},
+			{
+				type: 'stateChange',
+				status: {
+					type: 'saucy',
+					expiresIn: 3,
+				},
+			},
+		],
+	},
+	clumsyStatus: {
+		name: 'Olive Oil',
+		description: 'Spray olive oil to make your opponent slip',
+		icon: '🫒',
+		success: [
+			{
+				type: 'message',
+				textLines: [{ speed: SPEEDS.Fast, string: '{CASTER} uses {ACTION}!' }],
+			},
+			{ type: 'animation', animation: 'glob', color: 'var(--clr-olive-oil)' },
+			{ type: 'animation', animation: 'slip' },
+			{
+				type: 'stateChange',
+				status: {
+					type: 'clumsy',
+					expiresIn: 3,
+				},
+			},
+			{
+				type: 'message',
+				textLines: [
+					{ speed: SPEEDS.Fast, string: '{TARGET} is slipping all around!' },
+				],
+			},
+		],
+	},
+  ```
 
+  Notice that these actions pass an actual `status` property to the `stateChange` event. We'll need to handle this in the `stateChange()` method of the `BattleEvent` class.
+
+  We also have a `targetType` property on the action. This will be used to determine which `Combatant` to apply the status effect to.
+
+  ```ts
+  async stateChange(resolve: VoidResolve) {
+		const { caster, target, damage, recover, status } = this.event;
+		const who = this.event.onCaster ? caster : target;
+
+		if (damage) {
+			if (target && target.status?.type !== 'protected') {
+				target.update({ hp: target.hp - damage });
+				target.pizzaElement.classList.add('blinking');
+			}
+		}
+
+		if (recover) {
+			if (who) {
+				const newHp = Math.min(who.hp + recover, who.maxHp);
+				who.update({ hp: newHp });
+			}
+		}
+
+		if (status) {
+			who?.update({
+				status: { ...status },
+			});
+		}
+
+		if (status === null) {
+			who?.update({
+				status: null,
+			});
+		}
+
+		// Wait a little bit, then stop blinking the Pizza
+		await wait(600);
+		target?.pizzaElement.classList.remove('blinking');
+
+		resolve();
+	}
+  ```
+
+  Pretty simple here. If the `BattleEvent` has a `status` property, we'll apply it to the `Combatant`. If it's `null`, we'll remove the status effect from the `Combatant`.
+
+  But we also have to handle the status effect in terms of our event queue. For example, if a `Combatant` has the `clumsy` status effect, we want to make sure that they have a chance to slip and fall instead of attacking. Right now, we only have success events. Let's fix that.
+
+  ```ts
+  const resultingEvents = caster.getReplacedEvents(
+    submission?.action.success || []
+  );
+
+  for (const event of resultingEvents) {
+    const newEvent = {
+      ...event,
+      action: submission?.action,
+      caster,
+      target: submission?.target,
+    };
+
+    if (submission) newEvent.submission = submission;
+
+    await this.onNewEvent(newEvent);
+  }
+  ```
+
+  Notice the changes in the `turn()` method. We're calling a new `getReplacedEvents()` method on the `Combatant` class. Let's add that now.
+
+  ```ts
+  getReplacedEvents(originalEvents: BattleEventType[]) {
+		const randomChance = [true, false, false];
+
+		if (this.status?.type === 'clumsy' && randomFromArray(randomChance)) {
+			return [
+				{
+					type: 'message',
+					textLines: [
+						{ speed: SPEEDS.Fast, string: `${this.name} flops over!` },
+					],
+				},
+			];
+		}
+
+		return originalEvents;
+	}
+  ```
+
+  Now, we are piping the success events through this function. There's a chance that nothing happens and we just return the original events. But if the `Combatant` has the `clumsy` status effect, there's a 1/3 chance that they'll slip and fall instead of performing the action.
+
+  Think of it like a pass through filter.
 </details>
+
+### Day 14
+
+- [x] Battle Menu UI
+
+<details>
+  <summary>Battle Menu UI</summary>
+
+  Up till now, our Battle System just chooses a random action for the player and enemy. Let's add a UI so that the player can choose their own action.
+
+  First, let's add a flag to our first `Combatant` in the `Battle` class called `isPlayerControlled`. This will be used to determine if we should show the menu or not.
+
+  ```ts
+  this.combatants = {
+    player1: new Combatant(
+      {
+        ...window.Pizzas.s001,
+        team: 'player',
+        hp: 30,
+        maxHp: 50,
+        xp: 75,
+        maxXp: 100,
+        level: 1,
+        isPlayerControlled: true,
+      },
+      this
+    ),
+    // ... rest of the combatants
+  };
+  ```
+
+  Now we can change the `init()` method of the `SubmissionMenu` class to check for this flag.
+
+  ```ts
+  init(container: HTMLDivElement) {
+		if (this.caster.isPlayerControlled) {
+			this.showMenu(container);
+			return;
+		}
+
+		this.decide();
+	}
+  ```
+
+  So now, if the caster is a player, we'll show the menu. Otherwise, we'll just call the `decide()` method, which will choose a random action for the enemy.
+
+  We are going to create a menu that is reusable. To do this, we need to pipe the pages that we want the menu to show. Let's create a `getPages()` method in the `SubmissionMenu` class.
+
+  ```ts
+  getPages() {
+		const backOption = {
+			label: 'Go Back',
+			description: 'Return to previous page',
+			handler: () => {
+				this.keyboardMenu.setOptions(this.getPages().root);
+			},
+            right: () => {
+                return '🔙';
+            }
+		};
+
+		return {
+			root: [
+				{
+					label: 'Attack',
+					description: 'Choose an attack',
+					handler: () => {
+						this.keyboardMenu.setOptions(this.getPages().attacks);
+					},
+					right: () => {
+						return '💥';
+					},
+				},
+				{
+					label: 'Items',
+					description: 'Use an item',
+					handler: () => {
+						this.keyboardMenu.setOptions(this.getPages().items);
+					},
+					right: () => {
+						return '🎒';
+					},
+				},
+				{
+					label: 'Swap',
+					description: 'Swap out your current pizza',
+					handler: () => {
+						// Do something when chosen
+					},
+          right: () => {
+              return '🔄';
+          }
+				},
+			],
+			attacks: [
+				...this.caster.actions.map(attackName => {
+					const action = window.Actions[attackName];
+
+					return {
+						label: action.name,
+						description: action.description,
+						handler: () => {
+							this.menuSubmit(action);
+						},
+            right: () => {
+                return action.icon;
+            }
+					};
+				}),
+				backOption,
+			],
+			items: [
+				// Items go here...
+				backOption,
+			],
+		};
+	}
+  ```
+
+  Little bit of a long method but it's simple. We have a `root` page that has the main menu options (Attack, Items, Swap). 
+  
+  Then we have an `attacks` page that has all of the attacks that the player can choose from (dynamically added). We also have an `items` page that will have all of the items that the player can choose from (more on that later).
+
+  We also have a property called `right` that is a function that returns a string, which we are going to use as an emoji icon for the menu option.
+
+  We also have a universal `backOption` so that the player can go back to the previous page.
+
+  Notice that each `handler()` method calls `this.keyboardMenu.setOptions()` with a different page. This is how we are going to change the menu options when the player chooses an option.
+
+  Now, let's create the `showMenu()` method.
+
+  ```ts
+  showMenu(container: HTMLDivElement) {
+		this.keyboardMenu = new KeyboardMenu();
+		this.keyboardMenu.init(container);
+		this.keyboardMenu.setOptions(this.getPages().root);
+	}
+  ```
+
+  Here, we just create a new `KeyboardMenu` class, append it to the container to show it on screen and set the options to the `root` page.
+
+  Let's create the `KeyboardMenu` class now.
+
+  ```ts
+  export class KeyboardMenu {
+    options: Page[];
+    up: KeyPressListener | null;
+    down: KeyPressListener | null;
+    prevFocus: HTMLButtonElement | null;
+
+    element!: HTMLDivElement;
+    descriptionElement!: HTMLDivElement;
+    descriptionElementText!: HTMLParagraphElement;
+
+    constructor() {
+      this.options = [];
+      this.up = null;
+      this.down = null;
+      this.prevFocus = null;
+    }
+
+    setOptions(options: Page[]) {
+      this.options = options;
+
+      const optionHTML = this.options.map((option, index) => {
+        const disabled = option.disabled ? 'disabled' : '';
+
+        return `
+          <div class='option'>
+              <button
+                  ${disabled} 
+                  data-button='${index}' 
+                  data-description='${option.description}'>
+                  ${option.label}
+              </button>
+              <span class='right'>
+                  ${option.right ? option.right() : ''}
+              </span>
+          </div>
+        `;
+      });
+
+      this.element.innerHTML = optionHTML.join('');
+
+      this.element.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+          const index = button.getAttribute('data-button');
+
+          if (index) {
+            const option = this.options[parseInt(index)];
+            option.handler();
+          }
+        });
+
+        button.addEventListener('mouseenter', () => button.focus());
+
+        button.addEventListener('focus', () => {
+          this.prevFocus = button;
+          this.descriptionElementText.innerText =
+            button.dataset.description || '';
+        });
+      });
+
+      setTimeout(() => {
+        getElement('button[data-button]:not([disabled])', this.element)?.focus();
+      }, 10);
+    }
+
+    createElement() {
+      this.element = document.createElement('div');
+      this.element.classList.add('keyboard-menu');
+
+      // Description Box
+      this.descriptionElement = document.createElement('div');
+      this.descriptionElement.classList.add('description');
+      this.descriptionElement.innerHTML = `<p>I will provide information</p>`;
+      this.descriptionElementText = getElement('p', this.descriptionElement);
+    }
+
+    end() {
+      this.element.remove();
+      this.descriptionElement.remove();
+
+      this.up?.unbind();
+      this.down?.unbind();
+    }
+
+    init(container: HTMLDivElement) {
+      this.createElement();
+      container.appendChild(this.descriptionElement);
+      container.appendChild(this.element);
+
+      // Keyboard Navigation
+      this.up = new KeyPressListener('ArrowUp', () => {
+        const current = Number(this.prevFocus?.getAttribute('data-button'));
+        const buttonArr = getElements<HTMLButtonElement>('button', this.element);
+        const prevButton = buttonArr.reverse().find(button => {
+          if (!button.dataset.button) return;
+
+          const buttonNumber = Number(button.dataset.button);
+
+          return buttonNumber < current && !button.disabled;
+        });
+
+        prevButton?.focus();
+      });
+
+      this.down = new KeyPressListener('ArrowDown', () => {
+        const current = Number(this.prevFocus?.getAttribute('data-button'));
+        const buttonArr = getElements<HTMLButtonElement>('button', this.element);
+        const nextButton = buttonArr.find(button => {
+          if (!button.dataset.button) return;
+
+          const buttonNumber = Number(button.dataset.button);
+
+          return buttonNumber > current && !button.disabled;
+        });
+
+        nextButton?.focus();
+      });
+    }
+  }
+  ```
+
+  Let's break this down.
+
+  We have a `setOptions()` method that takes in an array of `Page` objects and creates the HTML for the menu. We also have a `createElement()` method that creates the HTML for the menu.
+
+  We also have a `end()` method that removes the menu from the DOM and unbinds the keyboard listeners.
+
+  We also have an `init()` method that appends the menu to the container and binds the keyboard listeners.
+
+  The loops in the `init()` method are slightly complex, but they basically make it so that if we press the up arrow key, it will focus on the previous button that isn't disabled. And if we press the down arrow key, it will focus on the next button that isn't disabled.
+
+  We have to use `reverse()` on the button array when going up because otherwise our condition will be true for button 1, 2, etc. but we want button 4 to be focused on if we are on button 5.
+
+  Also the following line is just a complex selector for focusing on the first button that isn't disabled.
+
+  ```ts
+  setTimeout(() => {
+    getElement('button[data-button]:not([disabled])', this.element)?.focus();
+  }, 10);
+  ```
+
+  Finally, let's look at the `menuSubmit()` method in the `SubmissionMenu` class.
+
+  This is what gets called if the player presses an attack option.
+
+  ```ts
+  menuSubmit(action: Action, instanceId: number | null = null) {
+		this.keyboardMenu?.end();
+
+		this.onComplete({
+			action,
+			target: action.targetType === 'friendly' ? this.caster : this.enemy,
+		});
+	}
+  ```
+
+  The `end()` method on the `KeyboardMenu` class removes the menu from the DOM and unbinds the keyboard listeners.
+
+  Then, we call the `onComplete()` method to actually run the action.
+</details>
+
