@@ -32,9 +32,22 @@
 .keyboard-menu .option .right {
 	position: absolute;
 	inset: 0 2px 0 auto;
-    font-size: 0.8rem;
-    display: flex;
-    align-items: center;
+	display: flex;
+	align-items: center;
+}
+
+.keyboard-menu .option .right:not(.emoji) {
+    font-family: var(--ff-battle);
+	font-size: 10px;
+    padding-inline-end: 4px;
+}
+
+.keyboard-menu button:focus + .right:not(.emoji) {
+    color: var(--clr-light);
+}
+
+.emoji {
+	font-size: 0.8rem;
 }
 
 /* Description Box */

@@ -79,4 +79,47 @@ window.Actions = {
 			},
 		],
 	},
+	// Items
+	item_recoverStatus: {
+		name: 'Heating Lamp',
+		description: 'Feeling fresh and warm',
+		targetType: 'friendly',
+		success: [
+			{
+				type: 'message',
+				textLines: [
+					{ speed: SPEEDS.Fast, string: '{CASTER} used a {ACTION}!' },
+				],
+			},
+			{ type: 'stateChange', status: null },
+			{
+				type: 'message',
+				textLines: [
+					{ speed: SPEEDS.Fast, string: '{TARGET} is feeling' },
+					{ speed: SPEEDS.Fast, string: 'fresh!', classes: ['blue'] },
+				],
+			},
+		],
+	},
+	item_recoverHp: {
+		name: 'Parmesan',
+		description: 'Recover some HP',
+		targetType: 'friendly',
+		success: [
+			{
+				type: 'message',
+				textLines: [
+					{ speed: SPEEDS.Fast, string: '{CASTER} sprinkled some {ACTION}!' },
+				],
+			},
+			{ type: 'stateChange', recover: 10 },
+			{
+				type: 'message',
+				textLines: [
+					{ speed: SPEEDS.Fast, string: '{TARGET} recovered' },
+					{ speed: SPEEDS.Fast, string: '10 HP!', classes: ['green'] },
+				],
+			},
+		],
+	},
 };

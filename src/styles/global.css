@@ -8,16 +8,17 @@
 	--clr-border: hsl(199, 54%, 17%);
 	--clr-green: hsl(145, 63%, 42%);
 	--clr-red: hsl(0, 100%, 61%);
-  --clr-orange: hsl(30, 100%, 60%);
+	--clr-orange: hsl(30, 100%, 60%);
+    --clr-blue: var(--clr-primary);
 
 	/* Battle Colors */
 	--clr-level-bg: hsl(30, 100%, 90%);
 	/* --clr-level-border: hsl(30, 100%, 20%); */
 	--clr-level-border: hsl(30, 26%, 42%);
-    --clr-olive-oil: hsl(70, 98%, 28%);
+	--clr-olive-oil: hsl(70, 98%, 28%);
 
 	/* Fonts */
-	/* --ff-body: 'Dosis', monospace; */
+	--ff-battle: 'Dosis', monospace;
 	--ff-body: 'Share Tech Mono', monospace;
 
 	--mapTransitionSpeed: 400ms;

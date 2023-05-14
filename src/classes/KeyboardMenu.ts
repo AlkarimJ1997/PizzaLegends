@@ -1,5 +1,5 @@
 import { KeyPressListener } from './KeyPressListener';
-import { getElement, getElements } from '../utils/utils';
+import { getElement, getElements, isSingleEmoji } from '../utils/utils';
 import '../styles/KeyboardMenu.css';
 
 type Page = {
@@ -32,6 +32,8 @@ export class KeyboardMenu {
 
 		const optionHTML = this.options.map((option, index) => {
 			const disabled = option.disabled ? 'disabled' : '';
+			const rightOption = option.right ? option.right() : '';
+			const emoji = isSingleEmoji(rightOption) ? 'emoji' : '';
 
 			return `
                 <div class='option'>
@@ -41,8 +43,8 @@ export class KeyboardMenu {
                         data-description='${option.description}'>
                         ${option.label}
                     </button>
-                    <span class='right'>
-                        ${option.right ? option.right() : ''}
+                    <span class='right ${emoji}'>
+                        ${rightOption}
                     </span>
                 </div>
             `;

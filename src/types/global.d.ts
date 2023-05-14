@@ -80,6 +80,7 @@ declare global {
 		onComplete: () => void;
 		combatants: Combatants;
 		activeCombatants: ActiveCombatants;
+        items: Item[];
 		turnCycle: TurnCycle;
 
 		createElement(): void;
@@ -256,6 +257,7 @@ declare global {
 	type Submission = {
 		action: Action;
 		target: Combatant;
+        instanceId?: string;
 	};
 
 	type BattleEventType = {
@@ -282,6 +284,18 @@ declare global {
 		targetType?: string;
 		success: BattleEventType[];
 	};
+
+	type Item = {
+		actionId: string;
+		instanceId: string;
+		team: 'player' | 'enemy';
+	};
+
+    type MappedItem = {
+        actionId: string;
+        instanceId: string;
+        quantity: number;
+    }
 
 	// window Objects
 	interface Window {

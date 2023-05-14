@@ -76,3 +76,8 @@ export const wait = (ms: number) =>
 export const randomFromArray = <T>(array: T[]) => {
 	return array[Math.floor(Math.random() * array.length)];
 };
+
+export const isSingleEmoji = (str: string) => {
+	const regex = /^\p{Emoji}$/u;
+	return regex.test(str);
+};
