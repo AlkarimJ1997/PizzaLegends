@@ -34,6 +34,7 @@ export class KeyboardMenu {
 			const disabled = option.disabled ? 'disabled' : '';
 			const rightOption = option.right ? option.right() : '';
 			const emoji = isSingleEmoji(rightOption) ? 'emoji' : '';
+			const img = rightOption.includes('img') ? 'img' : '';
 
 			return `
                 <div class='option'>
@@ -43,7 +44,7 @@ export class KeyboardMenu {
                         data-description='${option.description}'>
                         ${option.label}
                     </button>
-                    <span class='right ${emoji}'>
+                    <span class='right ${emoji} ${img}'>
                         ${rightOption}
                     </span>
                 </div>

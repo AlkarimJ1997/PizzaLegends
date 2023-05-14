@@ -1,10 +1,11 @@
 import { Message } from '../Message';
 import { SubmissionMenu } from './SubmissionMenu';
+import { ReplacementMenu } from './ReplacementMenu';
 import { wait } from '../../utils/utils';
 
 type VoidResolve = () => void;
 type SubmissionResolve = (submission?: Submission) => void;
-type BattleEventMethod = (resolve: VoidResolve | SubmissionResolve) => void;
+type ReplacementResolve = (replacement: Combatant) => void;
 
 export class BattleEvent {
 	event: BattleEventType;
@@ -75,19 +76,65 @@ export class BattleEvent {
 	}
 
 	submissionMenu(resolve: SubmissionResolve) {
-		if (!this.event.caster || !this.event.enemy) return resolve();
+		const { caster, enemy } = this.event;
+		const { items, combatants } = this.battle;
+		const possibleCombatants = Object.values(combatants) as Combatant[];
+
+		if (!caster || !enemy) return resolve();
 
 		const menu = new SubmissionMenu({
-			caster: this.event.caster,
-			enemy: this.event.enemy,
-			items: this.battle.items,
+			caster,
+			enemy,
+			items,
+			replacements: possibleCombatants.filter(c => {
+				const sameTeam = c.team === caster.team;
+				const notCaster = c.id !== caster.id;
+				const alive = c.hp > 0;
+
+				return sameTeam && notCaster && alive;
+			}),
 			onComplete: submission => {
-				// submission { what move to use, who to use it on }
-				resolve(submission);
+				resolve(submission as Submission);
 			},
 		});
 
 		menu.init(this.battle.element);
+	}
+
+	replacementMenu(resolve: ReplacementResolve) {
+		const replacements = Object.values(this.battle.combatants) as Combatant[];
+
+		const menu = new ReplacementMenu({
+			replacements: replacements.filter(c => {
+				return c.team === this.event.team && c.hp > 0;
+			}),
+			onComplete: replacement => {
+				resolve(replacement as Combatant);
+			},
+		});
+
+		menu.init(this.battle.element);
+	}
+
+	async replace(resolve: VoidResolve) {
+		const { replacement } = this.event;
+		const prevCombatantId = this.battle.activeCombatants[replacement?.team];
+		const prevCombatant = this.battle.combatants[prevCombatantId];
+
+		// Clear out the old combatant and update the DOM
+		this.battle.activeCombatants[replacement?.team] = null;
+		prevCombatant?.update();
+
+		// Wait a little bit so the player can see it
+		await wait(400);
+
+		// Add the new combatant and update the DOM
+		this.battle.activeCombatants[replacement?.team] = replacement?.id;
+		replacement?.update();
+
+		// Wait a little bit so the player can see it, then resolve
+		await wait(400);
+		resolve();
 	}
 
 	animation(resolve: VoidResolve) {
@@ -98,14 +145,28 @@ export class BattleEvent {
 		fn(this.event, resolve);
 	}
 
-	init(resolve: VoidResolve | SubmissionResolve) {
-		const eventHandlers: Record<string, BattleEventMethod> = {
-			message: this.message.bind(this),
-			stateChange: this.stateChange.bind(this),
-			submissionMenu: this.submissionMenu.bind(this),
-			animation: this.animation.bind(this),
-		};
-
-		eventHandlers[this.event.type](resolve);
+	init(resolve: VoidResolve | SubmissionResolve | ReplacementResolve) {
+		switch (this.event.type) {
+			case 'message':
+				this.message(resolve as VoidResolve);
+				break;
+			case 'stateChange':
+				this.stateChange(resolve as VoidResolve);
+				break;
+			case 'submissionMenu':
+				this.submissionMenu(resolve as SubmissionResolve);
+				break;
+			case 'replacementMenu':
+				this.replacementMenu(resolve as ReplacementResolve);
+				break;
+			case 'replace':
+				this.replace(resolve as VoidResolve);
+				break;
+			case 'animation':
+				this.animation(resolve as VoidResolve);
+				break;
+			default:
+				break;
+		}
 	}
 }

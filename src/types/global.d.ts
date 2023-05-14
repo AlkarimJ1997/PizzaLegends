@@ -90,6 +90,7 @@ declare global {
 	interface Combatant {
 		id: string;
 		name: string;
+        description: string;
 		type: PizzaType;
 		src: string;
 		icon: string;
@@ -217,6 +218,7 @@ declare global {
 	type CombatantConfig = {
 		id?: string;
 		name: string;
+        description: string;
 		type: PizzaType;
 		src: string;
 		icon: string;
@@ -247,6 +249,7 @@ declare global {
 
 	type PizzaConfig = {
 		name: string;
+        description: string;
 		type: PizzaType;
 		src: string;
 		icon: string;
@@ -257,8 +260,14 @@ declare global {
 	type Submission = {
 		action: Action;
 		target: Combatant;
-        instanceId?: string;
+        instanceId: string;
 	};
+
+    type Replacement = {
+        replacement: Combatant;
+    };
+
+    type SubmissionReturn = Submission | Replacement;
 
 	type BattleEventType = {
 		type: string;
@@ -277,6 +286,8 @@ declare global {
 			type: string;
 			expiresIn: number;
 		} | null;
+        replacement?: Combatant 
+        team?: TeamType;
 	};
 
 	type Action = {

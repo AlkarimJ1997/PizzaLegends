@@ -48,11 +48,24 @@ export class Battle {
 				},
 				this
 			),
+			player2: new Combatant(
+				{
+					...window.Pizzas.s002,
+					team: 'player',
+					hp: 30,
+					maxHp: 50,
+					xp: 75,
+					maxXp: 100,
+					level: 1,
+					isPlayerControlled: true,
+				},
+				this
+			),
 			enemy1: new Combatant(
 				{
 					...window.Pizzas.v001,
 					team: 'enemy',
-					hp: 20,
+					hp: 1,
 					maxHp: 50,
 					xp: 20,
 					maxXp: 100,
@@ -83,7 +96,7 @@ export class Battle {
 			{ actionId: 'item_recoverStatus', instanceId: 'p1', team: 'player' },
 			{ actionId: 'item_recoverStatus', instanceId: 'p2', team: 'player' },
 			{ actionId: 'item_recoverStatus', instanceId: 'p3', team: 'enemy' },
-            { actionId: 'item_recoverHp', instanceId: 'p4', team: 'player' },
+			{ actionId: 'item_recoverHp', instanceId: 'p4', team: 'player' },
 		];
 	}
 
@@ -118,7 +131,7 @@ export class Battle {
 		this.turnCycle = new TurnCycle({
 			battle: this,
 			onNewEvent: (event: BattleEventType) => {
-				return new Promise<void | Submission>(resolve => {
+				return new Promise<void | SubmissionReturn>(resolve => {
 					const battleEvent = new BattleEvent(event, this);
 					battleEvent.init(resolve);
 				});

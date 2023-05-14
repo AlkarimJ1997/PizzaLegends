@@ -9,6 +9,7 @@ type CombatantProperty = {
 export class Combatant {
 	id?: string;
 	name: string;
+	description: string;
 	type: PizzaType;
 	src: string;
 	icon: string;
@@ -36,6 +37,7 @@ export class Combatant {
 		// config is HP, maxHP, XP, name, actions, etc.
 		this.id = config.id;
 		this.name = config.name;
+        this.description = config.description;
 		this.type = config.type;
 		this.src = config.src;
 		this.icon = config.icon;

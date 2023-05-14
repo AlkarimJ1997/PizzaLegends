@@ -8,6 +8,7 @@
 /* Scaling */
 .battle .combatant {
 	transform: scale(2);
+	transition: opacity 0.4s;
 }
 
 /* Active States */
@@ -123,6 +124,7 @@
 	background: url(../assets/images/characters/pizzas/pizza-shadow.png) no-repeat
 		no-repeat;
 	transform: scale(2);
+	transition: opacity 0.4s, transform 0.4s;
 }
 
 .pizza[data-team='player'] {
@@ -136,8 +138,10 @@
 /* Don't show inactive Pizzas */
 .pizza[data-active='false'] {
 	opacity: 0;
+	transform: translate3d(0, 16px, 0) scale(2);
 }
 
 .pizza[data-active='true'] {
 	opacity: 1;
+	transform: translate3d(0, 0, 0) scale(2);
 }

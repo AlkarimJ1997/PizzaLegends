@@ -36,7 +36,7 @@
 	align-items: center;
 }
 
-.keyboard-menu .option .right:not(.emoji) {
+.keyboard-menu .option .right:not(.emoji, .img) {
     font-family: var(--ff-battle);
 	font-size: 10px;
     padding-inline-end: 4px;

@@ -4,7 +4,8 @@ import '../../styles/SubmissionMenu.css';
 type SubmissionMenuConfig = {
 	caster: Combatant;
 	enemy: Combatant;
-	onComplete: (submission: Submission) => void;
+	replacements: Combatant[];
+	onComplete: (submission: Submission | Replacement) => void;
 	items: Item[];
 };
 
@@ -15,14 +16,22 @@ type QuantityMap = {
 export class SubmissionMenu {
 	caster: Combatant;
 	enemy: Combatant;
-	onComplete: (submission: Submission) => void;
+	replacements: Combatant[];
+	onComplete: (submission: Submission | Replacement) => void;
 	items: MappedItem[];
 
 	keyboardMenu!: KeyboardMenu;
 
-	constructor({ caster, enemy, onComplete, items }: SubmissionMenuConfig) {
+	constructor({
+		caster,
+		enemy,
+		replacements,
+		onComplete,
+		items,
+	}: SubmissionMenuConfig) {
 		this.caster = caster;
 		this.enemy = enemy;
+		this.replacements = replacements;
 		this.onComplete = onComplete;
 
 		const quantityMap: QuantityMap = {};
@@ -84,7 +93,7 @@ export class SubmissionMenu {
 					label: 'Swap',
 					description: 'Swap out your current pizza',
 					handler: () => {
-						// Do something when chosen
+						this.keyboardMenu.setOptions(this.getPages().replacements);
 					},
 					right: () => {
 						return '🔄';
@@ -125,7 +134,32 @@ export class SubmissionMenu {
 				}),
 				backOption,
 			],
+			replacements: [
+				...this.replacements.map(replacement => {
+					return {
+						label: replacement.name,
+						description: replacement.description,
+						handler: () => {
+							this.menuSubmitReplacement(replacement);
+						},
+						right: () => {
+							const iconImg = document.createElement('img');
+
+							iconImg.src = replacement.icon;
+							iconImg.alt = replacement.type;
+
+							return iconImg.outerHTML;
+						},
+					};
+				}),
+				backOption,
+			],
 		};
+	}
+
+	menuSubmitReplacement(replacement: Combatant) {
+		this.keyboardMenu?.end();
+		this.onComplete({ replacement });
 	}
 
 	menuSubmit(action: Action, instanceId?: string) {
@@ -134,7 +168,7 @@ export class SubmissionMenu {
 		this.onComplete({
 			action,
 			target: action.targetType === 'friendly' ? this.caster : this.enemy,
-			instanceId,
+			instanceId: instanceId || '',
 		});
 	}
 
