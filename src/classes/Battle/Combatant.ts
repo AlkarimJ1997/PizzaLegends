@@ -246,6 +246,8 @@ export class Combatant {
 				],
 			};
 		}
+
+        return null;
 	}
 
 	init(container: HTMLDivElement) {

@@ -64,8 +64,12 @@ export class BattleEvent {
 			});
 		}
 
-		// Wait a little bit, then stop blinking the Pizza
+		// Wait a little bit, update teams, then stop blinking the Pizza
 		await wait(600);
+
+        this.battle.playerTeam.update();
+        this.battle.enemyTeam.update();
+
 		target?.pizzaElement.classList.remove('blinking');
 
 		resolve();
@@ -130,6 +134,10 @@ export class BattleEvent {
 
 		// Wait a little bit so the player can see it, then resolve
 		await wait(400);
+
+        this.battle.playerTeam.update();
+        this.battle.enemyTeam.update();
+
 		resolve();
 	}
 

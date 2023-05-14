@@ -1,0 +1,32 @@
+.team {
+	position: absolute;
+	top: 4px;
+	display: flex;
+	gap: 4px;
+}
+
+.team[data-team='player'] {
+	left: 4px;
+}
+
+.team[data-team='enemy'] {
+	right: 4px;
+}
+
+/* Initially don't show dead or active states */
+.team .dead-pizza {
+	display: none;
+}
+
+.team .active-pizza-indicator {
+	display: none;
+}
+
+/* Show them based on data attributes */
+.team [data-dead='true'] .dead-pizza {
+	display: block;
+}
+
+.team [data-active='true'] .active-pizza-indicator {
+	display: block;
+}

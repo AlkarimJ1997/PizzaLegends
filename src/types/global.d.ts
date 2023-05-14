@@ -82,13 +82,15 @@ declare global {
 		activeCombatants: ActiveCombatants;
 		items: Item[];
 		turnCycle: TurnCycle;
+        playerTeam: Team;
+        enemyTeam: Team;
 
 		createElement(): void;
 		init(container: HTMLDivElement): void;
 	}
 
 	interface Combatant {
-		id: string;
+		id?: string;
 		name: string;
 		description: string;
 		type: PizzaType;
@@ -105,7 +107,7 @@ declare global {
 			type: string;
 			expiresIn: number;
 		} | null;
-		isPlayerControlled: boolean;
+		isPlayerControlled?: boolean;
 
 		battle: Battle;
 
@@ -128,6 +130,17 @@ declare global {
 		decrementStatus(): null | BattleEventType;
 		init(container: HTMLDivElement): void;
 	}
+
+    interface Team {
+        team: TeamType;
+        name: string;
+        combatants: Combatant[];
+        element: HTMLDivElement;
+
+        createElement(): void;
+        update(): void;
+        init(container: HTMLDivElement): void;
+    }
 
 	// GameObject.ts types
 	type GameObjectConfig = {
