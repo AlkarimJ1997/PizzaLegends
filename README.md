@@ -1,14 +1,3 @@
-<style>
-  details {
-    margin-bottom: 0.5rem;
-  }
-
-  summary {
-    font-size: 1.1rem;
-    user-select: none;
-  }
-</style>
-
 # Pizza Legends
 
 This repository contains the code for a 2D RPG game called Pizza Legends. It was made following this [tutorial](https://www.youtube.com/watch?v=fyi4vfbKEeo) by Drew Conley.
