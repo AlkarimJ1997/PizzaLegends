@@ -3815,7 +3815,7 @@ npm run dev
 - [x] Battle Menu UI
 
 <details>
-  <summary>Battle Menu UI</summary>
+  <summary>Battle Menu UI</summary></br>
 
   Up till now, our Battle System just chooses a random action for the player and enemy. Let's add a UI so that the player can choose their own action.
 
