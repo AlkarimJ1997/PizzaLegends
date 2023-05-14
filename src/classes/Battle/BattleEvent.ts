@@ -3,10 +3,6 @@ import { SubmissionMenu } from './SubmissionMenu';
 import { ReplacementMenu } from './ReplacementMenu';
 import { wait } from '../../utils/utils';
 
-type VoidResolve = () => void;
-type SubmissionResolve = (submission?: Submission) => void;
-type ReplacementResolve = (replacement: Combatant) => void;
-
 export class BattleEvent {
 	event: BattleEventType;
 	battle: Battle;
@@ -145,28 +141,18 @@ export class BattleEvent {
 		fn(this.event, resolve);
 	}
 
-	init(resolve: VoidResolve | SubmissionResolve | ReplacementResolve) {
-		switch (this.event.type) {
-			case 'message':
-				this.message(resolve as VoidResolve);
-				break;
-			case 'stateChange':
-				this.stateChange(resolve as VoidResolve);
-				break;
-			case 'submissionMenu':
-				this.submissionMenu(resolve as SubmissionResolve);
-				break;
-			case 'replacementMenu':
-				this.replacementMenu(resolve as ReplacementResolve);
-				break;
-			case 'replace':
-				this.replace(resolve as VoidResolve);
-				break;
-			case 'animation':
-				this.animation(resolve as VoidResolve);
-				break;
-			default:
-				break;
-		}
+	init(resolve: Resolve) {
+		const eventHandlers: EventHandler = {
+			message: this.message,
+			stateChange: this.stateChange,
+			submissionMenu: this.submissionMenu,
+			replacementMenu: this.replacementMenu,
+			replace: this.replace,
+			animation: this.animation,
+		};
+
+		const handler = eventHandlers[this.event.type as keyof EventHandler];
+
+		handler?.call(this, resolve as () => void);
 	}
 }

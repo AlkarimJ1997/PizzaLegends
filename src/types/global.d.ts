@@ -80,7 +80,7 @@ declare global {
 		onComplete: () => void;
 		combatants: Combatants;
 		activeCombatants: ActiveCombatants;
-        items: Item[];
+		items: Item[];
 		turnCycle: TurnCycle;
 
 		createElement(): void;
@@ -90,7 +90,7 @@ declare global {
 	interface Combatant {
 		id: string;
 		name: string;
-        description: string;
+		description: string;
 		type: PizzaType;
 		src: string;
 		icon: string;
@@ -218,7 +218,7 @@ declare global {
 	type CombatantConfig = {
 		id?: string;
 		name: string;
-        description: string;
+		description: string;
 		type: PizzaType;
 		src: string;
 		icon: string;
@@ -249,7 +249,7 @@ declare global {
 
 	type PizzaConfig = {
 		name: string;
-        description: string;
+		description: string;
 		type: PizzaType;
 		src: string;
 		icon: string;
@@ -260,14 +260,14 @@ declare global {
 	type Submission = {
 		action: Action;
 		target: Combatant;
-        instanceId: string;
+		instanceId: string;
 	};
 
-    type Replacement = {
-        replacement: Combatant;
-    };
+	type Replacement = {
+		replacement: Combatant;
+	};
 
-    type SubmissionReturn = Submission | Replacement;
+	type SubmissionReturn = Submission | Replacement;
 
 	type BattleEventType = {
 		type: string;
@@ -286,8 +286,23 @@ declare global {
 			type: string;
 			expiresIn: number;
 		} | null;
-        replacement?: Combatant 
-        team?: TeamType;
+		replacement?: Combatant;
+		team?: TeamType;
+	};
+
+	// Battle Event Handlers
+	type VoidResolve = () => void;
+	type SubmissionResolve = (submission?: Submission) => void;
+	type ReplacementResolve = (replacement: Combatant) => void;
+    type Resolve = VoidResolve | SubmissionResolve | ReplacementResolve;
+
+	type EventHandler = {
+		message: (resolve: VoidResolve) => void;
+		stateChange: (resolve: VoidResolve) => Promise<void>;
+		submissionMenu: (resolve: SubmissionResolve) => void;
+		replacementMenu: (resolve: ReplacementResolve) => void;
+		replace: (resolve: VoidResolve) => void;
+		animation: (resolve: VoidResolve) => void;
 	};
 
 	type Action = {
@@ -302,11 +317,11 @@ declare global {
 		team: 'player' | 'enemy';
 	};
 
-    type MappedItem = {
-        actionId: string;
-        instanceId: string;
-        quantity: number;
-    }
+	type MappedItem = {
+		actionId: string;
+		instanceId: string;
+		quantity: number;
+	};
 
 	// window Objects
 	interface Window {
