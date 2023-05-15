@@ -5138,4 +5138,90 @@ npm run dev
 
 <details>
   <summary>Overworld HUD</summary></br>
+
+  Okay, let's quickly add a HUD to the Overworld. Luckily, we are going to reuse our HUD element from the `Combatant` class so it's pretty easy.
+
+  First, let's create a new HUD right when our game launches in the `init()` method of `Overworld`.
+
+  ```ts
+  init() {
+    this.hud = new Hud();
+    this.hud.init(getElement('.game'));
+
+		this.startMap(window.OverworldMaps.DemoRoom);
+
+    // ... rest of code
+	}
+  ```
+
+  Now, let's create the `Hud` class.
+
+  ```ts
+  export class Hud {
+    scoreboards: Combatant[] = [];
+    element!: HTMLDivElement;
+
+    createElement() {
+      this.element = document.createElement('div');
+      this.element.classList.add('hud');
+
+      const { playerState, Pizzas } = window;
+
+      playerState.lineup.forEach((key: string) => {
+        const pizza = playerState.pizzas[key];
+        const scoreboard = new Combatant(
+          {
+            id: key,
+            ...Pizzas[pizza.pizzaId],
+            ...pizza,
+          },
+          null
+        );
+
+        scoreboard.createElement();
+        this.scoreboards.push(scoreboard);
+        this.element.appendChild(scoreboard.hudElement);
+      });
+    }
+
+    update() {
+      this.scoreboards.forEach(scoreboard => {
+        scoreboard.update(window.playerState.pizzas[scoreboard.id]);
+      });
+    }
+
+    init(container: HTMLDivElement) {
+      this.createElement();
+      this.update();
+      container.appendChild(this.element);
+
+      // Listen for update signals
+      document.addEventListener('PlayerStateUpdated', () => {
+        this.update();
+      });
+    }
+  }
+  ```
+
+  Very simple class here. We don't even need a constructor. We just create `Combatant` instances for each pizza in the player's lineup and append their HUD elements. We also listen for `PlayerStateUpdated` events to update the HUD when the player's state changes.
+
+  By doing this, if a Pizza gets hurt in battle, the HUD will update to reflect that.
+
+  Now, let's quickly fire this event when we change the player's state. Right now, we only do this after a battle in the `onWinner` callback.
+
+  ```ts
+  onWinner: winner => {
+    if (winner === 'player') {
+      // ... rest of code
+
+      // Fire signal for Overworld HUD
+      emitEvent('PlayerStateUpdated', {});
+    }
+
+    this.element.remove();
+    this.onComplete();
+  },
+  ```
+
+  And that's it! Now, we have a HUD in the Overworld that updates when the player's state changes.
 </details>

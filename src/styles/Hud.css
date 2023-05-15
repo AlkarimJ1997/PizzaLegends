@@ -1,6 +1,7 @@
 .hud {
-    position: absolute;
+    position: fixed;
     inset: 10px auto auto 2px;
+    transform: scale(1.2);
     image-rendering: pixelated;
 }
 
@@ -11,4 +12,19 @@
 
 .hud .combatant__type {
     display: none;
+}
+
+@media (width <= 1300px) {
+    .hud {
+        inset: 10px auto auto 20px;
+    }
+}
+
+@media (width <= 1200px) {
+    .hud {
+        display: flex;
+        gap: 1rem;
+        inset: -10px auto auto 50%;
+        transform: translateX(-50%) scale(1.2);
+    }
 }
