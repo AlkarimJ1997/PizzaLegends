@@ -63,7 +63,6 @@ export class PlayerState {
 		if (this.lineup.length < 3) this.lineup.push(newId);
 
 		emitEvent('LineupChanged', {});
-        console.log(this);
 	}
 
 	swapLineup(oldId: string, incomingId: string) {

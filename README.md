@@ -5695,4 +5695,227 @@ npm run dev
 
 <details>
   <summary>Pizza Stone</summary></br>
+
+  Now, let's add a Pizza Stone to our game. This will be an interactable `GameObject` that will allow us to make pizzas.
+
+  First, let's create a new `PizzaStone` class that extends `GameObject`.
+
+  ```ts
+  export class PizzaStone extends GameObject {
+    sprite: Sprite;
+    storyFlag: string;
+      pizzas: string[];
+
+    constructor(config: PizzaStoneConfig) {
+      super(config);
+
+      this.sprite = new Sprite({
+        gameObject: this,
+        src: '../assets/images/characters/pizza-stone.png',
+        animations: {
+          'used-down': [[0, 0]],
+          'unused-down': [[1, 0]],
+        },
+        currentAnimation: 'used-down',
+      });
+
+      this.storyFlag = config.storyFlag;
+      this.pizzas = config.pizzas;
+
+      this.talking = [
+        {
+          required: [this.storyFlag],
+          events: [
+            {
+              type: 'message',
+              textLines: [
+                {
+                  speed: SPEEDS.Normal,
+                  string: 'You have already used this.',
+                },
+              ],
+            },
+          ],
+        },
+        {
+          events: [
+            {
+              type: 'message',
+              textLines: [
+                {
+                  speed: SPEEDS.Normal,
+                  string: 'Approaching the legendary pizza stone...',
+                },
+              ],
+            },
+            { type: 'craftingMenu', pizzas: this.pizzas },
+            { type: 'addStoryFlag', flag: this.storyFlag },
+          ],
+        },
+      ];
+    }
+
+    update() {
+      if (window.playerState.storyFlags[this.storyFlag]) {
+        this.sprite.currentAnimation = 'used-down';
+        return;
+      }
+
+      this.sprite.currentAnimation = 'unused-down';
+    }
+  }
+  ```
+
+  Let's break it down. Like any subclass, we call `super` with the config. We create a `Sprite` for the stone, and set its animations. The animation will be `'used-down'` if the player has already used the stone, and `'unused-down'` if they haven't, which is updated in the `update` method (remember that `update` is called every frame).
+
+  From there, we have a `storyFlag` that we pass in that will determine whether the player has already used the stone. We also have a `pizzas` array that we pass in that will determine what pizzas the player can make.
+
+  By doing this, different pizza stones can craft different pizzas. For example, we can have a pizza stone in the forest that can only craft the `Forest Pizza`, and a pizza stone in the desert that can only craft the `Desert Pizza`.
+
+  Finally, we have a `talking` array that will determine what happens when the player interacts with the stone. If the story flag is already present, the stone won't be interactable. If it isn't, the player will be able to interact with it, i.e. craft a new pizza.
+
+  We can add the `PizzaStone` to our map like so:
+
+  ```ts
+  		gameObjects: {
+			hero: new Person({
+				// ...
+			}),
+			npcA: new Person({
+				// ...
+			}),
+			npcB: new Person({
+				// ...
+			}),
+			pizzaStone: new PizzaStone({
+				x: withGrid(2),
+				y: withGrid(7),
+				storyFlag: 'USED_PIZZA_STONE',
+				pizzas: ['v001', 'f001'],
+			}),
+		},
+  ```
+
+  Notice that the strings in the `pizzas` array are the IDs of the pizzas in the Pizzadex.
+
+  Now, let's actually create the new `craftingMenu` event in `OverworldEvent`.
+
+  ```ts
+  craftingMenu(resolve: () => void) {
+		const menu = new CraftingMenu({
+			pizzas: this.event.pizzas as string[],
+			onComplete: () => {
+				resolve();
+			},
+		});
+
+		menu.init(getElement<HTMLDivElement>('.game'));
+	}
+  ```
+
+  A pattern we've seen many times. We create a new `CraftingMenu` with the pizzas we passed in, and when the player is done, we resolve the event.
+
+  Now, let's add the `CraftingMenu` class.
+
+  ```ts
+  export class CraftingMenu {
+    pizzas: string[];
+    onComplete: () => void;
+    element!: HTMLDivElement;
+    keyboardMenu: KeyboardMenu | null = null;
+
+    constructor({ pizzas, onComplete }: CraftingMenuConfig) {
+      this.pizzas = pizzas;
+      this.onComplete = onComplete;
+    }
+
+    getOptions() {
+      return this.pizzas.map((id: string) => {
+        const base = window.Pizzas[id];
+
+        return {
+          label: base.name,
+          description: base.description,
+          handler: () => {
+            window.playerState.addPizza(id);
+            this.close();
+          },
+          right: () => {
+            return `<img src='${base.icon}' alt='${base.name}' />`;
+          },
+        };
+      });
+    }
+
+    createElement() {
+      this.element = document.createElement('div');
+      this.element.classList.add('overlay-menu');
+      this.element.classList.add('crafting-menu');
+
+      this.element.innerHTML = `
+              <h2>Create a Pizza</h2>
+          `;
+    }
+
+    close() {
+      this.keyboardMenu?.end();
+      this.element.remove();
+      this.onComplete();
+    }
+
+    init(container: HTMLDivElement) {
+      this.createElement();
+
+      this.keyboardMenu = new KeyboardMenu({
+        descriptionContainer: container,
+      });
+      this.keyboardMenu.init(this.element);
+      this.keyboardMenu.setOptions(this.getOptions());
+
+      container.appendChild(this.element);
+    }
+  }
+  ```
+
+  Pretty much nothing new here. It's pattern is exactly that of other menus we've created.
+
+  However, the `handler()` method is a bit different. We need to dynamically add a new Pizza to the player's lineup or pizzas. We do this by creating a new method in `PlayerState` called `addPizza`.
+
+  ```ts
+  addPizza(pizzaId: string) {
+		const newId = `p${Date.now()}` + Math.floor(Math.random() * 99999);
+
+		this.pizzas[newId] = {
+			pizzaId,
+			hp: 50,
+			maxHp: 50,
+			xp: 0,
+			maxXp: 100,
+			level: 1,
+			status: null,
+		};
+
+		if (this.lineup.length < 3) this.lineup.push(newId);
+
+		emitEvent('LineupChanged', {});
+	}
+  ```
+
+  Not too complicated here. We create a unique ID for the pizza, and add it to the player's `pizzas` object. We also add it to the player's lineup if there's room.
+
+  Finally, we emit a `LineupChanged` event, which will update the Overworld HUD.
+
+  It's important to point out that the stats for the Pizza are all hard coded. If we are very progressed in the game, we'd need to add a way to dynamically calculate the stats of the pizza based on the player's level (because a level 1 pizza is going to be useless to the player).
+</details>
+
+### Day 23
+
+- [x] Saving Story Progress
+
+<details>
+  <summary>Saving Story Progress</summary></br>
+
+  We are at the point where we have a lot of features and concepts to create a full-fledged game. However, we are missing one key feature: saving the player's progress. Let's add that now.
+
+  
 </details>
