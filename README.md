@@ -5225,3 +5225,313 @@ npm run dev
 
   And that's it! Now, we have a HUD in the Overworld that updates when the player's state changes.
 </details>
+
+### Day 20
+
+- [x] Pause Menu
+
+<details>
+  <summary>Pause Menu</summary></br>
+
+  Today, we built a pause menu for the player to use in the Overworld. Let's start by creating a new class called `PauseMenu`.
+
+  ```ts
+  export class PauseMenu {
+    onComplete: () => void;
+
+    element!: HTMLDivElement;
+    keyboardMenu: KeyboardMenu | null = null;
+    esc: KeyPressListener | null = null;
+
+    constructor({ onComplete }: { onComplete: () => void }) {
+      this.onComplete = onComplete;
+    }
+
+    getOptions(pageKey: string) {
+      const { playerState, Pizzas } = window;
+
+      // Case 1: Show options for the root page
+      if (pageKey === 'root') {
+        return [
+          {
+            label: 'Pizzas',
+            description: 'Manage your pizzas',
+            handler: () => {
+              this.keyboardMenu?.setOptions(this.getOptions('pizzas'));
+            },
+            right: () => '🍕',
+          },
+          {
+            label: 'Save',
+            description: 'Save your progress',
+            handler: () => {
+              // We'll come back to this
+            },
+            right: () => '💾',
+          },
+          {
+            label: 'Close',
+            description: 'Close the pause menu',
+            handler: () => this.close(),
+            right: () => '❎',
+          },
+        ];
+      }
+
+      // Case 2: Show options for the Pizza page
+      if (pageKey === 'pizzas') {
+        const lineupPizzas = playerState.lineup.map((id: string) => {
+          const { pizzaId } = playerState.pizzas[id];
+          const base = Pizzas[pizzaId];
+
+          return {
+            label: base.name,
+            description: base.description,
+            handler: () => {
+              this.keyboardMenu?.setOptions(this.getOptions(id));
+            },
+            right: () => {
+              return `<img src='${base.icon}' alt='${base.name}' />`;
+            },
+          };
+        });
+
+        return [
+          ...lineupPizzas,
+          {
+            label: 'Back',
+            description: 'Go back to the previous menu',
+            handler: () => {
+              this.keyboardMenu?.setOptions(this.getOptions('root'));
+            },
+            right: () => '🔙',
+          },
+        ];
+      }
+
+      // Case 3: Show options for one Pizza (specific ID)
+      const inactiveIds = Object.keys(playerState.pizzas).filter((id: string) => {
+        return !playerState.lineup.includes(id);
+      });
+
+      const inactivePizzas = inactiveIds.map((id: string) => {
+        const { pizzaId } = playerState.pizzas[id];
+        const base = Pizzas[pizzaId];
+
+        return {
+          label: `Swap for ${base.name}`,
+          description: base.description,
+          handler: () => {
+            playerState.swapLineup(pageKey, id);
+            this.keyboardMenu?.setOptions(this.getOptions('root'));
+          },
+          right: () => {
+            return `<img src='${base.icon}' alt='${base.name}' />`;
+          },
+        };
+      });
+
+      return [
+        ...inactivePizzas,
+        {
+          label: 'Move to front',
+          description: 'Move this pizza to the front of the line',
+          handler: () => {
+            playerState.moveToFront(pageKey);
+            this.keyboardMenu?.setOptions(this.getOptions('root'));
+          },
+          right: () => '🔼',
+        },
+        {
+          label: 'Back',
+          description: 'Go back to the previous menu',
+          handler: () => {
+            this.keyboardMenu?.setOptions(this.getOptions('root'));
+          },
+          right: () => '🔙',
+        },
+      ];
+    }
+
+    createElement() {
+      this.element = document.createElement('div');
+      this.element.classList.add('pause-menu');
+
+      this.element.innerHTML = `
+              <h2>Pause Menu</h2>
+          `;
+    }
+
+    close() {
+      this.esc?.unbind();
+      this.keyboardMenu?.end();
+      this.element.remove();
+      this.onComplete();
+    }
+
+    async init(container: HTMLDivElement) {
+      this.createElement();
+
+      this.keyboardMenu = new KeyboardMenu({
+        descriptionContainer: container,
+      });
+      this.keyboardMenu.init(this.element);
+      this.keyboardMenu.setOptions(this.getOptions('root'));
+
+      container.appendChild(this.element);
+
+      // Close Pause Menu on Escape
+      wait(200);
+      this.esc = new KeyPressListener('Escape', () => {
+        this.close();
+      });
+    }
+  }
+  ```
+
+  A little bit of a long class, but the logic is very simple. We have a `getOptions` method that returns an array of options for the `KeyboardMenu` to display. We have three cases:
+
+  1. The root page, which shows the main menu options
+  2. The pizzas page, which shows the player's lineup
+  3. A specific pizza page, which shows options for that pizza
+
+  We gather our Pizzas dynamically from `playerState` and our Pizzadex. We also create two methods in `playerState` to help us manage the lineup: `swapLineup` and `moveToFront`. We'll come back to these later.
+
+  We also have a `close` method that removes the menu from the DOM and calls the `onComplete` callback, which will 'unpause' the game.
+
+  Notice we also have a `KeyPressListener` that listens for the Escape key. This will close the menu when the player presses Escape. But we also wait 200ms before we add this listener. This is because we don't want the Escape key to close the menu immediately after it opens (since Escape is also used to open the menu).
+
+  But how do we actually pause the game? Let's go to the `Overworld` class and add a `pause` OverworldEvent whenever the player presses Escape.
+
+  We'll do this in the `bindActionInput()` method from a while back, the one that listens for the player to press the Enter key to talk to NPCs.
+
+  ```ts
+  bindActionInput() {
+		new KeyPressListener('Enter', () => {
+			// Is there a person here to talk to?
+			this.map.checkForActionCutscene();
+		});
+
+		new KeyPressListener('Escape', () => {
+			if (!this.map.isCutscenePlaying) {
+				this.map.startCutscene([{ type: 'pause' }]);
+			}
+		});
+	}
+  ```
+
+  Notice that this is a global cutscene. Now, how do we actually stop the game loop from running? We can add a flag in the game loop that checks if the game is paused. If so, it won't keep running `requestAnimationFrame`.
+
+  ```ts
+  startGameLoop() {
+		const targetFPS = 60;
+		const targetDeltaTime = 1000 / targetFPS;
+		let lastFrameTime = performance.now();
+		let accumulator = 0;
+
+		const step = (currentFrameTime: number) => {
+			// ... rest of the game loop
+
+      if (!this.map.isPaused) {
+          this.currentAnimationFrame = requestAnimationFrame(step);
+      }
+		};
+
+		this.currentAnimationFrame = requestAnimationFrame(step);
+	}
+  ```
+
+  Now, we'll add this flag to the `OverworldMap` class.
+
+  ```ts
+  this.isPaused = false;
+  ```
+
+  From here, we can actually create the new `pause` event in `OverworldEvent`.
+
+  ```ts
+  pause(resolve: () => void) {
+		this.map.isPaused = true;
+
+		const menu = new PauseMenu({
+			onComplete: () => {
+				resolve();
+				this.map.isPaused = false;
+				this.map.overworld?.startGameLoop();
+			},
+		});
+
+		menu.init(getElement<HTMLDivElement>('.game'));
+	}
+  ```
+
+  Nothing crazy here. We set `isPaused` to true to stop the game loop, and create a new `PauseMenu` so that it shows up on screen. The `onComplete` function we pass will resolve the event, unpause the game, and restart the game loop.
+
+  Now, let's look at the two methods we added to `PlayerState` to help us manage the lineup.
+
+  ```ts
+	swapLineup(oldId: string, incomingId: string) {
+		const oldIndex = this.lineup.indexOf(oldId);
+		this.lineup[oldIndex] = incomingId;
+
+		emitEvent('LineupChanged', {});
+	}
+
+	moveToFront(incomingId: string) {
+		this.lineup = this.lineup.filter(id => id !== incomingId);
+		this.lineup.unshift(incomingId);
+
+		emitEvent('LineupChanged', {});
+	}
+  ```
+
+  Very simple methods here. `swapLineup` takes the ID of the pizza we want to swap out, and the ID of the pizza we want to swap in. It finds the index of the pizza we want to swap out, and replaces it with the pizza we want to swap in.
+
+  `moveToFront` takes the ID of the pizza we want to move to the front of the lineup. It removes that pizza from the lineup, and adds it to the front, so that the length of the lineup stays the same.
+
+  In either case, we fire a `LineupChanged` event so that the Overworld HUD can update the lineup. Let's look at that now.
+
+  ```ts
+  init(container: HTMLDivElement) {
+		this.createElement();
+		this.update();
+		container.appendChild(this.element);
+
+		// Listen for update signals
+		document.addEventListener('PlayerStateUpdated', () => {
+			this.update();
+		});
+
+		document.addEventListener('LineupChanged', () => {
+			this.createElement();
+      this.update();
+			container.appendChild(this.element);
+		});
+	}
+  ```
+
+  When the lineup changes, we recreate the Overworld HUD and update it. Let's look at the `update` method. But by doing this, we need to handle any existing HUD elements.
+
+  But this is easy. We just add the following lines to the start of the `createElement` method.
+
+  ```ts
+  createElement() {
+		this.element?.remove();
+		this.scoreboards = [];
+
+    // ... rest of the method
+	}
+  ```
+</details>
+
+### Day 21
+
+- [x] Story Flags
+
+<details>
+  <summary>Story Flags</summary></br>
+
+  Remember way back when we talked about Story Flags? Time to implement them.
+
+  
+</details>
