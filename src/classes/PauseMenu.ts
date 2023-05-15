@@ -19,6 +19,34 @@ export class PauseMenu {
 
 		// Case 1: Show options for the root page
 		if (pageKey === 'root') {
+			return [
+				{
+					label: 'Pizzas',
+					description: 'Manage your pizzas',
+					handler: () => {
+						this.keyboardMenu?.setOptions(this.getOptions('pizzas'));
+					},
+					right: () => '🍕',
+				},
+				{
+					label: 'Save',
+					description: 'Save your progress',
+					handler: () => {
+						// We'll come back to this
+					},
+					right: () => '💾',
+				},
+				{
+					label: 'Close',
+					description: 'Close the pause menu',
+					handler: () => this.close(),
+					right: () => '❎',
+				},
+			];
+		}
+
+		// Case 2: Show options for the Pizza page
+		if (pageKey === 'pizzas') {
 			const lineupPizzas = playerState.lineup.map((id: string) => {
 				const { pizzaId } = playerState.pizzas[id];
 				const base = Pizzas[pizzaId];
@@ -38,23 +66,17 @@ export class PauseMenu {
 			return [
 				...lineupPizzas,
 				{
-					label: 'Save',
-					description: 'Save your progress',
+					label: 'Back',
+					description: 'Go back to the previous menu',
 					handler: () => {
-						// We'll come back to this
+						this.keyboardMenu?.setOptions(this.getOptions('root'));
 					},
-					right: () => '💾',
-				},
-				{
-					label: 'Close',
-					description: 'Close the pause menu',
-					handler: () => this.close(),
-					right: () => '❎',
+					right: () => '🔙',
 				},
 			];
 		}
 
-		// Case 2: Show options for one Pizza (specific ID)
+		// Case 3: Show options for one Pizza (specific ID)
 		const inactiveIds = Object.keys(playerState.pizzas).filter((id: string) => {
 			return !playerState.lineup.includes(id);
 		});
