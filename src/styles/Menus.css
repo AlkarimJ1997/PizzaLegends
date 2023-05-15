@@ -1,0 +1,27 @@
+.pause-menu {
+	image-rendering: pixelated;
+	position: absolute;
+	inset: 1em 4.5em auto 4.5em;
+	background-color: var(--clr-secondary);
+	padding: 2px 6px 8px;
+	color: var(--clr-light);
+	border: 1px solid var(--clr-border);
+	z-index: 2;
+}
+
+.pause-menu .keyboard-menu {
+	position: relative;
+	border: 1px solid var(--clr-border);
+}
+
+.pause-menu .keyboard-menu img {
+	padding-inline-end: 1px;
+}
+
+.pause-menu h2 {
+	margin-bottom: 5px;
+	padding-block: 2px;
+	font-size: 11px;
+	color: var(--clr-border);
+	text-align: center;
+}

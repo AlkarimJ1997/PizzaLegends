@@ -6,6 +6,9 @@ export class Hud {
 	element!: HTMLDivElement;
 
 	createElement() {
+		this.element?.remove();
+		this.scoreboards = [];
+
 		this.element = document.createElement('div');
 		this.element.classList.add('hud');
 
@@ -42,6 +45,12 @@ export class Hud {
 		// Listen for update signals
 		document.addEventListener('PlayerStateUpdated', () => {
 			this.update();
+		});
+
+		document.addEventListener('LineupChanged', () => {
+			this.createElement();
+            this.update();
+			container.appendChild(this.element);
 		});
 	}
 }

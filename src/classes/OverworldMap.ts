@@ -9,6 +9,7 @@ export class OverworldMap {
 	upperImage: HTMLImageElement = new Image();
 	isCutscenePlaying: boolean;
 	cutsceneSpaces: CutsceneSpaces;
+    isPaused: boolean;
 
 	constructor(config: OverworldMapConfig) {
 		this.overworld = null;
@@ -25,6 +26,8 @@ export class OverworldMap {
 
 		this.isCutscenePlaying = false;
 		this.cutsceneSpaces = config.cutsceneSpaces || {};
+
+        this.isPaused = false;
 	}
 
 	drawLowerImage(ctx: CanvasRenderingContext2D, cameraPerson: GameObject) {

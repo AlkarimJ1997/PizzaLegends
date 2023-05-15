@@ -2,6 +2,10 @@ import { KeyPressListener } from './KeyPressListener';
 import { getElement, getElements, isSingleEmoji } from '../utils/utils';
 import '../styles/KeyboardMenu.css';
 
+type KeyboardMenuConfig = {
+	descriptionContainer?: HTMLDivElement;
+};
+
 export class KeyboardMenu {
 	options: Page[];
 	up: KeyPressListener | null;
@@ -12,11 +16,15 @@ export class KeyboardMenu {
 	descriptionElement!: HTMLDivElement;
 	descriptionElementText!: HTMLParagraphElement;
 
-	constructor() {
+	descriptionContainer?: HTMLDivElement;
+
+	constructor(config: KeyboardMenuConfig = {}) {
 		this.options = [];
 		this.up = null;
 		this.down = null;
 		this.prevFocus = null;
+
+		this.descriptionContainer = config.descriptionContainer;
 	}
 
 	setOptions(options: Page[]) {
@@ -90,7 +98,9 @@ export class KeyboardMenu {
 
 	init(container: HTMLDivElement) {
 		this.createElement();
-		container.appendChild(this.descriptionElement);
+		(this.descriptionContainer || container).appendChild(
+			this.descriptionElement
+		);
 		container.appendChild(this.element);
 
 		// Keyboard Navigation

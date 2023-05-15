@@ -23,6 +23,7 @@ declare global {
 		upperImage: HTMLImageElement;
 		isCutscenePlaying: boolean;
 		cutsceneSpaces: CutsceneSpaces;
+        isPaused: boolean;
 
 		drawLowerImage(
 			ctx: CanvasRenderingContext2D,

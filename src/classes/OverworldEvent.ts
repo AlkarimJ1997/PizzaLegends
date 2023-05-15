@@ -2,6 +2,7 @@ import { Message } from './Message';
 import { SceneTransition } from './SceneTransition';
 import { Battle } from './Battle/Battle';
 import { oppositeDirection, getElement } from '../utils/utils';
+import { PauseMenu } from './PauseMenu';
 
 type OverworldEventConfig = {
 	map: OverworldMap;
@@ -113,7 +114,7 @@ export class OverworldEvent {
 
 		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
 			const battle = new Battle({
-                enemy: window.Enemies[this.event.enemyId as string],
+				enemy: window.Enemies[this.event.enemyId as string],
 				onComplete: () => {
 					resolve();
 				},
@@ -126,6 +127,20 @@ export class OverworldEvent {
 		});
 	}
 
+	pause(resolve: () => void) {
+		this.map.isPaused = true;
+
+		const menu = new PauseMenu({
+			onComplete: () => {
+				resolve();
+				this.map.isPaused = false;
+				this.map.overworld?.startGameLoop();
+			},
+		});
+
+		menu.init(getElement<HTMLDivElement>('.game'));
+	}
+
 	init() {
 		const eventHandlers: Record<string, OverworldEventMethod> = {
 			stand: this.stand.bind(this),
@@ -133,6 +148,7 @@ export class OverworldEvent {
 			message: this.message.bind(this),
 			changeMap: this.changeMap.bind(this),
 			battle: this.battle.bind(this),
+			pause: this.pause.bind(this),
 		};
 
 		return new Promise<void>(resolve => {

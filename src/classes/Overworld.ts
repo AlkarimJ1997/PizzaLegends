@@ -15,7 +15,7 @@ export class Overworld {
 	ctx: CanvasRenderingContext2D;
 	currentAnimationFrame: number;
 
-    hud!: Hud;
+	hud!: Hud;
 	map!: OverworldMap;
 	directionInput!: DirectionInput;
 
@@ -69,7 +69,9 @@ export class Overworld {
 			// Draw Upper Image
 			this.map.drawUpperImage(this.ctx, cameraPerson);
 
-			this.currentAnimationFrame = requestAnimationFrame(step);
+            if (!this.map.isPaused) {
+                this.currentAnimationFrame = requestAnimationFrame(step);
+            }
 		};
 
 		this.currentAnimationFrame = requestAnimationFrame(step);
@@ -79,6 +81,12 @@ export class Overworld {
 		new KeyPressListener('Enter', () => {
 			// Is there a person here to talk to?
 			this.map.checkForActionCutscene();
+		});
+
+		new KeyPressListener('Escape', () => {
+			if (!this.map.isCutscenePlaying) {
+				this.map.startCutscene([{ type: 'pause' }]);
+			}
 		});
 	}
 
@@ -107,8 +115,8 @@ export class Overworld {
 	}
 
 	init() {
-        this.hud = new Hud();
-        this.hud.init(getElement('.game'));
+		this.hud = new Hud();
+		this.hud.init(getElement('.game'));
 
 		this.startMap(window.OverworldMaps.DemoRoom);
 

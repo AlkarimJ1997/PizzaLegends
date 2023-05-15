@@ -1,3 +1,5 @@
+import { emitEvent } from '../utils/utils';
+
 export class PlayerState {
 	pizzas: { [key: string]: Partial<CombatantConfig> };
 	lineup: string[];
@@ -23,6 +25,15 @@ export class PlayerState {
 				level: 1,
 				status: null,
 			},
+			p3: {
+				pizzaId: 'f001',
+				hp: 50,
+				maxHp: 50,
+				xp: 75,
+				maxXp: 100,
+				level: 1,
+				status: null,
+			},
 		};
 
 		this.lineup = ['p1', 'p2'];
@@ -31,5 +42,19 @@ export class PlayerState {
 			{ actionId: 'item_recoverHp', instanceId: 'item2' },
 			{ actionId: 'item_recoverHp', instanceId: 'item3' },
 		];
+	}
+
+	swapLineup(oldId: string, incomingId: string) {
+		const oldIndex = this.lineup.indexOf(oldId);
+		this.lineup[oldIndex] = incomingId;
+
+		emitEvent('LineupChanged', {});
+	}
+
+	moveToFront(incomingId: string) {
+		this.lineup = this.lineup.filter(id => id !== incomingId);
+		this.lineup.unshift(incomingId);
+
+		emitEvent('LineupChanged', {});
 	}
 }

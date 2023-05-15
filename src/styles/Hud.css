@@ -1,30 +1,35 @@
 .hud {
-    position: fixed;
-    inset: 10px auto auto 2px;
-    transform: scale(1.2);
-    image-rendering: pixelated;
+	image-rendering: pixelated;
+	position: fixed;
+	inset: 10px auto auto 2px;
+	transform: scale(1.2);
+}
+
+.game:has(.battle) .hud {
+	display: none;
 }
 
 .hud .combatant {
-    position: relative;
-    margin-bottom: 10px;
+	position: relative;
+	margin-bottom: 10px;
 }
 
-.hud .combatant__type {
-    display: none;
+.hud .combatant__type,
+.hud .combatant__status {
+	display: none !important;
 }
 
 @media (width <= 1300px) {
-    .hud {
-        inset: 10px auto auto 20px;
-    }
+	.hud {
+		inset: 10px auto auto 20px;
+	}
 }
 
 @media (width <= 1200px) {
-    .hud {
-        display: flex;
-        gap: 1rem;
-        inset: -10px auto auto 50%;
-        transform: translateX(-50%) scale(1.2);
-    }
+	.hud {
+		inset: -10px auto auto 50%;
+		display: flex;
+		gap: 1rem;
+		transform: translateX(-50%) scale(1.2);
+	}
 }
