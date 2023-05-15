@@ -5533,5 +5533,163 @@ npm run dev
 
   Remember way back when we talked about Story Flags? Time to implement them.
 
-  
+  First, let's add a `storyFlags` property to `PlayerState`.
+
+  ```ts
+  this.storyFlags = {};
+  ```
+
+  Now, remember our `talking` property in our map configurations and its complicated structure? Time to put it to use. I can do something like the following:
+
+  ```ts
+  talking: [
+    {
+      required: ['DEFEATED_BETH'],
+      events: [
+        {
+          type: 'message',
+          textLines: [
+            { speed: SPEEDS.Fast, string: "What do you want now? I'm busy!" },
+          ],
+          faceHero: 'npcA',
+        },
+      ],
+    },
+    {
+      events: [
+        {
+          type: 'message',
+          textLines: [
+            { speed: SPEEDS.Normal, string: "I'm going to crush you!" },
+          ],
+          faceHero: 'npcA',
+        },
+        { type: 'battle', enemyId: 'beth' },
+        { type: 'addStoryFlag', flag: 'DEFEATED_BETH' },
+        {
+          type: 'message',
+          textLines: [
+            { speed: SPEEDS.Fast, string: 'You crushed me like weak pepper.' },
+          ],
+        },
+      ],
+    },
+  ]
+  ```
+
+  Notice that we add an optional array of strings called `required`. This is an array of story flags that must be present in order for this `talking` configuration to be used. If the required flags are not set, this scenario will be skipped.
+
+  Let's actually implement this. We need to configure our `checkForActionCutscene` method in `OverworldMap` to check for story flags.
+
+  ```ts
+  checkForActionCutscene() {
+		const hero = this.gameObjects.hero;
+		const nextCoords = nextPosition(hero.x, hero.y, hero.direction);
+		const match = Object.values(this.gameObjects).find(obj => {
+			return `${obj.x},${obj.y}` === `${nextCoords.x},${nextCoords.y}`;
+		});
+
+		if (!this.isCutscenePlaying && match && match.talking.length) {
+			const relevantScenario = match.talking.find(scenario => {
+				return (scenario.required || []).every(sFlag => {
+					return window.playerState.storyFlags[sFlag];
+				});
+			});
+
+			relevantScenario && this.startCutscene(relevantScenario.events);
+		}
+	}
+  ```
+
+  Now, it will loop through the `talking` array and find the first scenario that has all of its required story flags set. If it finds one, it will start the cutscene.
+
+  But now, we need to actually add the story flag when we defeat Beth. We'll do it using a new OverworldEvent called `addStoryFlag`. Let's create the method in `OverworldEvent`.
+
+  ```ts
+  addStoryFlag(resolve: () => void) {
+		window.playerState.storyFlags[this.event.flag] = true;
+		resolve();
+	}
+  ```
+
+  Extremely simple method. We add the story flag to the player state, and resolve the event.
+
+  Now, there's one more issue. What about conditional story flags? For example, if we don't defeat Beth, we don't want to add the `DEFEATED_BETH` flag or execute any events that happen after the battle period.
+
+  Let's modify `OverworldEvent` and `Battle` to actually return a value when they resolve.
+
+  First, we'll do `Battle`.
+
+  ```ts
+  onWinner: winner => {
+    if (winner === 'player') {
+      // ... rest of the method
+    }
+
+    this.element.remove();
+    this.onComplete(winner === 'player');
+  },
+  ```
+
+  Now, we pass a boolean to `onComplete` that indicates whether the player won or not.
+
+  Let's absorb that in `OverworldEvent`.
+
+  ```ts
+  battle(resolve: BattleResolve<'WON_BATTLE' | 'LOST_BATTLE'>) {
+		const sceneTransition = new SceneTransition();
+
+		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
+			const battle = new Battle({
+				enemy: window.Enemies[this.event.enemyId as string],
+				onComplete: didWin => {
+					resolve(didWin ? 'WON_BATTLE' : 'LOST_BATTLE');
+				},
+			});
+
+			battle.init(getElement<HTMLDivElement>('.game'));
+
+			// After battle is over
+			sceneTransition.fadeOut();
+		});
+	}
+  ```
+
+  Now, if the player won, we resolve the event with a `Promise<string>` that resolves to `'WON_BATTLE'`. If the player lost, we resolve with `'LOST_BATTLE'`.
+
+  Let's capture this in our looping of OverworldEvents. This happens in `OverworldMap` in the `startCutscene` method.
+
+  ```ts
+  async startCutscene(events: BehaviorLoopEvent[]) {
+		this.isCutscenePlaying = true;
+
+		// Start a loop of async events, awaiting each one
+		for (const event of events) {
+			const eventHandler = new OverworldEvent({
+				event,
+				map: this,
+			});
+
+			const result = await eventHandler.init();
+
+      if (result === 'LOST_BATTLE') break;
+		}
+
+		this.isCutscenePlaying = false;
+
+		// Reset NPCs to do their idle behavior
+		Object.values(this.gameObjects).forEach(gameObject => {
+			gameObject.doBehaviorEvent(this);
+		});
+	}
+  ```
+
+  Now, if we lose the battle, we break out of the loop and stop any further events from happening.
+
+  And that's it! We can now have conditional story flags and conditional events based on those flags.
 </details>
+
+### Day 22
+
+- [x] Pizza Stone
+
