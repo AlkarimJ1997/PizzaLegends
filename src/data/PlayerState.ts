@@ -1,5 +1,5 @@
 export class PlayerState {
-	pizzas: { [key: string]: CombatantConfig };
+	pizzas: { [key: string]: Partial<CombatantConfig> };
 	lineup: string[];
 	items: Item[];
 

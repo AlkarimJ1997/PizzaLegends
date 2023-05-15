@@ -2,14 +2,6 @@ import { KeyPressListener } from './KeyPressListener';
 import { getElement, getElements, isSingleEmoji } from '../utils/utils';
 import '../styles/KeyboardMenu.css';
 
-type Page = {
-	label: string;
-	description: string;
-	disabled?: boolean;
-	handler: () => void;
-	right?: () => string;
-};
-
 export class KeyboardMenu {
 	options: Page[];
 	up: KeyPressListener | null;

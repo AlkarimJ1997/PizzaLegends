@@ -46,7 +46,7 @@ export class Team {
 		this.combatants.forEach(c => {
 			const icon = getElement(`[data-combatant="${c.id}"]`, this.element);
 
-			icon?.setAttribute('data-dead', `${c.hp <= 0}`);
+			icon?.setAttribute('data-dead', `${(c.hp as number) <= 0}`);
 			icon?.setAttribute('data-active', `${c.isActive}`);
 		});
 	}

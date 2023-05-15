@@ -77,11 +77,12 @@ declare global {
 
 	interface Battle {
 		element: HTMLDivElement;
-        enemy: EnemyConfig;
+		enemy: EnemyConfig;
 		onComplete: () => void;
 		combatants: Combatants;
 		activeCombatants: ActiveCombatants;
 		items: Item[];
+        usedInstanceIds: { [key: string]: boolean };
 		turnCycle: TurnCycle;
 		playerTeam: Team;
 		enemyTeam: Team;
@@ -99,10 +100,10 @@ declare global {
 		icon: string;
 		actions: string[];
 		team: TeamType;
-		hp: number;
+		hp?: number;
 		maxHp: number;
-		xp: number;
-		maxXp: number;
+		xp?: number;
+		maxXp?: number;
 		level: number;
 		status?: {
 			type: string;
@@ -168,7 +169,7 @@ declare global {
 		textLines?: TextObj[];
 		faceHero?: string;
 		map?: string;
-        enemyId?: string;
+		enemyId?: string;
 	};
 
 	type TalkEvent = {
@@ -240,16 +241,17 @@ declare global {
 		icon: string;
 		actions: string[];
 		team: TeamType;
-		hp: number;
+		hp?: number;
 		maxHp: number;
-		xp: number;
-		maxXp: number;
+		xp?: number;
+		maxXp?: number;
 		level: number;
 		status?: {
 			type: string;
 			expiresIn: number;
 		} | null;
 		isPlayerControlled?: boolean;
+		pizzaId?: string;
 	};
 
 	// Pizza Configurations
@@ -324,6 +326,14 @@ declare global {
 		animation: (resolve: VoidResolve) => void;
 	};
 
+    type Page = {
+        label: string;
+        description: string;
+        disabled?: boolean;
+        handler: () => void;
+        right?: () => string;
+    };
+
 	type Action = {
 		name: string;
 		targetType?: string;
@@ -351,16 +361,18 @@ declare global {
 		success: BattleEventType[];
 	};
 
+	type EnemyPizza = {
+		pizzaId: string;
+		hp?: number;
+		maxHp: number;
+		level: number;
+	};
+
 	type EnemyConfig = {
 		name: string;
 		src: string;
 		pizzas: {
-			[key: string]: {
-				pizzaId: string;
-                hp?: number;
-				maxHp: number;
-				level: number;
-			};
+			[key: string]: EnemyPizza;
 		};
 	};
 

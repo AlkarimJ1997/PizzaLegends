@@ -42,11 +42,11 @@ export class Battle {
 			enemy: null,
 		};
 
-		window.playerState.lineup.forEach(id => {
+		window.playerState.lineup.forEach((id: string) => {
 			this.addCombatant(id, 'player', window.playerState.pizzas[id]);
 		});
 
-		Object.keys(this.enemy.pizzas).forEach(key => {
+		Object.keys(this.enemy.pizzas).forEach((key: string) => {
 			this.addCombatant(`e_${key}`, 'enemy', this.enemy.pizzas[key]);
 		});
 
@@ -60,10 +60,10 @@ export class Battle {
 		this.usedInstanceIds = {};
 	}
 
-	addCombatant(id: string, team: TeamType, config: EnemyConfig) {
+	addCombatant(id: string, team: TeamType, config: EnemyPizza) {
 		this.combatants[id] = new Combatant(
 			{
-				...window.Pizzas[config.pizzaId],
+				...window.Pizzas[config.pizzaId as string],
 				...config,
 				team,
 				isPlayerControlled: team === 'player',

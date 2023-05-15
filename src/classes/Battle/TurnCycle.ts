@@ -103,7 +103,7 @@ export class TurnCycle {
 		}
 
 		// Did the target die?
-		const targetDead = submission && submission.target.hp <= 0;
+		const targetDead = submission && (submission.target.hp as number) <= 0;
 
 		if (targetDead) {
 			await this.onNewEvent({
@@ -209,7 +209,7 @@ export class TurnCycle {
 		const combatants = Object.values(this.battle.combatants) as Combatant[];
 
 		combatants.forEach(c => {
-			if (c.hp > 0) aliveTeams[c.team] = true;
+			if ((c.hp as number) > 0) aliveTeams[c.team] = true;
 		});
 
 		if (!aliveTeams.player) return 'enemy';

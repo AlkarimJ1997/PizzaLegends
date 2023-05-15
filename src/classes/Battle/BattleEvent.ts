@@ -35,18 +35,22 @@ export class BattleEvent {
 	}
 
 	async stateChange(resolve: VoidResolve) {
-		const { caster, target, damage, recover, status } = this.event;
+		let damage = this.event.damage;
+		const { caster, target, recover, status } = this.event;
 		const who = this.event.onCaster ? caster : target;
 
 		if (damage) {
-			if (target && target.status?.type !== 'protected') {
+			if (target && target.hp && target.status?.type !== 'protected') {
+				// Apply damage based on the caster's level
+				damage += Math.floor((damage * (caster?.level || 1)) / 10);
+
 				target.update({ hp: target.hp - damage });
 				target.pizzaElement.classList.add('blinking');
 			}
 		}
 
 		if (recover) {
-			if (who) {
+			if (who && who.hp) {
 				const newHp = Math.min(who.hp + recover, who.maxHp);
 				who.update({ hp: newHp });
 			}
@@ -89,7 +93,7 @@ export class BattleEvent {
 			replacements: possibleCombatants.filter(c => {
 				const sameTeam = c.team === caster.team;
 				const notCaster = c.id !== caster.id;
-				const alive = c.hp > 0;
+				const alive = (c.hp as number) > 0;
 
 				return sameTeam && notCaster && alive;
 			}),
@@ -106,7 +110,7 @@ export class BattleEvent {
 
 		const menu = new ReplacementMenu({
 			replacements: replacements.filter(c => {
-				return c.team === this.event.team && c.hp > 0;
+				return c.team === this.event.team && (c.hp as number) > 0;
 			}),
 			onComplete: replacement => {
 				resolve(replacement as Combatant);
@@ -150,13 +154,14 @@ export class BattleEvent {
 
 			if (amount > 0) {
 				amount -= 1;
-				combatant.xp += 1;
+				(combatant.xp as number) += 1;
 
 				// Check if we leveled up
 				if (combatant.xp === combatant.maxXp) {
 					combatant.xp = 0;
 					combatant.maxXp = 100;
 					combatant.level += 1;
+					combatant.maxHp += 10;
 				}
 
 				combatant.update();

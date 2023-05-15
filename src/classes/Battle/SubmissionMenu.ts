@@ -73,7 +73,7 @@ export class SubmissionMenu {
 					label: 'Attack',
 					description: 'Choose an attack',
 					handler: () => {
-						this.keyboardMenu.setOptions(this.getPages().attacks);
+						this.keyboardMenu.setOptions(this.getPages().attacks as Page[]);
 					},
 					right: () => {
 						return '💥';

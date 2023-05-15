@@ -4764,6 +4764,7 @@ npm run dev
 
 - [x] Giving XP to Pizzas
 - [x] Dynamic Enemies and Player State
+- [x] Ending the Battle 
 
 
 <details>
@@ -4857,4 +4858,276 @@ npm run dev
   <summary>Dynamic Enemies and Player State</summary></br>
 
   Now, let's work on adding dynamic enemies and a player state to the battle. Currently, our battle is very static. Also, nothing persists after the battle is over.
+
+  Let's create a class called `PlayerState` that will hold the player's state.
+
+  ```ts
+  export class PlayerState {
+    pizzas: { [key: string]: Partial<CombatantConfig> };
+    lineup: string[];
+    items: Item[];
+
+    constructor() {
+      this.pizzas = {
+        p1: {
+          pizzaId: 's001',
+          hp: 30,
+          maxHp: 50,
+          xp: 90,
+          maxXp: 100,
+          level: 1,
+          status: { type: 'saucy', expiresIn: 1 },
+        },
+        p2: {
+          pizzaId: 'v001',
+          hp: 50,
+          maxHp: 50,
+          xp: 75,
+          maxXp: 100,
+          level: 1,
+          status: null,
+        },
+      };
+
+      this.lineup = ['p1', 'p2'];
+      this.items = [
+        { actionId: 'item_recoverHp', instanceId: 'item1' },
+        { actionId: 'item_recoverHp', instanceId: 'item2' },
+        { actionId: 'item_recoverHp', instanceId: 'item3' },
+      ];
+    }
+  }
+  ```
+
+  Here, we store the player's pizzas, lineup order, and items.
+
+  Now, let's define our enemies on the `window` object.
+
+  ```ts
+  window.Enemies = {
+    erio: {
+      name: 'Erio',
+      src: '../assets/images/characters/people/erio.png',
+      pizzas: {
+        a: {
+          pizzaId: 's001',
+          maxHp: 50,
+          level: 1,
+        },
+        b: {
+          pizzaId: 's002',
+          maxHp: 50,
+          level: 1,
+        },
+      },
+    },
+    beth: {
+      name: 'Beth',
+      src: '../assets/images/characters/people/npc1.png',
+      pizzas: {
+        a: {
+          pizzaId: 's001',
+          hp: 1,
+          maxHp: 50,
+          level: 1,
+        },
+      },
+    },
+  };
+
+  window.playerState = new PlayerState();
+  ```
+
+  Here, we define the `Battle` enemies. We also instantiate the `PlayerState` class and store it on the `window` object.
+
+  Now, in our `battle` OverworldEvent, we can specify the enemy we want to battle.
+
+  ```ts
+  { type: 'battle', enemyId: 'beth' }
+  ```
+
+  Let's handle this in the `battle()` method of `OverworldEvent`.
+
+  ```ts
+  battle(resolve: () => void) {
+		const sceneTransition = new SceneTransition();
+
+		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
+			const battle = new Battle({
+        enemy: window.Enemies[this.event.enemyId as string],
+				onComplete: () => {
+					resolve();
+				},
+			});
+
+			battle.init(getElement<HTMLDivElement>('.game'));
+
+			// After battle is over
+			sceneTransition.fadeOut();
+		});
+	}
+  ```
+
+  We now pass the entire enemy object we configured to the `Battle` class.
+
+  Let's handle this in the `Battle` class.
+
+  ```ts
+  constructor({ enemy, onComplete }: BattleConfig) {
+		this.enemy = enemy;
+		this.onComplete = onComplete;
+
+		this.activeCombatants = {
+			player: null,
+			enemy: null,
+		};
+
+		window.playerState.lineup.forEach((id: string) => {
+			this.addCombatant(id, 'player', window.playerState.pizzas[id]);
+		});
+
+		Object.keys(this.enemy.pizzas).forEach((key: string) => {
+			this.addCombatant(`e_${key}`, 'enemy', this.enemy.pizzas[key]);
+		});
+
+		window.playerState.items.forEach((item: Item) => {
+			this.items.push({
+				...item,
+				team: 'player',
+			});
+		});
+
+		this.usedInstanceIds = {};
+	}
+  ```
+
+  Lots of changes here. First, we don't define the IDs for our `activeCombatants` immediately, as they will now depend. Then, we take the lineup from the `PlayerState` and add the pizzas to the battle. We also add the enemy pizzas. We also add the items from the `PlayerState` to the battle.
+
+  Let's look at the `addCombatant()` method.
+
+  ```ts
+  addCombatant(id: string, team: TeamType, config: EnemyPizza) {
+		this.combatants[id] = new Combatant(
+			{
+				...window.Pizzas[config.pizzaId as string],
+				...config,
+				team,
+				isPlayerControlled: team === 'player',
+			},
+			this
+		);
+
+		// Populate first active combatant
+		this.activeCombatants[team] = this.activeCombatants[team] || id;
+	}
+  ```
+
+  Pretty simple here, we spread all the configuration objects and create a new `Combatant` instance. We also set the first active combatant for each team.
+
+  For the new enemy sprite to actually appear in the battle, make sure to set it based on the enemy's `src` property in the `createElement()` method of `Battle`.
+
+  ```ts
+  createElement() {
+		this.element = document.createElement('div');
+		this.element.classList.add('battle');
+
+		const heroSrc = getSrc('../assets/images/characters/people/hero.png');
+		const enemySrc = getSrc(this.enemy.src);
+
+		// ... rest of code
+	}
+  ```
+</details>
+
+<details>
+  <summary>Ending the Battle</summary>
+
+  Now, let's actually end the battle when we have a winner. We are going to do so with a callback function called `onWinner`. Let's call it in the `turn()` method of `TurnCycle`.
+
+  ```ts
+  // Do we have a winning team?
+  const winner = this.getWinningTeam();
+
+  if (winner) {
+    await this.onNewEvent({
+      type: 'message',
+      textLines: [
+        { speed: SPEEDS.Normal, string: 'The battle is' },
+        { speed: SPEEDS.Fast, string: 'over!', classes: ['green'] },
+      ],
+    });
+
+    this.onWinner(winner);
+    return;
+  }
+  ```
+
+  Now, let's actually pass it into the `TurnCycle` class when we create it in the `init()` method of the `Battle` class.
+
+  ```ts
+  init(container: HTMLDivElement) {
+		// ... rest of code
+
+		this.turnCycle = new TurnCycle({
+			battle: this,
+			onNewEvent: (event: BattleEventType) => {
+				return new Promise<void | SubmissionReturn>(resolve => {
+					const battleEvent = new BattleEvent(event, this);
+					battleEvent.init(resolve);
+				});
+			},
+			onWinner: winner => {
+				if (winner === 'player') {
+					const playerState = window.playerState;
+
+					// Update player state
+					Object.keys(playerState.pizzas).forEach(id => {
+						const playerPizza = playerState.pizzas[id];
+						const combatant = this.combatants[id];
+
+						if (combatant) {
+							playerPizza.hp = combatant.hp;
+							playerPizza.xp = combatant.xp;
+							playerPizza.maxXp = combatant.maxXp;
+							playerPizza.level = combatant.level;
+						}
+					});
+
+					// Get rid of items player used
+					playerState.items = playerState.items.filter((item: Item) => {
+						return !this.usedInstanceIds[item.instanceId];
+					});
+				}
+
+				this.element.remove();
+				this.onComplete();
+			},
+		});
+
+		this.turnCycle.init();
+	}
+  ```
+
+  Here, if the winner is the player, we update the `PlayerState` with the new stats of the pizzas. We also remove the items that were used in the battle. Then, we remove the battle UI from the screen and call `onComplete` to resume the overworld.
+
+  Notice we use a property called `usedInstanceIds` to keep track of which items were used in the battle. Let's add that to the `Battle` class.
+
+  ```ts
+  this.usedInstanceIds = {};
+  ```
+
+  Now, we can add to it in the `turn()` method of `TurnCycle` when we check for item usage.
+
+  ```ts
+  // Check for items
+  if (submission?.instanceId) {
+    // Add to list to persist to player state later
+    this.battle.usedInstanceIds[submission.instanceId] = true;
+
+    // Remove item from battle state
+    this.battle.items = this.battle.items.filter(item => {
+      return item.instanceId !== submission.instanceId;
+    });
+  }
+  ```
 </details>
