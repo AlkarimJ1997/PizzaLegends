@@ -79,7 +79,7 @@ declare global {
 	interface Battle {
 		element: HTMLDivElement;
 		enemy: EnemyConfig;
-		onComplete: () => void;
+		onComplete: (didWin: boolean) => void;
 		combatants: Combatants;
 		activeCombatants: ActiveCombatants;
 		items: Item[];
@@ -171,9 +171,11 @@ declare global {
 		faceHero?: string;
 		map?: string;
 		enemyId?: string;
+        flag?: string;
 	};
 
 	type TalkEvent = {
+        required?: string[];
 		events: BehaviorLoopEvent[];
 	};
 

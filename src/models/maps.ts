@@ -24,17 +24,60 @@ window.OverworldMaps = {
 				],
 				talking: [
 					{
+						required: ['TALKED_TO_ERIO'],
 						events: [
 							{
 								type: 'message',
 								textLines: [
-									{ speed: SPEEDS.Normal, string: "I'm busy..." },
-									{ speed: SPEEDS.Pause, string: '', pause: true },
+									{
+										speed: SPEEDS.Fast,
+										string: "Isn't Erio the coolest?",
+									},
+								],
+								faceHero: 'npcA',
+							},
+						],
+					},
+					{
+						required: ['DEFEATED_BETH'],
+						events: [
+							{
+								type: 'message',
+								textLines: [
+									{
+										speed: SPEEDS.Fast,
+										string: "What do you want now? I'm busy!",
+									},
+								],
+								faceHero: 'npcA',
+							},
+						],
+					},
+					{
+						events: [
+							{
+								type: 'message',
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: "I'm going to crush you!",
+									},
+									// { speed: SPEEDS.Pause, string: '', pause: true },
 									// { speed: SPEEDS.Fast, string: 'Go away!' },
 								],
 								faceHero: 'npcA',
 							},
 							{ type: 'battle', enemyId: 'beth' },
+							{ type: 'addStoryFlag', flag: 'DEFEATED_BETH' },
+							{
+								type: 'message',
+								textLines: [
+									{
+										speed: SPEEDS.Fast,
+										string: 'You crushed me like weak pepper.',
+									},
+								],
+							},
 							// { type: 'walk', direction: 'up', who: 'hero' },
 						],
 					},
@@ -59,7 +102,8 @@ window.OverworldMaps = {
 								textLines: [{ speed: SPEEDS.SuperFast, string: 'Bahaha!' }],
 								faceHero: 'npcB',
 							},
-							{ type: 'battle', enemyId: 'erio' },
+							{ type: 'addStoryFlag', flag: 'TALKED_TO_ERIO' },
+							// { type: 'battle', enemyId: 'erio' },
 						],
 					},
 				],

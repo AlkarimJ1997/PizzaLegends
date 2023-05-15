@@ -7,7 +7,7 @@ import '../../styles/Battle.css';
 
 type BattleConfig = {
 	enemy: EnemyConfig;
-	onComplete: () => void;
+	onComplete: (didWin: boolean) => void;
 };
 
 type Combatants = {
@@ -22,7 +22,7 @@ type ActiveCombatants = {
 export class Battle {
 	element!: HTMLDivElement;
 	enemy: EnemyConfig;
-	onComplete: () => void;
+	onComplete: (didWin: boolean) => void;
 
 	combatants: Combatants = {};
 	activeCombatants: ActiveCombatants;
@@ -153,7 +153,7 @@ export class Battle {
 				}
 
 				this.element.remove();
-				this.onComplete();
+				this.onComplete(winner === 'player');
 			},
 		});
 

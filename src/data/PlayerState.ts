@@ -4,6 +4,7 @@ export class PlayerState {
 	pizzas: { [key: string]: Partial<CombatantConfig> };
 	lineup: string[];
 	items: Item[];
+	storyFlags: { [key: string]: boolean };
 
 	constructor() {
 		this.pizzas = {
@@ -42,6 +43,8 @@ export class PlayerState {
 			{ actionId: 'item_recoverHp', instanceId: 'item2' },
 			{ actionId: 'item_recoverHp', instanceId: 'item3' },
 		];
+
+		this.storyFlags = {};
 	}
 
 	swapLineup(oldId: string, incomingId: string) {

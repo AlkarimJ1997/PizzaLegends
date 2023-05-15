@@ -9,7 +9,9 @@ type OverworldEventConfig = {
 	event: BehaviorLoopEvent;
 };
 
-type OverworldEventMethod = (resolve: () => void) => void;
+type BattleResolve<T> = (value?: T | PromiseLike<T>) => void;
+
+type OverworldEventMethod = (resolve: () => void) => void | string;
 
 export class OverworldEvent {
 	map: OverworldMap;
@@ -109,14 +111,14 @@ export class OverworldEvent {
 		});
 	}
 
-	battle(resolve: () => void) {
+	battle(resolve: BattleResolve<'WON_BATTLE' | 'LOST_BATTLE'>) {
 		const sceneTransition = new SceneTransition();
 
 		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
 			const battle = new Battle({
 				enemy: window.Enemies[this.event.enemyId as string],
-				onComplete: () => {
-					resolve();
+				onComplete: didWin => {
+					resolve(didWin ? 'WON_BATTLE' : 'LOST_BATTLE');
 				},
 			});
 
@@ -141,6 +143,11 @@ export class OverworldEvent {
 		menu.init(getElement<HTMLDivElement>('.game'));
 	}
 
+	addStoryFlag(resolve: () => void) {
+		window.playerState.storyFlags[this.event.flag] = true;
+		resolve();
+	}
+
 	init() {
 		const eventHandlers: Record<string, OverworldEventMethod> = {
 			stand: this.stand.bind(this),
@@ -149,9 +156,10 @@ export class OverworldEvent {
 			changeMap: this.changeMap.bind(this),
 			battle: this.battle.bind(this),
 			pause: this.pause.bind(this),
+			addStoryFlag: this.addStoryFlag.bind(this),
 		};
 
-		return new Promise<void>(resolve => {
+		return new Promise<void | string>(resolve => {
 			eventHandlers[this.event.type](resolve);
 		});
 	}

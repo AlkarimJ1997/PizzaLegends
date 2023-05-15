@@ -9,7 +9,7 @@ export class OverworldMap {
 	upperImage: HTMLImageElement = new Image();
 	isCutscenePlaying: boolean;
 	cutsceneSpaces: CutsceneSpaces;
-    isPaused: boolean;
+	isPaused: boolean;
 
 	constructor(config: OverworldMapConfig) {
 		this.overworld = null;
@@ -27,7 +27,7 @@ export class OverworldMap {
 		this.isCutscenePlaying = false;
 		this.cutsceneSpaces = config.cutsceneSpaces || {};
 
-        this.isPaused = false;
+		this.isPaused = false;
 	}
 
 	drawLowerImage(ctx: CanvasRenderingContext2D, cameraPerson: GameObject) {
@@ -66,7 +66,9 @@ export class OverworldMap {
 				map: this,
 			});
 
-			await eventHandler.init();
+			const result = await eventHandler.init();
+
+            if (result === 'LOST_BATTLE') break;
 		}
 
 		this.isCutscenePlaying = false;
@@ -85,7 +87,13 @@ export class OverworldMap {
 		});
 
 		if (!this.isCutscenePlaying && match && match.talking.length) {
-			this.startCutscene(match.talking[0].events);
+			const relevantScenario = match.talking.find(scenario => {
+				return (scenario.required || []).every(sFlag => {
+					return window.playerState.storyFlags[sFlag];
+				});
+			});
+
+			relevantScenario && this.startCutscene(relevantScenario.events);
 		}
 	}
 
