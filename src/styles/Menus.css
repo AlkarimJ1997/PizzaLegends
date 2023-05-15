@@ -1,4 +1,4 @@
-.pause-menu {
+.overlay-menu {
 	image-rendering: pixelated;
 	position: absolute;
 	inset: 1em 4.5em auto 4.5em;
@@ -9,16 +9,16 @@
 	z-index: 2;
 }
 
-.pause-menu .keyboard-menu {
+.overlay-menu .keyboard-menu {
 	position: relative;
 	border: 1px solid var(--clr-border);
 }
 
-.pause-menu .keyboard-menu img {
+.overlay-menu .keyboard-menu img {
 	padding-inline-end: 1px;
 }
 
-.pause-menu h2 {
+.overlay-menu h2 {
 	margin-bottom: 5px;
 	padding-block: 2px;
 	font-size: 11px;

@@ -48,7 +48,7 @@ declare global {
 	}
 
 	interface GameObject {
-		isStanding: boolean;
+		isStanding?: boolean;
 		id: string | null;
 		isMounted: boolean;
 		x: number;
@@ -172,6 +172,7 @@ declare global {
 		map?: string;
 		enemyId?: string;
         flag?: string;
+        pizzas?: string[];
 	};
 
 	type TalkEvent = {

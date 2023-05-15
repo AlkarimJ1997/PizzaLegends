@@ -1,8 +1,9 @@
 import { Message } from './Message';
 import { SceneTransition } from './SceneTransition';
 import { Battle } from './Battle/Battle';
-import { oppositeDirection, getElement } from '../utils/utils';
 import { PauseMenu } from './PauseMenu';
+import { CraftingMenu } from './CraftingMenu';
+import { oppositeDirection, getElement } from '../utils/utils';
 
 type OverworldEventConfig = {
 	map: OverworldMap;
@@ -148,6 +149,17 @@ export class OverworldEvent {
 		resolve();
 	}
 
+	craftingMenu(resolve: () => void) {
+		const menu = new CraftingMenu({
+			pizzas: this.event.pizzas as string[],
+			onComplete: () => {
+				resolve();
+			},
+		});
+
+		menu.init(getElement<HTMLDivElement>('.game'));
+	}
+
 	init() {
 		const eventHandlers: Record<string, OverworldEventMethod> = {
 			stand: this.stand.bind(this),
@@ -157,6 +169,7 @@ export class OverworldEvent {
 			battle: this.battle.bind(this),
 			pause: this.pause.bind(this),
 			addStoryFlag: this.addStoryFlag.bind(this),
+            craftingMenu: this.craftingMenu.bind(this),
 		};
 
 		return new Promise<void | string>(resolve => {

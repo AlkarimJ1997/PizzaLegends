@@ -79,7 +79,7 @@ export class Sprite {
 				[0, 1],
 			],
 		};
-		this.currentAnimation = config.currentAnimation || 'idle-right';
+		this.currentAnimation = config.currentAnimation || 'idle-down';
 		this.currentAnimationFrame = 0;
 
 		// game loop frames per animation frame (lower is faster)

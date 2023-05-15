@@ -2,8 +2,7 @@ import { OverworldEvent } from './OverworldEvent';
 import { Sprite } from './Sprite';
 
 export abstract class GameObject {
-	protected abstract isStanding: boolean;
-
+	isStanding?: boolean;
 	id: string | null;
 	isMounted: boolean;
 	x: number;

@@ -5693,3 +5693,6 @@ npm run dev
 
 - [x] Pizza Stone
 
+<details>
+  <summary>Pizza Stone</summary></br>
+</details>

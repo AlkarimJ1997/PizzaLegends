@@ -1,4 +1,5 @@
 import { Person } from '../classes/Person';
+import { PizzaStone } from '../classes/PizzaStone';
 import { SPEEDS } from '../data/enums';
 import { withGrid, asGridCoord } from '../utils/utils';
 
@@ -107,6 +108,12 @@ window.OverworldMaps = {
 						],
 					},
 				],
+			}),
+			pizzaStone: new PizzaStone({
+				x: withGrid(2),
+				y: withGrid(7),
+				storyFlag: 'USED_PIZZA_STONE',
+				pizzas: ['v001', 'f001'],
 			}),
 		},
 		walls: {
