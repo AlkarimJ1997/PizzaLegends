@@ -1,16 +1,24 @@
 import { wait } from '../utils/utils';
 import { KeyPressListener } from './KeyPressListener';
 import { KeyboardMenu } from './KeyboardMenu';
+import type { Progress } from './Progress';
 import '../styles/Menus.css';
 
+type PauseMenuConfig = {
+	progress: Progress;
+	onComplete: () => void;
+};
+
 export class PauseMenu {
+	progress: Progress;
 	onComplete: () => void;
 
 	element!: HTMLDivElement;
 	keyboardMenu: KeyboardMenu | null = null;
 	esc: KeyPressListener | null = null;
 
-	constructor({ onComplete }: { onComplete: () => void }) {
+	constructor({ progress, onComplete }: PauseMenuConfig) {
+		this.progress = progress;
 		this.onComplete = onComplete;
 	}
 
@@ -32,7 +40,8 @@ export class PauseMenu {
 					label: 'Save',
 					description: 'Save your progress',
 					handler: () => {
-						// We'll come back to this
+						this.progress.save();
+						this.close();
 					},
 					right: () => '💾',
 				},
@@ -122,7 +131,7 @@ export class PauseMenu {
 
 	createElement() {
 		this.element = document.createElement('div');
-        this.element.classList.add('overlay-menu');
+		this.element.classList.add('overlay-menu');
 		this.element.classList.add('pause-menu');
 
 		this.element.innerHTML = `

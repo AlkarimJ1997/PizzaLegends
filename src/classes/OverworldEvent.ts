@@ -103,11 +103,18 @@ export class OverworldEvent {
 		const sceneTransition = new SceneTransition();
 
 		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
-			this.map.overworld?.startMap(
-				window.OverworldMaps[this.event.map as string]
-			);
-			resolve();
+			const { OverworldMaps } = window;
+			const { map, x, y, direction } = this.event ?? {};
 
+			if (!map) throw new Error('No map specified in event');
+
+			if (!x || !y || !direction) {
+				this.map.overworld?.startMap(OverworldMaps[map]);
+			} else {
+				this.map.overworld?.startMap(OverworldMaps[map], { x, y, direction });
+			}
+
+			resolve();
 			sceneTransition.fadeOut();
 		});
 	}
@@ -134,6 +141,7 @@ export class OverworldEvent {
 		this.map.isPaused = true;
 
 		const menu = new PauseMenu({
+            progress: this.map.overworld?.progress,
 			onComplete: () => {
 				resolve();
 				this.map.isPaused = false;
@@ -169,7 +177,7 @@ export class OverworldEvent {
 			battle: this.battle.bind(this),
 			pause: this.pause.bind(this),
 			addStoryFlag: this.addStoryFlag.bind(this),
-            craftingMenu: this.craftingMenu.bind(this),
+			craftingMenu: this.craftingMenu.bind(this),
 		};
 
 		return new Promise<void | string>(resolve => {

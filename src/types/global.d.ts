@@ -6,12 +6,17 @@ declare global {
 		ctx: CanvasRenderingContext2D;
 		currentAnimationFrame: number;
 		map: OverworldMap;
+        progress: Progress | null;
+        hud: Hud;
 		directionInput: DirectionInput;
 
 		startGameLoop(): void;
 		bindActionInput(): void;
 		bindHeroPositionCheck(): void;
-		startMap(mapConfig: OverworldMapConfig): void;
+		startMap(
+			mapConfig: OverworldMapConfig,
+			heroInitialState?: HeroInitialState
+		): void;
 		init(): void;
 	}
 
@@ -23,7 +28,7 @@ declare global {
 		upperImage: HTMLImageElement;
 		isCutscenePlaying: boolean;
 		cutsceneSpaces: CutsceneSpaces;
-        isPaused: boolean;
+		isPaused: boolean;
 
 		drawLowerImage(
 			ctx: CanvasRenderingContext2D,
@@ -83,7 +88,7 @@ declare global {
 		combatants: Combatants;
 		activeCombatants: ActiveCombatants;
 		items: Item[];
-        usedInstanceIds: { [key: string]: boolean };
+		usedInstanceIds: { [key: string]: boolean };
 		turnCycle: TurnCycle;
 		playerTeam: Team;
 		enemyTeam: Team;
@@ -146,6 +151,13 @@ declare global {
 		init(container: HTMLDivElement): void;
 	}
 
+    // Overworld.ts types
+    type HeroInitialState = {
+        x: number;
+        y: number;
+        direction: string;
+    }
+
 	// GameObject.ts types
 	type GameObjectConfig = {
 		x?: number;
@@ -171,12 +183,14 @@ declare global {
 		faceHero?: string;
 		map?: string;
 		enemyId?: string;
-        flag?: string;
-        pizzas?: string[];
+		flag?: string;
+		pizzas?: string[];
+		x?: number;
+		y?: number;
 	};
 
 	type TalkEvent = {
-        required?: string[];
+		required?: string[];
 		events: BehaviorLoopEvent[];
 	};
 
@@ -198,6 +212,7 @@ declare global {
 	};
 
 	type OverworldMapConfig = {
+		id: string;
 		lowerSrc: string;
 		upperSrc: string;
 		gameObjects: GameObjects;
@@ -330,13 +345,13 @@ declare global {
 		animation: (resolve: VoidResolve) => void;
 	};
 
-    type Page = {
-        label: string;
-        description: string;
-        disabled?: boolean;
-        handler: () => void;
-        right?: () => string;
-    };
+	type Page = {
+		label: string;
+		description: string;
+		disabled?: boolean;
+		handler: () => void;
+		right?: () => string;
+	};
 
 	type Action = {
 		name: string;
