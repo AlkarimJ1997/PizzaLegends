@@ -1,4 +1,5 @@
 import { OverworldMap } from './OverworldMap';
+import { Hud } from './Hud';
 import { DirectionInput } from './DirectionInput';
 import { KeyPressListener } from './KeyPressListener';
 import { SPEEDS } from '../data/enums';
@@ -13,6 +14,8 @@ export class Overworld {
 	canvas: HTMLCanvasElement;
 	ctx: CanvasRenderingContext2D;
 	currentAnimationFrame: number;
+
+    hud!: Hud;
 	map!: OverworldMap;
 	directionInput!: DirectionInput;
 
@@ -104,6 +107,9 @@ export class Overworld {
 	}
 
 	init() {
+        this.hud = new Hud();
+        this.hud.init(getElement('.game'));
+
 		this.startMap(window.OverworldMaps.DemoRoom);
 
 		this.bindActionInput();

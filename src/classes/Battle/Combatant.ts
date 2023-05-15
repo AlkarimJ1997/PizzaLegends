@@ -26,14 +26,14 @@ export class Combatant {
 	} | null;
 	isPlayerControlled?: boolean;
 
-	battle: Battle;
+	battle: Battle | null;
 
 	hudElement!: HTMLDivElement;
 	pizzaElement!: HTMLImageElement;
 	hpFills!: NodeListOf<SVGRectElement>;
 	xpFills!: NodeListOf<SVGRectElement>;
 
-	constructor(config: CombatantConfig, battle: Battle) {
+	constructor(config: CombatantConfig, battle: Battle | null) {
 		// config is HP, maxHP, XP, name, actions, etc.
 		this.id = config.id;
 		this.name = config.name;
@@ -67,7 +67,7 @@ export class Combatant {
 	}
 
 	get isActive() {
-		return this.battle.activeCombatants[this.team] === this.id;
+		return this.battle?.activeCombatants[this.team] === this.id;
 	}
 
 	get givesXp() {
@@ -216,8 +216,8 @@ export class Combatant {
 		}
 
 		const oppositeTeam = this.team === 'player' ? 'enemy' : 'player';
-		const targetId = this.battle.activeCombatants[oppositeTeam];
-		const target = this.battle.combatants[targetId];
+		const targetId = this.battle?.activeCombatants[oppositeTeam];
+		const target = this.battle?.combatants[targetId];
 
 		if (target.status?.type === 'protected') {
 			return [

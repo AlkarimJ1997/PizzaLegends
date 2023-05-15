@@ -111,7 +111,7 @@ declare global {
 		} | null;
 		isPlayerControlled?: boolean;
 
-		battle: Battle;
+		battle: Battle | null;
 
 		hudElement: HTMLDivElement;
 		pizzaElement: HTMLImageElement;

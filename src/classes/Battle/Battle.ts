@@ -1,7 +1,7 @@
 import { Combatant } from './Combatant';
 import { TurnCycle } from './TurnCycle';
 import { BattleEvent } from './BattleEvent';
-import { getSrc } from '../../utils/utils';
+import { getSrc, emitEvent } from '../../utils/utils';
 import { Team } from './Team';
 import '../../styles/Battle.css';
 
@@ -147,6 +147,9 @@ export class Battle {
 					playerState.items = playerState.items.filter((item: Item) => {
 						return !this.usedInstanceIds[item.instanceId];
 					});
+
+					// Fire signal for Overworld HUD
+					emitEvent('PlayerStateUpdated', {});
 				}
 
 				this.element.remove();

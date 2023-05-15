@@ -5040,7 +5040,7 @@ npm run dev
 </details>
 
 <details>
-  <summary>Ending the Battle</summary>
+  <summary>Ending the Battle</summary></br>
 
   Now, let's actually end the battle when we have a winner. We are going to do so with a callback function called `onWinner`. Let's call it in the `turn()` method of `TurnCycle`.
 
@@ -5130,4 +5130,12 @@ npm run dev
     });
   }
   ```
+</details>
+
+### Day 19
+
+- [x] Overworld HUD
+
+<details>
+  <summary>Overworld HUD</summary></br>
 </details>
