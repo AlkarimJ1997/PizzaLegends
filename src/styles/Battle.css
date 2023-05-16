@@ -6,6 +6,14 @@
 	background-size: cover;
 }
 
+.battle.green-kitchen {
+	background-image: url(../assets/images/maps/GreenKitchenBattle.png);
+}
+
+.battle.dining-room {
+	background-image: url(../assets/images/maps/DiningRoomBattle.png);
+}
+
 .battle__hero,
 .battle__enemy {
 	position: absolute;
@@ -55,8 +63,8 @@
 }
 
 .glob-orb > img {
-    width: 50px;
-    aspect-ratio: 1 / 1;
+	width: 50px;
+	aspect-ratio: 1 / 1;
 }
 
 .glob-orb-left {
@@ -70,7 +78,7 @@
 }
 
 .shield {
-    animation: shield 1.5s steps(3);
+	animation: shield 1.5s steps(3);
 }
 
 @keyframes blinking {
@@ -174,15 +182,15 @@
 }
 
 @keyframes shield {
-    0% {
-        transform: scale(1);
-    }
+	0% {
+		transform: scale(1);
+	}
 
-    50% {
-        transform: scale(2);
-    }
+	50% {
+		transform: scale(2);
+	}
 
-    100% {
-        transform: scale(3);
-    }
+	100% {
+		transform: scale(3);
+	}
 }

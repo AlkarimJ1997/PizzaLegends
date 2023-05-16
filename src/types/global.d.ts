@@ -23,6 +23,10 @@ declare global {
 	interface OverworldMap {
 		overworld: Overworld | null;
 		gameObjects: GameObjects;
+        configObjects: {
+            [key: string]: GameObjectConfig;
+        };
+
 		walls: Walls;
 		lowerImage: HTMLImageElement;
 		upperImage: HTMLImageElement;
@@ -47,14 +51,11 @@ declare global {
 			currentY: number,
 			direction: string
 		): boolean;
-		addWall(x: number, y: number): void;
-		removeWall(x: number, y: number): void;
-		moveWall(wasX: number, wasY: number, direction: string): void;
 	}
 
 	interface GameObject {
 		isStanding?: boolean;
-		id: string | null;
+		id?: string | null;
 		isMounted: boolean;
 		x: number;
 		y: number;
@@ -63,6 +64,7 @@ declare global {
 		behaviorLoop: BehaviorLoopEvent[];
 		behaviorLoopIndex: number;
 		talking: TalkEvent[];
+        retryTimeout: number | null;
 
 		doBehaviorEvent(map: OverworldMap): Promise<void>;
 		mount(map: OverworldMap): void;
@@ -71,6 +73,7 @@ declare global {
 
 	interface Person extends GameObject {
 		isStanding: boolean;
+        intentPosition: [number, number] | null;
 		movingProgressRemaining: number;
 		isPlayerControlled: boolean;
 		directionUpdate: DirectionUpdate;
@@ -156,7 +159,7 @@ declare global {
 		lineup: string[];
 		items: Item[];
 		storyFlags: { [key: string]: boolean };
-        [key: string]: unknown;
+		[key: string]: unknown;
 
 		addPizza(pizzaId: string): void;
 		swapLineup(oldId: string, incomingId: string): void;
@@ -172,6 +175,8 @@ declare global {
 
 	// GameObject.ts types
 	type GameObjectConfig = {
+        type: string;
+        id?: string;
 		x?: number;
 		y?: number;
 		src?: string;
@@ -195,6 +200,7 @@ declare global {
 		faceHero?: string;
 		map?: string;
 		enemyId?: string;
+        arena?: string;
 		flag?: string;
 		pizzas?: string[];
 		x?: number;
@@ -227,7 +233,9 @@ declare global {
 		id: string;
 		lowerSrc: string;
 		upperSrc: string;
-		gameObjects: GameObjects;
+		configObjects: {
+			[key: string]: GameObjectConfig | PersonConfig | PizzaStoneConfig;
+		};
 		walls?: Walls;
 		cutsceneSpaces?: CutsceneSpaces;
 	};
@@ -355,6 +363,12 @@ declare global {
 		replace: (resolve: VoidResolve) => void;
 		giveXp: (resolve: VoidResolve) => void;
 		animation: (resolve: VoidResolve) => void;
+	};
+    
+    // PizzaStone.ts types
+	type PizzaStoneConfig = GameObjectConfig & {
+        storyFlag?: string;
+        pizzas?: string[];
 	};
 
 	type Page = {

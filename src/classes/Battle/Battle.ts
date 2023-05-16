@@ -7,6 +7,7 @@ import '../../styles/Battle.css';
 
 type BattleConfig = {
 	enemy: EnemyConfig;
+	arena: string | null;
 	onComplete: (didWin: boolean) => void;
 };
 
@@ -22,6 +23,7 @@ type ActiveCombatants = {
 export class Battle {
 	element!: HTMLDivElement;
 	enemy: EnemyConfig;
+	arena: string | null;
 	onComplete: (didWin: boolean) => void;
 
 	combatants: Combatants = {};
@@ -33,8 +35,9 @@ export class Battle {
 	enemyTeam!: Team;
 	turnCycle!: TurnCycle;
 
-	constructor({ enemy, onComplete }: BattleConfig) {
+	constructor({ enemy, arena, onComplete }: BattleConfig) {
 		this.enemy = enemy;
+		this.arena = arena;
 		this.onComplete = onComplete;
 
 		this.activeCombatants = {
@@ -78,6 +81,9 @@ export class Battle {
 	createElement() {
 		this.element = document.createElement('div');
 		this.element.classList.add('battle');
+
+		// If provided, use the arena image
+		if (this.arena) this.element.classList.add(this.arena);
 
 		const heroSrc = getSrc('../assets/images/characters/people/hero.png');
 		const enemySrc = getSrc(this.enemy.src);

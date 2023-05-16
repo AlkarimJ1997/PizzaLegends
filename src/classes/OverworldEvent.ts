@@ -100,6 +100,9 @@ export class OverworldEvent {
 	}
 
 	changeMap(resolve: () => void) {
+		// Demount all game objects
+		Object.values(this.map.gameObjects).forEach(obj => (obj.isMounted = false));
+
 		const sceneTransition = new SceneTransition();
 
 		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
@@ -123,8 +126,11 @@ export class OverworldEvent {
 		const sceneTransition = new SceneTransition();
 
 		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
+			if (!this.event.enemyId) throw new Error('No enemy specified in event');
+
 			const battle = new Battle({
-				enemy: window.Enemies[this.event.enemyId as string],
+				enemy: window.Enemies[this.event.enemyId],
+				arena: this.event.arena || null,
 				onComplete: didWin => {
 					resolve(didWin ? 'WON_BATTLE' : 'LOST_BATTLE');
 				},
@@ -141,7 +147,7 @@ export class OverworldEvent {
 		this.map.isPaused = true;
 
 		const menu = new PauseMenu({
-            progress: this.map.overworld?.progress,
+			progress: this.map.overworld?.progress,
 			onComplete: () => {
 				resolve();
 				this.map.isPaused = false;

@@ -6,7 +6,7 @@ export class Progress {
 	saveFileKey: string;
 
 	constructor() {
-		this.mapId = 'DemoRoom';
+		this.mapId = 'Kitchen';
 		this.startingHeroX = 0;
 		this.startingHeroY = 0;
 		this.startingHeroDirection = 'down';

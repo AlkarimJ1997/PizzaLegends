@@ -115,11 +115,9 @@ export class Overworld {
 		const { hero } = this.map.gameObjects;
 		const { x, y, direction } = heroInitialState;
 
-		this.map.removeWall(hero.x, hero.y);
 		hero.x = x;
 		hero.y = y;
 		hero.direction = direction;
-		this.map.addWall(hero.x, hero.y);
 
 		// Load progress
 		if (!this.progress) return;

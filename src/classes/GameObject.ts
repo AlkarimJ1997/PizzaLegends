@@ -3,7 +3,7 @@ import { Sprite } from './Sprite';
 
 export abstract class GameObject {
 	isStanding?: boolean;
-	id: string | null;
+	id?: string | null;
 	isMounted: boolean;
 	x: number;
 	y: number;
@@ -12,6 +12,7 @@ export abstract class GameObject {
 	behaviorLoop: BehaviorLoopEvent[];
 	behaviorLoopIndex: number;
 	talking: TalkEvent[];
+	retryTimeout: number | null;
 
 	constructor(config: GameObjectConfig) {
 		this.id = null;
@@ -26,13 +27,21 @@ export abstract class GameObject {
 
 		this.behaviorLoop = config.behaviorLoop || [];
 		this.behaviorLoopIndex = 0;
-
 		this.talking = config.talking || [];
+		this.retryTimeout = null;
 	}
 
 	async doBehaviorEvent(map: OverworldMap) {
-		// If we're in a cutscene or there's no behavior loop, bail out
-		if (map.isCutscenePlaying || this.behaviorLoop.length === 0 || this.isStanding) {
+		if (this.behaviorLoop.length === 0) return;
+
+        // If there's a cutscene playing, wait a bit then try again
+		if (map.isCutscenePlaying) {
+            if (this.retryTimeout) clearTimeout(this.retryTimeout);
+
+			this.retryTimeout = setTimeout(() => {
+				this.doBehaviorEvent(map);
+			}, 1000);
+
 			return;
 		}
 
@@ -56,8 +65,6 @@ export abstract class GameObject {
 
 	mount(map: OverworldMap) {
 		this.isMounted = true;
-
-		map.addWall(this.x, this.y);
 
 		// If we have a behavior loop, kick it off after a short delay
 		setTimeout(() => {

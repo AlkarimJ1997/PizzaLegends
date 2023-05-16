@@ -1,9 +1,15 @@
 import { OverworldEvent } from './OverworldEvent';
+import { Person } from './Person';
 import { createImage, withGrid, nextPosition } from '../utils/utils';
+import { PizzaStone } from './PizzaStone';
 
 export class OverworldMap {
 	overworld: Overworld | null;
 	gameObjects: GameObjects;
+	configObjects: {
+		[key: string]: GameObjectConfig;
+	};
+
 	walls: Walls;
 	lowerImage: HTMLImageElement = new Image();
 	upperImage: HTMLImageElement = new Image();
@@ -13,7 +19,9 @@ export class OverworldMap {
 
 	constructor(config: OverworldMapConfig) {
 		this.overworld = null;
-		this.gameObjects = config.gameObjects;
+		this.gameObjects = {};
+		this.configObjects = config.configObjects;
+
 		this.walls = config.walls || {};
 
 		createImage(config.lowerSrc).then(image => {
@@ -47,12 +55,27 @@ export class OverworldMap {
 	}
 
 	mountObjects() {
-		Object.keys(this.gameObjects).forEach(key => {
-			const gameObject = this.gameObjects[key];
+		Object.keys(this.configObjects).forEach(key => {
+			const configObject = this.configObjects[key];
+			let instance;
+
+			configObject.id = key;
+
+			switch (configObject.type) {
+				case 'Person':
+					instance = new Person(configObject);
+					break;
+				case 'PizzaStone':
+					instance = new PizzaStone(configObject);
+					break;
+				default:
+					return;
+			}
 
 			// TODO: determine if object should actually be mounted
-			gameObject.id = key;
-			gameObject.mount(this as OverworldMap);
+			this.gameObjects[key] = instance;
+			this.gameObjects[key].id = key;
+			instance.mount(this);
 		});
 	}
 
@@ -68,15 +91,10 @@ export class OverworldMap {
 
 			const result = await eventHandler.init();
 
-            if (result === 'LOST_BATTLE') break;
+			if (result === 'LOST_BATTLE') break;
 		}
 
 		this.isCutscenePlaying = false;
-
-		// Reset NPCs to do their idle behavior
-		Object.values(this.gameObjects).forEach(gameObject => {
-			gameObject.doBehaviorEvent(this);
-		});
 	}
 
 	checkForActionCutscene() {
@@ -109,22 +127,19 @@ export class OverworldMap {
 	isSpaceTaken(currentX: number, currentY: number, direction: string) {
 		const { x, y } = nextPosition(currentX, currentY, direction);
 
-		return this.walls[`${x},${y}`] || false;
-	}
+		if (this.walls[`${x},${y}`]) return true;
 
-	addWall(x: number, y: number) {
-		this.walls[`${x},${y}`] = true;
-	}
+		// Check for game objects at this position
+		return Object.values(this.gameObjects).find(gameObj => {
+			if (gameObj.x === x && gameObj.y === y) return true;
 
-	removeWall(x: number, y: number) {
-		delete this.walls[`${x},${y}`];
-	}
+            if ('intentPosition' in gameObj && gameObj.intentPosition) {
+                const [objX, objY] = gameObj.intentPosition as [number, number];
+                
+                if (objX === x && objY === y) return true;
+            }
 
-	moveWall(wasX: number, wasY: number, direction: string) {
-		this.removeWall(wasX, wasY);
-
-		const { x, y } = nextPosition(wasX, wasY, direction);
-
-		this.addWall(x, y);
+			return false;
+		});
 	}
 }

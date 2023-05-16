@@ -1,8 +1,9 @@
 import { GameObject } from './GameObject';
-import { emitEvent } from '../utils/utils';
+import { emitEvent, nextPosition } from '../utils/utils';
 
 export class Person extends GameObject {
 	isStanding: boolean;
+    intentPosition: [number, number] | null;
 	movingProgressRemaining: number;
 	isPlayerControlled: boolean;
 	directionUpdate: DirectionUpdate;
@@ -12,6 +13,7 @@ export class Person extends GameObject {
 
 		this.movingProgressRemaining = 0;
 		this.isStanding = false;
+        this.intentPosition = null;
 		this.isPlayerControlled = config.isPlayerControlled || false;
 		this.directionUpdate = {
 			up: ['y', -1],
@@ -29,6 +31,7 @@ export class Person extends GameObject {
 
 		if (this.movingProgressRemaining === 0) {
 			// We're done moving, so let's throw a signal
+            this.intentPosition = null;
 			emitEvent('PersonWalkingComplete', { whoId: this.id as string });
 		}
 	}
@@ -43,6 +46,8 @@ export class Person extends GameObject {
 	}
 
 	startBehavior(state: State, behavior: BehaviorLoopEvent) {
+        if (!this.isMounted) return;
+
 		this.direction = behavior.direction ?? this.direction;
 
 		if (behavior.type === 'walk') {
@@ -57,8 +62,10 @@ export class Person extends GameObject {
 			}
 
 			// Ready to walk!
-			state.map.moveWall(this.x, this.y, this.direction);
+            const intentPosition = nextPosition(this.x, this.y, this.direction);
+
 			this.movingProgressRemaining = 16;
+            this.intentPosition = [intentPosition.x, intentPosition.y];
 			this.updateSprite();
 		}
 
