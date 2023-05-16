@@ -31,7 +31,7 @@ export class Progress {
 		);
 	}
 
-	getSaveFile() {
+	getSaveFile(): SaveFile | null {
 		const saveFile = window.localStorage.getItem(this.saveFileKey);
 
 		return saveFile ? JSON.parse(saveFile) : null;

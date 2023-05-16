@@ -5,6 +5,7 @@ import { KeyPressListener } from './KeyPressListener';
 import { SPEEDS } from '../data/enums';
 import { getElement } from '../utils/utils';
 import { Progress } from './Progress';
+import { TitleScreen } from './TitleScreen';
 
 type OverworldConfig = {
 	element: HTMLElement;
@@ -17,6 +18,7 @@ export class Overworld {
 	currentAnimationFrame: number;
 
 	progress: Progress | null = null;
+	titleScreen: TitleScreen | null = null;
 	hud!: Hud;
 	map!: OverworldMap;
 	directionInput!: DirectionInput;
@@ -138,14 +140,23 @@ export class Overworld {
 		}
 	}
 
-	init() {
+	async init() {
+		// Game container
+		const gameContainer = getElement<HTMLDivElement>('.game');
+
 		this.progress = new Progress();
+
+		// Show the Title Screen
+		this.titleScreen = new TitleScreen({
+			progress: this.progress,
+		});
+
+		const useSaveFile = await this.titleScreen.init(gameContainer);
 
 		// Potentially load progress
 		let initialHeroState = null;
-		const saveFile = this.progress.getSaveFile();
 
-		if (saveFile) {
+		if (useSaveFile) {
 			this.progress.load();
 			initialHeroState = {
 				x: this.progress.startingHeroX,
@@ -155,7 +166,7 @@ export class Overworld {
 		}
 
 		this.hud = new Hud();
-		this.hud.init(getElement('.game'));
+		this.hud.init(gameContainer);
 
 		this.startMap(window.OverworldMaps[this.progress.mapId], initialHeroState);
 

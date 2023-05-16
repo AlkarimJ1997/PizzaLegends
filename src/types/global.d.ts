@@ -6,8 +6,8 @@ declare global {
 		ctx: CanvasRenderingContext2D;
 		currentAnimationFrame: number;
 		map: OverworldMap;
-        progress: Progress | null;
-        hud: Hud;
+		progress: Progress | null;
+		hud: Hud;
 		directionInput: DirectionInput;
 
 		startGameLoop(): void;
@@ -151,12 +151,24 @@ declare global {
 		init(container: HTMLDivElement): void;
 	}
 
-    // Overworld.ts types
-    type HeroInitialState = {
-        x: number;
-        y: number;
-        direction: string;
-    }
+	interface PlayerState {
+		pizzas: { [key: string]: Partial<CombatantConfig> };
+		lineup: string[];
+		items: Item[];
+		storyFlags: { [key: string]: boolean };
+        [key: string]: unknown;
+
+		addPizza(pizzaId: string): void;
+		swapLineup(oldId: string, incomingId: string): void;
+		moveToFront(incomingId: string): void;
+	}
+
+	// Overworld.ts types
+	type HeroInitialState = {
+		x: number;
+		y: number;
+		direction: string;
+	};
 
 	// GameObject.ts types
 	type GameObjectConfig = {
@@ -369,6 +381,15 @@ declare global {
 		actionId: string;
 		instanceId: string;
 		quantity: number;
+	};
+
+	// Progress.ts types
+	type SaveFile = {
+		mapId: string;
+		startingHeroX: number;
+		startingHeroY: number;
+		startingHeroDirection: string;
+		playerState: PlayerState;
 	};
 
 	// window configurations

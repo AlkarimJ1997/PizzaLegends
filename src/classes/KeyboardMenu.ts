@@ -7,10 +7,10 @@ type KeyboardMenuConfig = {
 };
 
 export class KeyboardMenu {
-	options: Page[];
-	up: KeyPressListener | null;
-	down: KeyPressListener | null;
-	prevFocus: HTMLButtonElement | null;
+	options: Page[] = [];
+	up: KeyPressListener | null = null;
+	down: KeyPressListener | null = null;
+	prevFocus: HTMLButtonElement | null = null;
 
 	element!: HTMLDivElement;
 	descriptionElement!: HTMLDivElement;
@@ -19,11 +19,6 @@ export class KeyboardMenu {
 	descriptionContainer?: HTMLDivElement;
 
 	constructor(config: KeyboardMenuConfig = {}) {
-		this.options = [];
-		this.up = null;
-		this.down = null;
-		this.prevFocus = null;
-
 		this.descriptionContainer = config.descriptionContainer;
 	}
 

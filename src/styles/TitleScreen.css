@@ -1,0 +1,67 @@
+.title-screen {
+	position: absolute;
+	inset: 0;
+	background-color: #000;
+	border-radius: 0.2rem;
+}
+
+.title-screen__logo {
+	image-rendering: pixelated;
+	display: block;
+	width: 128px;
+	margin-inline: auto;
+}
+
+.title-screen .keyboard-menu {
+	position: relative;
+	width: 100px;
+	background: transparent;
+	margin-inline: auto;
+	border: 0;
+}
+
+.title-screen button {
+	justify-content: center;
+    background-color: var(--clr-dark);
+	padding: 0;
+    color: var(--clr-light);
+	border-radius: 0.125rem;
+    transition: background-color 0.2s ease-in-out;
+    margin-bottom: 0.5em;
+}
+
+.title-screen button:focus {
+    background-color: var(--clr-secondary);
+}
+
+.title-screen .description {
+	--maxWidth: 50%;
+
+    padding-inline: 0.5em;
+	text-align: center;
+}
+
+@media (width <= 1250px) {
+    .title-screen {
+        width: 90%;
+        margin-inline: auto;
+    }
+}
+
+@media (width <= 1150px) {
+    .title-screen {
+        width: 80%;
+        margin-inline: auto;
+    }
+
+    .title-screen .description {
+        --maxWidth: 60%;
+    }
+}
+
+@media (width <= 1000px) {
+    .title-screen {
+        width: 80%;
+        margin-inline: auto;
+    }
+}
