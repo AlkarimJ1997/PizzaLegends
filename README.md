@@ -6164,4 +6164,117 @@ npm run dev
   <summary>Title Screen</summary></br>
 
   We're at the home stretch. Now, let's create a title screen for the game.
+
+  First, let's create a new `TitleScreen` class.
+
+  ```ts
+  export class TitleScreen {
+    progress: Progress;
+    element!: HTMLDivElement;
+    keyboardMenu: KeyboardMenu | null = null;
+
+    constructor({ progress }: { progress: Progress }) {
+      this.progress = progress;
+    }
+
+    getOptions(resolve: (saveFile?: SaveFile | null) => void) {
+      const saveFile = this.progress.getSaveFile();
+
+      return [
+        {
+          label: 'New Game',
+          description: 'Start a new pizza adventure!',
+          handler: () => {
+            //
+            this.close();
+            resolve();
+          },
+        },
+        saveFile && {
+          label: 'Continue Game',
+          description: 'Continue your pizza adventure!',
+          handler: () => {
+            this.close();
+            resolve(saveFile);
+          },
+        },
+      ].filter(v => v) as Page[];
+    }
+
+    createElement() {
+      this.element = document.createElement('div');
+      this.element.classList.add('title-screen');
+
+      const titleScreen = getSrc('../assets/images/logo.png');
+
+      this.element.innerHTML = `
+        <img class='title-screen__logo' src='${titleScreen}' alt='Pizza Legends ' />
+      `;
+    }
+
+    close() {
+      this.keyboardMenu?.end();
+      this.element.remove();
+    }
+
+    async init(container: HTMLDivElement) {
+      return new Promise(resolve => {
+        this.createElement();
+        container.appendChild(this.element);
+
+        this.keyboardMenu = new KeyboardMenu();
+        this.keyboardMenu.init(this.element);
+        this.keyboardMenu.setOptions(this.getOptions(resolve));
+      });
+    }
+  }
+  ```
+
+  Nothing crazy here. We have a `getOptions()` method that returns the options for the title screen. If there's a save file, we show the option to continue the game. Otherwise, we just show the option to start a new game.
+
+  However, we are using a new pattern to show a different way of doing things. Rather than having an `onComplete` callback, our `init()` method is returning a promise that resolves when the user selects an option.
+
+  In other words, we pass the `resolve` to `getOptions()` which is called once the user selects an option. Notice that we don't return anything if the player chooses new game, but if they do we return the save file.
+
+  Now we can `await` this promise in our `init()` method of `Overworld`.
+
+  ```ts
+  async init() {
+		// Game container
+		const gameContainer = getElement<HTMLDivElement>('.game');
+
+		this.progress = new Progress();
+
+		// Show the Title Screen
+		this.titleScreen = new TitleScreen({
+			progress: this.progress,
+		});
+
+		const useSaveFile = await this.titleScreen.init(gameContainer);
+
+		// Potentially load progress
+		let initialHeroState = null;
+
+		if (useSaveFile) {
+			this.progress.load();
+			initialHeroState = {
+				x: this.progress.startingHeroX,
+				y: this.progress.startingHeroY,
+				direction: this.progress.startingHeroDirection,
+			};
+		}
+
+		this.hud = new Hud();
+		this.hud.init(gameContainer);
+
+		this.startMap(window.OverworldMaps[this.progress.mapId], initialHeroState);
+
+		// ... rest of init()
+	}
+  ```
+
+  And that's it! We now have a title screen for our game.
 </details>
+
+### Day 25
+
