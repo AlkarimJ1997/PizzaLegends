@@ -159,6 +159,8 @@ export class OverworldEvent {
 	}
 
 	addStoryFlag(resolve: () => void) {
+		if (!this.event.flag) throw new Error('No flag specified in event');
+
 		window.playerState.storyFlags[this.event.flag] = true;
 		resolve();
 	}

@@ -2,17 +2,10 @@ import { GameObject } from './GameObject';
 import { Sprite } from './Sprite';
 import { SPEEDS } from '../data/enums';
 
-type PizzaStoneConfig = {
-	x: number;
-	y: number;
-	storyFlag: string;
-    pizzas: string[];
-};
-
 export class PizzaStone extends GameObject {
 	sprite: Sprite;
 	storyFlag: string;
-    pizzas: string[];
+	pizzas: string[];
 
 	constructor(config: PizzaStoneConfig) {
 		super(config);
@@ -27,8 +20,9 @@ export class PizzaStone extends GameObject {
 			currentAnimation: 'used-down',
 		});
 
-		this.storyFlag = config.storyFlag;
-        this.pizzas = config.pizzas;
+		this.storyFlag = config.storyFlag || '';
+		this.pizzas = config.pizzas || Object.keys(window.Pizzas);
+        console.log(this.pizzas);
 
 		this.talking = [
 			{

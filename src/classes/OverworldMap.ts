@@ -66,7 +66,7 @@ export class OverworldMap {
 					instance = new Person(configObject);
 					break;
 				case 'PizzaStone':
-					instance = new PizzaStone(configObject);
+					instance = new PizzaStone(configObject as PizzaStoneConfig);
 					break;
 				default:
 					return;
@@ -130,7 +130,7 @@ export class OverworldMap {
 		if (this.walls[`${x},${y}`]) return true;
 
 		// Check for game objects at this position
-		return Object.values(this.gameObjects).find(gameObj => {
+		return !!Object.values(this.gameObjects).find(gameObj => {
 			if (gameObj.x === x && gameObj.y === y) return true;
 
             if ('intentPosition' in gameObj && gameObj.intentPosition) {

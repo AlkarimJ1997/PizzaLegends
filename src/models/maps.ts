@@ -17,7 +17,7 @@ window.OverworldMaps = {
 				type: 'Person',
 				x: withGrid(10),
 				y: withGrid(8),
-				src: '/images/characters/people/npc1.png',
+				src: '../assets/images/characters/people/npc1.png',
 				behaviorLoop: [
 					{ type: 'walk', direction: 'left' },
 					{ type: 'walk', direction: 'down' },

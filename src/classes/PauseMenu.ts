@@ -58,7 +58,7 @@ export class PauseMenu {
 		if (pageKey === 'pizzas') {
 			const lineupPizzas = playerState.lineup.map((id: string) => {
 				const { pizzaId } = playerState.pizzas[id];
-				const base = Pizzas[pizzaId];
+				const base = Pizzas[pizzaId as keyof typeof Pizzas];
 
 				return {
 					label: base.name,
@@ -92,7 +92,7 @@ export class PauseMenu {
 
 		const inactivePizzas = inactiveIds.map((id: string) => {
 			const { pizzaId } = playerState.pizzas[id];
-			const base = Pizzas[pizzaId];
+			const base = Pizzas[pizzaId as keyof typeof Pizzas];
 
 			return {
 				label: `Swap for ${base.name}`,

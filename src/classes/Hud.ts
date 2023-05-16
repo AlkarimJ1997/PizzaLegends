@@ -16,12 +16,15 @@ export class Hud {
 
 		playerState.lineup.forEach((key: string) => {
 			const pizza = playerState.pizzas[key];
+
+			if (!pizza.pizzaId) throw new Error(`Pizza ${key} is missing a pizzaId`);
+
 			const scoreboard = new Combatant(
 				{
 					id: key,
 					...Pizzas[pizza.pizzaId],
 					...pizza,
-				},
+				} as CombatantConfig,
 				null
 			);
 
@@ -33,6 +36,8 @@ export class Hud {
 
 	update() {
 		this.scoreboards.forEach(scoreboard => {
+			if (!scoreboard.id) return;
+
 			scoreboard.update(window.playerState.pizzas[scoreboard.id]);
 		});
 	}
@@ -49,7 +54,7 @@ export class Hud {
 
 		document.addEventListener('LineupChanged', () => {
 			this.createElement();
-            this.update();
+			this.update();
 			container.appendChild(this.element);
 		});
 	}

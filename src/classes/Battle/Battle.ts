@@ -46,7 +46,11 @@ export class Battle {
 		};
 
 		window.playerState.lineup.forEach((id: string) => {
-			this.addCombatant(id, 'player', window.playerState.pizzas[id]);
+			this.addCombatant(
+				id,
+				'player',
+				window.playerState.pizzas[id] as EnemyPizza
+			);
 		});
 
 		Object.keys(this.enemy.pizzas).forEach((key: string) => {

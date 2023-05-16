@@ -2,7 +2,6 @@ import { OverworldMap } from './OverworldMap';
 import { Hud } from './Hud';
 import { DirectionInput } from './DirectionInput';
 import { KeyPressListener } from './KeyPressListener';
-import { SPEEDS } from '../data/enums';
 import { getElement } from '../utils/utils';
 import { Progress } from './Progress';
 import { TitleScreen } from './TitleScreen';
@@ -175,25 +174,5 @@ export class Overworld {
 		this.directionInput.init();
 
 		this.startGameLoop();
-
-		// this.map.startCutscene([
-		// 	{ type: 'battle', enemyId: 'beth' },
-		// 	{
-		// 		type: 'message',
-		// 		textLines: [
-		// 			{ speed: SPEEDS.Slow, string: 'Oh, hello!' },
-		// 			{ speed: SPEEDS.Pause, string: '', pause: true },
-		// 			{ speed: SPEEDS.Normal, string: 'Have you seen my pet' },
-		// 			{ speed: SPEEDS.Fast, string: 'frog', classes: ['green'] },
-		// 			{ speed: SPEEDS.Normal, string: 'around here?' },
-		// 		],
-		// 	},
-		// 	{ who: 'hero', type: 'walk', direction: 'down' },
-		// 	{ who: 'hero', type: 'walk', direction: 'down' },
-		// 	{ who: 'npcA', type: 'walk', direction: 'up' },
-		// 	{ who: 'npcA', type: 'walk', direction: 'left' },
-		// 	{ who: 'hero', type: 'stand', direction: 'right', time: 200 },
-		// 	{ type: 'changeMap', map: 'Kitchen' },
-		// ]);
 	}
 }
