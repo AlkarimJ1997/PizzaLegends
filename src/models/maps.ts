@@ -42,28 +42,29 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[
-                                    { speed: SPEEDS.Normal, string: "I'm going to" },
-                                    { speed: SPEEDS.Pause, string: '', pause: true },
-                                    { speed: SPEEDS.Pause, string: "crush you!" },
-                                ],
+								textLines: [
+									{ speed: SPEEDS.Normal, string: "I'm going to" },
+									{ speed: SPEEDS.Pause, string: '', pause: true },
+									{ speed: SPEEDS.Pause, string: 'crush you!' },
+								],
 								faceHero: 'npcA',
 							},
 							{ type: 'battle', enemyId: 'beth' },
 							{ type: 'addStoryFlag', flag: 'DEFEATED_BETH' },
 							{
 								type: 'message',
-								textLines:[
-                                    { speed: SPEEDS.Fast, string: 'You crushed me like weak pepper.' },
-                                ],
+								textLines: [
+									{
+										speed: SPEEDS.Fast,
+										string: 'You crushed me like weak pepper.',
+									},
+								],
 								faceHero: 'npcA',
 							},
-							{ 
-                                type: 'message', 
-                                textLines:[
-                                    { speed: SPEEDS.Fast, string: 'Go away!' }
-                                ],
-                            }
+							{
+								type: 'message',
+								textLines: [{ speed: SPEEDS.Fast, string: 'Go away!' }],
+							},
 						],
 					},
 				],
@@ -92,7 +93,11 @@ window.OverworldMaps = {
 				talking: [
 					{
 						events: [
-							{ type: 'message', textLines:[{ speed: SPEEDS.SuperFast, string: 'Bahaha!' }], faceHero: 'npcB' },
+							{
+								type: 'message',
+								textLines: [{ speed: SPEEDS.SuperFast, string: 'Bahaha!' }],
+								faceHero: 'npcB',
+							},
 							{ type: 'addStoryFlag', flag: 'TALKED_TO_ERIO' },
 						],
 					},
@@ -118,7 +123,12 @@ window.OverworldMaps = {
 					events: [
 						{ who: 'npcB', type: 'walk', direction: 'left' },
 						{ who: 'npcB', type: 'stand', direction: 'up', time: 500 },
-						{ type: 'message', textLines:[{ speed: SPEEDS.Fast, string: "You can't be in there!"}] },
+						{
+							type: 'message',
+							textLines: [
+								{ speed: SPEEDS.Fast, string: "You can't be in there!" },
+							],
+						},
 						{ who: 'npcB', type: 'walk', direction: 'right' },
 						{ who: 'hero', type: 'walk', direction: 'down' },
 						{ who: 'hero', type: 'walk', direction: 'left' },
@@ -162,7 +172,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: "** They don't want to talk to you **" }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: "** They don't want to talk to you **",
+									},
+								],
 							},
 						],
 					},
@@ -178,7 +193,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'People take their jobs here very seriously.' }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: 'People take their jobs here very seriously.',
+									},
+								],
 								faceHero: 'kitchenNpcB',
 							},
 						],
@@ -219,9 +239,13 @@ window.OverworldMaps = {
 						{ type: 'addStoryFlag', flag: 'SEEN_INTRO' },
 						{
 							type: 'message',
-							textLines:[
-                                { speed: SPEEDS.Normal, string: '* You are chopping ingredients on your first day as a Pizza Chef at a famed establishment in town. *'}
-                            ],
+							textLines: [
+								{
+									speed: SPEEDS.Normal,
+									string:
+										'* You are chopping ingredients on your first day as a Pizza Chef at a famed establishment in town. *',
+								},
+							],
 						},
 						{ type: 'walk', who: 'kitchenNpcA', direction: 'down' },
 						{
@@ -231,23 +255,49 @@ window.OverworldMaps = {
 							time: 200,
 						},
 						{ type: 'stand', who: 'hero', direction: 'left', time: 200 },
-						{ type: 'message', textLines:[{ speed: SPEEDS.Slow, string: 'Ahem. Is this your best work?' }]},
 						{
 							type: 'message',
-							textLines:[
-                                { speed: SPEEDS.Fast, string: 'These pepperonis are completely' },
-                                { speed: SPEEDS.Fast, string: 'unstable!', classes: ['red'] },
-                                { speed: SPEEDS.Fast, string: 'The pepper shapes are all wrong!' },
-                            ]
+							textLines: [
+								{ speed: SPEEDS.Slow, string: 'Ahem. Is this your best work?' },
+							],
 						},
 						{
 							type: 'message',
-							textLines:[
-                                { speed: SPEEDS.Normal, string: "Don't even get me started on the" },
-                                { speed: SPEEDS.Normal, string: 'mushrooms.', classes: ['purple'] },
-                            ]
+							textLines: [
+								{
+									speed: SPEEDS.Fast,
+									string: 'These pepperonis are completely',
+								},
+								{ speed: SPEEDS.Fast, string: 'unstable!', classes: ['red'] },
+								{
+									speed: SPEEDS.Fast,
+									string: 'The pepper shapes are all wrong!',
+								},
+							],
 						},
-						{ type: 'message', textLines:[{ speed: SPEEDS.Normal, string: 'You will never make it in pizza!' }]},
+						{
+							type: 'message',
+							textLines: [
+								{
+									speed: SPEEDS.Normal,
+									string: "Don't even get me started on the",
+								},
+								{
+									speed: SPEEDS.Normal,
+									string: 'mushrooms.',
+									classes: ['purple'],
+								},
+							],
+						},
+						{
+							type: 'message',
+							textLines: [
+								{
+									speed: SPEEDS.Normal,
+									string: 'You will never make it in pizza!',
+								},
+							],
+						},
 						{
 							type: 'stand',
 							who: 'kitchenNpcA',
@@ -259,11 +309,19 @@ window.OverworldMaps = {
 						{ type: 'stand', who: 'hero', direction: 'down', time: 400 },
 						{
 							type: 'message',
-							textLines:[
-                                { speed: SPEEDS.Normal, string: '* The competition is' },
-                                { speed: SPEEDS.Normal, string: 'fierce!', classes: ['orange'] },
-                                { speed: SPEEDS.Normal, string: 'You should spend some time leveling up your Pizza lineup and skills. *' },
-                            ]
+							textLines: [
+								{ speed: SPEEDS.Normal, string: '* The competition is' },
+								{
+									speed: SPEEDS.Normal,
+									string: 'fierce!',
+									classes: ['orange'],
+								},
+								{
+									speed: SPEEDS.Normal,
+									string:
+										'You should spend some time leveling up your Pizza lineup and skills. *',
+								},
+							],
 						},
 						{
 							type: 'changeMap',
@@ -337,12 +395,32 @@ window.OverworldMaps = {
 				],
 				talking: [
 					{
+						required: ['TALKED_TO_STREET_NPC_A'],
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'All ambitious pizza chefs gather on Anchovy Avenue.' }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string:
+											'All ambitious pizza chefs gather on Anchovy Avenue.',
+									},
+								],
 								faceHero: 'streetNpcA',
 							},
+						],
+					},
+					{
+						events: [
+							{ type: 'jump', who: 'streetNpcA', time: 400 },
+							{ type: 'jump', who: 'streetNpcA', time: 400 },
+							{
+								type: 'message',
+								textLines: [
+									{ speed: SPEEDS.Fast, string: 'Welcome newcomer!' },
+								],
+							},
+							{ type: 'addStoryFlag', flag: 'TALKED_TO_STREET_NPC_A' },
 						],
 					},
 				],
@@ -364,7 +442,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: "I can't decide on my favorite toppings." }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: "I can't decide on my favorite toppings.",
+									},
+								],
 								faceHero: 'streetNpcB',
 							},
 						],
@@ -382,7 +465,9 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Slow, string: 'You are quite capable.' }],
+								textLines: [
+									{ speed: SPEEDS.Slow, string: 'You are quite capable.' },
+								],
 								faceHero: 'streetNpcC',
 							},
 						],
@@ -391,7 +476,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'You should have just stayed home!' }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: 'You should have just stayed home!',
+									},
+								],
 								faceHero: 'streetNpcC',
 							},
 							{ type: 'battle', enemyId: 'streetBattle' },
@@ -401,95 +491,95 @@ window.OverworldMaps = {
 				],
 			},
 		},
-		walls: { 
-				[asGridCoord(4,9)]: true,
-                [asGridCoord(5,8)]: true,
-				[asGridCoord(6,9)]: true,
-				[asGridCoord(7,9)]: true,
-				[asGridCoord(8,9)]: true,
-				[asGridCoord(9,9)]: true,
-				[asGridCoord(10,9)]: true,
-				[asGridCoord(11,9)]: true,
-				[asGridCoord(12,9)]: true,
-				[asGridCoord(13,8)]: true,
-				[asGridCoord(14,8)]: true,
-				[asGridCoord(15,7)]: true,
-				[asGridCoord(16,7)]: true,
-				[asGridCoord(17,7)]: true,
-				[asGridCoord(18,7)]: true,
-				[asGridCoord(19,7)]: true,
-				[asGridCoord(20,7)]: true,
-				[asGridCoord(21,7)]: true,
-				[asGridCoord(22,7)]: true,
-				[asGridCoord(23,7)]: true,
-				[asGridCoord(24,7)]: true,
-				[asGridCoord(24,6)]: true,
-				[asGridCoord(24,5)]: true,
-				[asGridCoord(26,5)]: true,
-				[asGridCoord(26,6)]: true,
-				[asGridCoord(26,7)]: true,
-				[asGridCoord(27,7)]: true,
-				[asGridCoord(28,8)]: true,
-				[asGridCoord(28,9)]: true,
-				[asGridCoord(29,8)]: true,
-				[asGridCoord(30,9)]: true,
-				[asGridCoord(31,9)]: true,
-				[asGridCoord(32,9)]: true,
-				[asGridCoord(33,9,)]: true,
-				[asGridCoord(16,9,)]: true,
-				[asGridCoord(17,9,)]: true,
-				[asGridCoord(25,9,)]: true,
-				[asGridCoord(26,9,)]: true,
-				[asGridCoord(16,10)]: true,
-				[asGridCoord(17,10)]: true,
-				[asGridCoord(25,10)]: true,
-				[asGridCoord(26,10)]: true,
-				[asGridCoord(16,11)]: true,
-				[asGridCoord(17,11)]: true,
-				[asGridCoord(25,11)]: true,
-				[asGridCoord(26,11)]: true,
-				[asGridCoord(18,11)]: true,
-				[asGridCoord(19,11)]: true,
-				[asGridCoord(4,14)]: true,
-				[asGridCoord(5,14)]: true,
-				[asGridCoord(6,14)]: true,
-				[asGridCoord(7,14)]: true,
-				[asGridCoord(8,14)]: true,
-				[asGridCoord(9,14)]: true,
-				[asGridCoord(10,14)]: true,
-				[asGridCoord(11,14)]: true,
-				[asGridCoord(12,14)]: true,
-				[asGridCoord(13,14)]: true,
-				[asGridCoord(14,14)]: true,
-				[asGridCoord(15,14)]: true,
-				[asGridCoord(16,14)]: true,
-				[asGridCoord(17,14)]: true,
-				[asGridCoord(18,14)]: true,
-				[asGridCoord(19,14)]: true,
-				[asGridCoord(20,14)]: true,
-				[asGridCoord(21,14)]: true,
-				[asGridCoord(22,14)]: true,
-				[asGridCoord(23,14)]: true,
-				[asGridCoord(24,14)]: true,
-				[asGridCoord(25,14)]: true,
-				[asGridCoord(26,14)]: true,
-				[asGridCoord(27,14)]: true,
-				[asGridCoord(28,14)]: true,
-				[asGridCoord(29,14)]: true,
-				[asGridCoord(30,14)]: true,
-				[asGridCoord(31,14)]: true,
-				[asGridCoord(32,14)]: true,
-				[asGridCoord(33,14)]: true,
-				[asGridCoord(3,10)]: true,
-				[asGridCoord(3,11)]: true,
-				[asGridCoord(3,12)]: true,
-				[asGridCoord(3,13)]: true,
-				[asGridCoord(34,10)]: true,
-				[asGridCoord(34,11)]: true,
-				[asGridCoord(34,12)]: true,
-				[asGridCoord(34,13)]: true,
-				[asGridCoord(29,8)]: true,
-				[asGridCoord(25,4)]: true,
+		walls: {
+			[asGridCoord(4, 9)]: true,
+			[asGridCoord(5, 8)]: true,
+			[asGridCoord(6, 9)]: true,
+			[asGridCoord(7, 9)]: true,
+			[asGridCoord(8, 9)]: true,
+			[asGridCoord(9, 9)]: true,
+			[asGridCoord(10, 9)]: true,
+			[asGridCoord(11, 9)]: true,
+			[asGridCoord(12, 9)]: true,
+			[asGridCoord(13, 8)]: true,
+			[asGridCoord(14, 8)]: true,
+			[asGridCoord(15, 7)]: true,
+			[asGridCoord(16, 7)]: true,
+			[asGridCoord(17, 7)]: true,
+			[asGridCoord(18, 7)]: true,
+			[asGridCoord(19, 7)]: true,
+			[asGridCoord(20, 7)]: true,
+			[asGridCoord(21, 7)]: true,
+			[asGridCoord(22, 7)]: true,
+			[asGridCoord(23, 7)]: true,
+			[asGridCoord(24, 7)]: true,
+			[asGridCoord(24, 6)]: true,
+			[asGridCoord(24, 5)]: true,
+			[asGridCoord(26, 5)]: true,
+			[asGridCoord(26, 6)]: true,
+			[asGridCoord(26, 7)]: true,
+			[asGridCoord(27, 7)]: true,
+			[asGridCoord(28, 8)]: true,
+			[asGridCoord(28, 9)]: true,
+			[asGridCoord(29, 8)]: true,
+			[asGridCoord(30, 9)]: true,
+			[asGridCoord(31, 9)]: true,
+			[asGridCoord(32, 9)]: true,
+			[asGridCoord(33, 9)]: true,
+			[asGridCoord(16, 9)]: true,
+			[asGridCoord(17, 9)]: true,
+			[asGridCoord(25, 9)]: true,
+			[asGridCoord(26, 9)]: true,
+			[asGridCoord(16, 10)]: true,
+			[asGridCoord(17, 10)]: true,
+			[asGridCoord(25, 10)]: true,
+			[asGridCoord(26, 10)]: true,
+			[asGridCoord(16, 11)]: true,
+			[asGridCoord(17, 11)]: true,
+			[asGridCoord(25, 11)]: true,
+			[asGridCoord(26, 11)]: true,
+			[asGridCoord(18, 11)]: true,
+			[asGridCoord(19, 11)]: true,
+			[asGridCoord(4, 14)]: true,
+			[asGridCoord(5, 14)]: true,
+			[asGridCoord(6, 14)]: true,
+			[asGridCoord(7, 14)]: true,
+			[asGridCoord(8, 14)]: true,
+			[asGridCoord(9, 14)]: true,
+			[asGridCoord(10, 14)]: true,
+			[asGridCoord(11, 14)]: true,
+			[asGridCoord(12, 14)]: true,
+			[asGridCoord(13, 14)]: true,
+			[asGridCoord(14, 14)]: true,
+			[asGridCoord(15, 14)]: true,
+			[asGridCoord(16, 14)]: true,
+			[asGridCoord(17, 14)]: true,
+			[asGridCoord(18, 14)]: true,
+			[asGridCoord(19, 14)]: true,
+			[asGridCoord(20, 14)]: true,
+			[asGridCoord(21, 14)]: true,
+			[asGridCoord(22, 14)]: true,
+			[asGridCoord(23, 14)]: true,
+			[asGridCoord(24, 14)]: true,
+			[asGridCoord(25, 14)]: true,
+			[asGridCoord(26, 14)]: true,
+			[asGridCoord(27, 14)]: true,
+			[asGridCoord(28, 14)]: true,
+			[asGridCoord(29, 14)]: true,
+			[asGridCoord(30, 14)]: true,
+			[asGridCoord(31, 14)]: true,
+			[asGridCoord(32, 14)]: true,
+			[asGridCoord(33, 14)]: true,
+			[asGridCoord(3, 10)]: true,
+			[asGridCoord(3, 11)]: true,
+			[asGridCoord(3, 12)]: true,
+			[asGridCoord(3, 13)]: true,
+			[asGridCoord(34, 10)]: true,
+			[asGridCoord(34, 11)]: true,
+			[asGridCoord(34, 12)]: true,
+			[asGridCoord(34, 13)]: true,
+			[asGridCoord(29, 8)]: true,
+			[asGridCoord(25, 4)]: true,
 		},
 		cutsceneSpaces: {
 			[asGridCoord(5, 9)]: [
@@ -554,7 +644,13 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'All of the chef rivalries have been good for business.' }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string:
+											'All of the chef rivalries have been good for business.',
+									},
+								],
 								faceHero: 'shopNpcA',
 							},
 						],
@@ -572,7 +668,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'Which peel will make me a better chef?' }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: 'Which peel will make me a better chef?',
+									},
+								],
 								faceHero: 'shopNpcB',
 							},
 						],
@@ -689,10 +790,14 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[
-                                    { speed: SPEEDS.Normal, string: 'Chef Rootie', classes: ['green'] },
-                                    { speed: SPEEDS.Normal, string: 'uses the best seasoning.' },
-                                ],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: 'Chef Rootie',
+										classes: ['green'],
+									},
+									{ speed: SPEEDS.Normal, string: 'uses the best seasoning.' },
+								],
 								faceHero: 'greenKitchenNpcA',
 							},
 						],
@@ -721,11 +826,11 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[
-                                    { speed: SPEEDS.Slow, string: 'Finally...' },
-                                    { speed: SPEEDS.Pause, string: '', pause: true },
-                                    { speed: SPEEDS.Fast, string: 'a pizza place that gets me!' },
-                                ],
+								textLines: [
+									{ speed: SPEEDS.Slow, string: 'Finally...' },
+									{ speed: SPEEDS.Pause, string: '', pause: true },
+									{ speed: SPEEDS.Fast, string: 'a pizza place that gets me!' },
+								],
 								faceHero: 'greenKitchenNpcB',
 							},
 						],
@@ -743,7 +848,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'My veggies need more growth.' }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: 'My veggies need more growth.',
+									},
+								],
 								faceHero: 'greenKitchenNpcC',
 							},
 						],
@@ -752,7 +862,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Fast, string: 'Veggies are the fuel for the heart and soul!' }],
+								textLines: [
+									{
+										speed: SPEEDS.Fast,
+										string: 'Veggies are the fuel for the heart and soul!',
+									},
+								],
 								faceHero: 'greenKitchenNpcC',
 							},
 							{ type: 'battle', enemyId: 'chefRootie', arena: 'green-kitchen' },
@@ -854,11 +969,15 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[
-                                    { speed: SPEEDS.Normal, string: 'This place is famous for' },
-                                    { speed: SPEEDS.Normal, string: 'veggie', classes: ['green'] },
-                                    { speed: SPEEDS.Normal, string: 'pizzas!' },
-                                ],
+								textLines: [
+									{ speed: SPEEDS.Normal, string: 'This place is famous for' },
+									{
+										speed: SPEEDS.Normal,
+										string: 'veggie',
+										classes: ['green'],
+									},
+									{ speed: SPEEDS.Normal, string: 'pizzas!' },
+								],
 								faceHero: 'streetNorthNpcA',
 							},
 						],
@@ -882,7 +1001,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'I love the fresh smell of garlic in the air.' }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: 'I love the fresh smell of garlic in the air.',
+									},
+								],
 								faceHero: 'streetNorthNpcB',
 							},
 						],
@@ -900,7 +1024,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'Could you be the Legendary one?' }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: 'Could you be the Legendary one?',
+									},
+								],
 								faceHero: 'streetNorthNpcC',
 							},
 						],
@@ -909,7 +1038,9 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'This is my turf!' }],
+								textLines: [
+									{ speed: SPEEDS.Normal, string: 'This is my turf!' },
+								],
 								faceHero: 'streetNorthNpcC',
 							},
 							{ type: 'battle', enemyId: 'streetNorthBattle' },
@@ -1029,7 +1160,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'Maybe I am not ready for this place.' }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: 'Maybe I am not ready for this place.',
+									},
+								],
 								faceHero: 'diningRoomNpcA',
 							},
 						],
@@ -1038,10 +1174,19 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.SuperFast, string: 'You think you have what it takes to cook here?!' }],
+								textLines: [
+									{
+										speed: SPEEDS.SuperFast,
+										string: 'You think you have what it takes to cook here?!',
+									},
+								],
 								faceHero: 'diningRoomNpcA',
 							},
-							{ type: 'battle', enemyId: 'diningRoomBattle', arena: 'dining-room' },
+							{
+								type: 'battle',
+								enemyId: 'diningRoomBattle',
+								arena: 'dining-room',
+							},
 							{ type: 'addStoryFlag', flag: 'diningRoomBattle' },
 						],
 					},
@@ -1057,7 +1202,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'People come from all over to dine here.' }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: 'People come from all over to dine here.',
+									},
+								],
 								faceHero: 'diningRoomNpcB',
 							},
 						],
@@ -1079,7 +1229,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: 'I was so lucky to score a reservation!' }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: 'I was so lucky to score a reservation!',
+									},
+								],
 								faceHero: 'diningRoomNpcC',
 							},
 						],
@@ -1104,7 +1259,12 @@ window.OverworldMaps = {
 						events: [
 							{
 								type: 'message',
-								textLines:[{ speed: SPEEDS.Normal, string: "I've been dreaming of this pizza for weeks!" }],
+								textLines: [
+									{
+										speed: SPEEDS.Normal,
+										string: "I've been dreaming of this pizza for weeks!",
+									},
+								],
 								faceHero: 'diningRoomNpcD',
 							},
 						],

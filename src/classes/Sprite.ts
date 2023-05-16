@@ -30,6 +30,7 @@ export class Sprite {
 	isLoaded = false;
 	isShadowLoaded = false;
 	gameObject: GameObject;
+	jumpHeight: number;
 
 	constructor(config: SpriteConfig) {
 		// Sprite Image
@@ -88,6 +89,9 @@ export class Sprite {
 
 		// Game Object reference
 		this.gameObject = config.gameObject;
+
+		// Jump Height for Jumping Animation
+		this.jumpHeight = 0;
 	}
 
 	get frame() {
@@ -115,7 +119,8 @@ export class Sprite {
 	}
 
 	draw(ctx: CanvasRenderingContext2D, cameraPerson: GameObject) {
-		const x = this.gameObject.x - this.NUDGE_X + withGrid(10.5) - cameraPerson.x;
+		const x =
+			this.gameObject.x - this.NUDGE_X + withGrid(10.5) - cameraPerson.x;
 		const y = this.gameObject.y - this.NUDGE_Y + withGrid(6) - cameraPerson.y;
 
 		this.isShadowLoaded && ctx.drawImage(this.shadow, x, y);
@@ -124,7 +129,17 @@ export class Sprite {
 		const [frameX, frameY] = this.frame;
 
 		this.isLoaded &&
-			ctx.drawImage(this.image, frameX * 32, frameY * 32, 32, 32, x, y, 32, 32);
+			ctx.drawImage(
+				this.image,
+				frameX * 32,
+				frameY * 32,
+				32,
+				32,
+				x,
+				y - this.jumpHeight,
+				32,
+				32
+			);
 
 		this.updateAnimationProgress();
 	}

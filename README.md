@@ -6275,6 +6275,3 @@ npm run dev
 
   And that's it! We now have a title screen for our game.
 </details>
-
-### Day 25
-

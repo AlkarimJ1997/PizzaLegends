@@ -48,7 +48,9 @@ export class OverworldEvent {
 	}
 
 	walk(resolve: () => void) {
-		const who = this.map.gameObjects[this.event.who as string] as Person;
+		if (!this.event.who) throw new Error('No who specified in event');
+
+		const who = this.map.gameObjects[this.event.who] as Person;
 
 		// TODO: I MADE THIS CODE MYSELF TO FIX A BUG (WE'LL SEE IF THERE ARE ANY SIDE EFFECTS)
 		if (
@@ -81,6 +83,24 @@ export class OverworldEvent {
 
 		// Listen for the PersonWalkingComplete event
 		document.addEventListener('PersonWalkingComplete', completeHandler);
+	}
+
+	jump(resolve: () => void) {
+		if (!this.event.who) throw new Error('No who specified in event');
+
+		const who = this.map.gameObjects[this.event.who] as Person;
+		const { hero } = this.map.gameObjects;
+
+		who.direction = oppositeDirection(hero.direction);
+
+		setTimeout(() => {
+			who.sprite.jumpHeight += 10;
+
+			setTimeout(() => {
+				who.sprite.jumpHeight -= 10;
+				resolve();
+			}, this.event.time || 500);
+		}, 200);
 	}
 
 	message(resolve: () => void) {
@@ -180,6 +200,7 @@ export class OverworldEvent {
 		const eventHandlers: Record<string, OverworldEventMethod> = {
 			stand: this.stand.bind(this),
 			walk: this.walk.bind(this),
+			jump: this.jump.bind(this),
 			message: this.message.bind(this),
 			changeMap: this.changeMap.bind(this),
 			battle: this.battle.bind(this),
