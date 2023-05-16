@@ -5917,5 +5917,251 @@ npm run dev
 
   We are at the point where we have a lot of features and concepts to create a full-fledged game. However, we are missing one key feature: saving the player's progress. Let's add that now.
 
-  
+  First, we are going to add some new properties to the `changeMap` event. We do this so we can specify where the player should enter the map (if they go through a door, for example).
+
+  ```ts
+  Street: {
+		id: 'Street',
+		lowerSrc: '../assets/images/maps/StreetLower.png',
+		upperSrc: '../assets/images/maps/StreetUpper.png',
+		gameObjects: {
+			hero: new Person({
+				isPlayerControlled: true,
+				x: withGrid(30),
+				y: withGrid(10),
+			}),
+		},
+		cutsceneSpaces: {
+			[asGridCoord(29, 9)]: [
+				{
+					events: [
+						{
+							type: 'changeMap',
+							map: 'Kitchen',
+							x: withGrid(5),
+							y: withGrid(10),
+							direction: 'up',
+						},
+					],
+				},
+			],
+		},
+	},
+  ```
+
+  Notice that we have a new `x`, `y`, and `direction` property. These will be used to determine where the player should enter the new map.
+
+  Let's handle these new parameters in the `changeMap()` method in `OverworldEvent`.
+
+  ```ts
+  changeMap(resolve: () => void) {
+		const sceneTransition = new SceneTransition();
+
+		sceneTransition.init(getElement<HTMLDivElement>('.game'), () => {
+			const { OverworldMaps } = window;
+			const { map, x, y, direction } = this.event ?? {};
+
+			if (!map) throw new Error('No map specified in event');
+
+			if (!x || !y || !direction) {
+				this.map.overworld?.startMap(OverworldMaps[map]);
+			} else {
+				this.map.overworld?.startMap(OverworldMaps[map], { x, y, direction });
+			}
+
+			resolve();
+			sceneTransition.fadeOut();
+		});
+	}
+  ```
+
+  Let's break this down. We destructure the `map`, `x`, `y`, and `direction` properties from the event. We fallback to an empty object if any of the properties are missing.
+
+  Then, we check if the `x`, `y`, and `direction` properties exist. If they do, we pass them to the `startMap()` method. Otherwise, we just call `startMap()` without any parameters.
+
+  Now in `startMap()` in `Overworld`, we need to handle these new parameters.
+
+  ```ts
+  startMap(
+		mapConfig: OverworldMapConfig,
+		heroInitialState?: HeroInitialState | null
+	) {
+		this.map = new OverworldMap(mapConfig);
+		this.map.overworld = this;
+		this.map.mountObjects();
+
+		if (!heroInitialState) return;
+
+		const { hero } = this.map.gameObjects;
+		const { x, y, direction } = heroInitialState;
+
+		this.map.removeWall(hero.x, hero.y);
+		hero.x = x;
+		hero.y = y;
+		hero.direction = direction;
+		this.map.addWall(hero.x, hero.y);
+	}
+  ```
+
+  We destructure the `x`, `y`, and `direction` properties from `heroInitialState`. Then, we remove the wall at the hero's current position, and set the hero's position and direction to the new values. Finally, we add a wall at the hero's new position.
+
+  Now, let's actually create a new `Progress` class to handle saving and loading the player's progress from local storage.
+
+  ```ts
+  export class Progress {
+    mapId: string;
+    startingHeroX: number;
+    startingHeroY: number;
+    startingHeroDirection: string;
+    saveFileKey: string;
+
+    constructor() {
+      this.mapId = 'DemoRoom';
+      this.startingHeroX = 0;
+      this.startingHeroY = 0;
+      this.startingHeroDirection = 'down';
+      this.saveFileKey = 'PizzaLegends_SaveFile1';
+    }
+
+    save(): void {
+      window.localStorage.setItem(
+        this.saveFileKey,
+        JSON.stringify({
+          mapId: this.mapId,
+          startingHeroX: this.startingHeroX,
+          startingHeroY: this.startingHeroY,
+          startingHeroDirection: this.startingHeroDirection,
+          playerState: {
+            pizzas: window.playerState.pizzas,
+            lineup: window.playerState.lineup,
+            items: window.playerState.items,
+            storyFlags: window.playerState.storyFlags,
+          },
+        })
+      );
+    }
+
+    getSaveFile() {
+      const saveFile = window.localStorage.getItem(this.saveFileKey);
+
+      return saveFile ? JSON.parse(saveFile) : null;
+    }
+
+    load() {
+      const saveFile = this.getSaveFile();
+
+      if (!saveFile) return;
+
+      this.mapId = saveFile.mapId;
+      this.startingHeroX = saveFile.startingHeroX;
+      this.startingHeroY = saveFile.startingHeroY;
+      this.startingHeroDirection = saveFile.startingHeroDirection;
+
+      Object.keys(saveFile.playerState).forEach(key => {
+        window.playerState[key] = saveFile.playerState[key];
+      });
+    }
+  }
+  ```
+
+  We default some class members to initial values, then we create a `save()` method that saves the player's progress to local storage, including the player's state.
+
+  We also create a `getSaveFile()` method that returns the save file from local storage, or `null` if it doesn't exist.
+
+  Finally, we create a `load()` method that loads the player's progress from local storage, which really just sets the class members to updated values, and sets the player's state to the updated values.
+
+  Now, let's create a new `Progress` instance in `Overworld` at the start of `init()`.
+
+  ```ts
+  init() {
+		this.progress = new Progress();
+
+		// Potentially load progress
+		let initialHeroState = null;
+		const saveFile = this.progress.getSaveFile();
+
+		if (saveFile) {
+			this.progress.load();
+			initialHeroState = {
+				x: this.progress.startingHeroX,
+				y: this.progress.startingHeroY,
+				direction: this.progress.startingHeroDirection,
+			};
+		}
+
+		this.hud = new Hud();
+		this.hud.init(getElement('.game'));
+
+		this.startMap(window.OverworldMaps[this.progress.mapId], initialHeroState);
+
+		// ... rest of init()
+	}
+  ```
+
+  Here, we get the save file from local storage using the `Progress` class. If it exists, we pass the state to the `startMap()` method so it can load the player's position, direction, and update their state.
+
+  Now, let's add the save functionality to the pause menu. We have the `save()` method in `Progress`, so we need to pass a reference to the `Progress` instance to the pause menu.
+
+  We can do this in the `pause()` method in `OverworldEvent`.
+
+  ```ts
+  pause(resolve: () => void) {
+		this.map.isPaused = true;
+
+		const menu = new PauseMenu({
+      progress: this.map.overworld?.progress,
+			onComplete: () => {
+				resolve();
+				this.map.isPaused = false;
+				this.map.overworld?.startGameLoop();
+			},
+		});
+
+		menu.init(getElement<HTMLDivElement>('.game'));
+	}
+  ```
+
+  Now, we just call the `save()` method in the `handler()` method for the `Save` menu item.
+
+  ```ts
+  getOptions(pageKey: string) {
+		const { playerState, Pizzas } = window;
+
+		// Case 1: Show options for the root page
+		if (pageKey === 'root') {
+			return [
+				{
+					label: 'Pizzas',
+					description: 'Manage your pizzas',
+					handler: () => {
+						this.keyboardMenu?.setOptions(this.getOptions('pizzas'));
+					},
+					right: () => '🍕',
+				},
+				{
+					label: 'Save',
+					description: 'Save your progress',
+					handler: () => {
+						this.progress.save();
+						this.close();
+					},
+					right: () => '💾',
+				},
+				// ... rest of options
+			];
+		}
+
+    // ... rest of method
+  }
+  ```
+</details>
+
+### Day 24
+
+- [x] Title Screen
+
+<details>
+  <summary>Title Screen</summary></br>
+
+  We're at the home stretch. Now, let's create a title screen for the game.
 </details>
